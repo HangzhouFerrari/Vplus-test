@@ -138,7 +138,7 @@ body.dark-mode .search-box::placeholder {
 }
 
 body.dark-mode .sidebar {
-  background: rgba(20, 18, 28, 0.8) !important;
+  background: rgba(20, 18, 28, 0.6) !important;
   border-right-color: var(--glass-border) !important;
 }
 
@@ -245,7 +245,7 @@ nav{
 .sidebar{
   position:fixed;left:0;top:64px;z-index:180;
   width:80px;height:calc(100vh - 64px);
-  background:linear-gradient(180deg,rgba(240,238,249,0.8) 0%,rgba(230,225,245,0.7) 100%);
+  background:linear-gradient(180deg,rgba(240,238,249,0.6) 0%,rgba(230,225,245,0.6) 100%);
   backdrop-filter:blur(10px);
   border-right:1px solid rgba(200,195,230,0.4);
   display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;
@@ -552,7 +552,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
     width:100%; height: calc(84px + env(safe-area-inset-bottom, 0px));
     flex-direction:row; justify-content:space-around; align-items:center;
     padding:0; border-right:none; border-top:1px solid var(--glass-border);
-    background: var(--glass); padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255,255,255,0.6); padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .sidebar .sidebar-btn { width: auto; height: 100%; border-radius: 0; flex: 1; }
   .sidebar div[style*="height:1px"], .sidebar div[style*="flex:1"], #recent-sidebar { display: none !important; }
@@ -635,12 +635,11 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
 .settings-dropdown-wrap{position:relative;}
 .settings-dropdown{
   position:absolute;right:-8px;top:48px;
-  background:rgba(255,255,255,0.95);
+  background:rgba(255,255,255,1);
   border:1px solid rgba(200,195,230,0.6);
   border-radius:var(--r);
   padding:16px;
   min-width:280px;
-  box-shadow:0 8px 32px rgba(80,60,160,0.2);
   backdrop-filter:blur(10px);
   z-index:300;
   transform-origin:top right;
