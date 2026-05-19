@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="200" viewBox="0 0 256 200">
+  <g id="icon_dashboard" transform="translate(-2032 1444.819)">
+    <path id="Path_151" data-name="Path 151" d="M30.929,37.485c0-17.794,14.014-32.219,31.3-32.219h193.4c17.288,0,31.3,14.425,31.3,32.219V173.047c0,17.794-14.014,32.219-31.3,32.219H62.23c-17.287,0-31.3-14.425-31.3-32.219Z" transform="translate(2001.071 -1450.086)" fill="rgba(255,255,255,0.4)"/>
+    <g id="Group_4" data-name="Group 4">
+      <rect id="Rectangle_5" data-name="Rectangle 5" width="137" height="174" rx="21" transform="translate(2045 -1433)" fill="#fff"/>
+      <rect id="Rectangle_6" data-name="Rectangle 6" width="81" height="71" rx="21" transform="translate(2194 -1433)" fill="#fff"/>
+      <rect id="Rectangle_9" data-name="Rectangle 9" width="81" height="33" rx="16.5" transform="translate(2194 -1292)" fill="#fff"/>
+      <rect id="Rectangle_7" data-name="Rectangle 7" width="41" height="47" rx="10" transform="translate(2194 -1351)" fill="#fff"/>
+      <rect id="Rectangle_8" data-name="Rectangle 8" width="29" height="47" rx="10" transform="translate(2246 -1351)" fill="#fff"/>
+    </g>
+  </g>
+</svg>

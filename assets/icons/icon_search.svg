@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <g id="icon_search" transform="translate(-2433 -926)">
+    <rect id="Rectangle_20" data-name="Rectangle 20" width="256" height="256" transform="translate(2433 926)" fill="rgba(0,0,0,0)"/>
+    <rect id="Rectangle_28" data-name="Rectangle 28" width="170" height="170" rx="85" transform="translate(2460 953)" fill="rgba(255,255,255,0.2)"/>
+    <path id="Rectangle_26" data-name="Rectangle 26" d="M85,25a60,60,0,1,0,60,60A60.068,60.068,0,0,0,85,25M85,0A85,85,0,1,1,0,85,85,85,0,0,1,85,0Z" transform="translate(2460 953)" fill="#fff"/>
+    <rect id="Rectangle_27" data-name="Rectangle 27" width="30" height="94" rx="15" transform="translate(2581.134 1094.898) rotate(-45)" fill="rgba(255,255,255,0.6)"/>
+  </g>
+</svg>

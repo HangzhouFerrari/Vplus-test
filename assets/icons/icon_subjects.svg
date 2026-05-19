@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <g id="icon_subjects" transform="translate(-2032 805)">
+    <rect id="subjects" width="256" height="256" transform="translate(2032 -805)" fill="rgba(255,255,255,0)"/>
+    <g id="Group_15" data-name="Group 15" transform="translate(13 13)">
+      <rect id="Rectangle_26" data-name="Rectangle 26" width="104" height="104" rx="30" transform="translate(2032 -805)" fill="#fff"/>
+      <rect id="Rectangle_27" data-name="Rectangle 27" width="104" height="104" rx="30" transform="translate(2158 -805)" fill="#fff"/>
+      <rect id="Rectangle_28" data-name="Rectangle 28" width="104" height="104" rx="30" transform="translate(2158 -679)" fill="rgba(255,255,255,0.4)"/>
+      <rect id="Rectangle_29" data-name="Rectangle 29" width="104" height="104" rx="30" transform="translate(2032 -679)" fill="#fff"/>
+    </g>
+  </g>
+</svg>

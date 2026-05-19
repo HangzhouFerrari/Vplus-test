@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <g id="icon_test" transform="translate(-3598 1414)">
+    <rect id="Rectangle_30" data-name="Rectangle 30" width="256" height="256" transform="translate(3598 -1414)" fill="rgba(149,0,0,0)"/>
+    <path id="Path_187" data-name="Path 187" d="M-620-358H-771a15.9,15.9,0,0,1-11.313-4.686A15.9,15.9,0,0,1-787-374V-598a15.9,15.9,0,0,1,4.686-11.314A15.9,15.9,0,0,1-771-614h117l50,50v190a15.9,15.9,0,0,1-4.686,11.314A15.9,15.9,0,0,1-620-358Z" transform="translate(4422 -800)" fill="rgba(255,255,255,0.4)" opacity="0.9"/>
+    <rect id="Rectangle_41" data-name="Rectangle 41" width="112" height="7" rx="3.5" transform="translate(3661 -1331)" fill="rgba(255,255,255,0.6)"/>
+    <rect id="Rectangle_42" data-name="Rectangle 42" width="130" height="7" rx="3.5" transform="translate(3661 -1314)" fill="rgba(255,255,255,0.6)"/>
+    <rect id="Rectangle_43" data-name="Rectangle 43" width="109" height="7" rx="3.5" transform="translate(3661 -1298)" fill="rgba(255,255,255,0.6)"/>
+    <rect id="Rectangle_44" data-name="Rectangle 44" width="80" height="7" rx="3.5" transform="translate(3661 -1281)" fill="rgba(255,255,255,0.6)"/>
+    <rect id="Rectangle_45" data-name="Rectangle 45" width="91" height="7" rx="3.5" transform="translate(3661 -1264)" fill="rgba(255,255,255,0.6)"/>
+    <rect id="Rectangle_46" data-name="Rectangle 46" width="40" height="7" rx="3.5" transform="translate(3661 -1248)" fill="rgba(255,255,255,0.6)"/>
+    <path id="Path_186" data-name="Path 186" d="M-787-614v34a15.9,15.9,0,0,0,4.686,11.314A15.9,15.9,0,0,0-771-564h34l-50-50Z" transform="translate(4555 -800)" fill="#fff"/>
+  </g>
+</svg>

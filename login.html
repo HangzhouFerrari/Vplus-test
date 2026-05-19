@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Velios+">
+<meta id="theme-meta" name="theme-color" content="#f0eef9">
+<title>Velios+ — Inloggen</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-grad:linear-gradient(160deg,#f0eef9 0%,#ddd8f0 50%,#cfc8e8 100%);
+  --glass:rgba(255,255,255,0.92);
+  --glass-border:rgba(200,195,230,0.6);
+  --glass-shadow:0 2px 8px rgba(0,98,255,0.1),inset 1px 1px 0 rgba(255,255,255,1),inset -1px -1px 2px rgba(255,255,255,0.5);
+  --glass-shadow-lg:0 8px 32px rgba(0,98,255,0.15),inset 1px 1px 0 rgba(255,255,255,1),inset -1px -1px 2px rgba(255,255,255,0.5);
+  --text:#0b0f2a;--text2:#3d3a55;--text3:#7c7899;
+  --accent:#0062ff;--accent2:#0075ff;--accent-light:rgba(0,98,255,0.12);
+  --red:#e83a4a;--green:#18b672;
+  --r:30px;--r2:36px;--r3:34px;--r4:30px;
+  --font:'DM Sans',sans-serif;
+  --ease:cubic-bezier(0,0,.47,1.15);
+  --ease2:cubic-bezier(0.34,1.56,0.64,1);
+}
+html{min-height:100vh;font-family:var(--font);color:var(--text);font-size:16px;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
+body{min-height:100dvh;background:var(--bg-grad);background-attachment:fixed;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;-webkit-touch-callout:none;}
+
+/* Dark mode */
+body.dark-mode{--bg-grad:linear-gradient(180deg,#0a0812 0%,#10091e 100%);--glass:rgba(22,20,34,0.96);--glass-border:rgba(64,60,100,0.6);--text:#fff;--text2:#c8c4e0;--text3:rgba(255,255,255,0.45);--glass-shadow:0 2px 10px rgba(0,0,0,0.6),inset 1px 1px 0 rgba(80,75,120,0.5);}
+body.dark-mode input{background:rgba(40,38,60,0.9)!important;color:#fff!important;border-color:var(--glass-border)!important;}
+body.dark-mode input:focus{background:rgba(50,48,74,0.98)!important;border-color:var(--accent)!important;}
+body.dark-mode input::placeholder{color:var(--text3)!important;}
+
+/* ── CARD ── */
+.login-card{
+  background:var(--glass);
+  border:1.5px solid var(--glass-border);
+  border-radius:var(--r2);
+  padding:36px 40px 32px;
+  width:100%;max-width:420px;
+  box-shadow:var(--glass-shadow-lg);
+  animation:cardIn .5s var(--ease2) both;
+}
+@keyframes cardIn{from{opacity:0;transform:scale(0.94) translateY(20px)}to{opacity:1;transform:none}}
+
+/* Logo */
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+.login-logo-mark{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:20px;font-weight:800;
+  box-shadow:0 4px 14px var(--accent-light);
+}
+.login-logo-title{font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--text);}
+.login-logo-title span{color:var(--accent);}
+
+/* Tabs */
+.login-tabs{display:flex;gap:0;margin-bottom:28px;background:rgba(200,195,230,0.2);border-radius:var(--r4);padding:3px;}
+.login-tab{
+  flex:1;padding:9px 12px;text-align:center;border-radius:calc(var(--r4) - 3px);
+  font-size:14px;font-weight:700;color:var(--text3);cursor:pointer;
+  transition:all .2s var(--ease2);border:none;background:none;font-family:var(--font);
+}
+.login-tab.active{background:var(--glass);color:var(--accent);box-shadow:var(--glass-shadow);}
+
+/* Panels */
+.login-panel{display:none;}
+.login-panel.active{display:flex;flex-direction:column;gap:16px;animation:panelIn .3s var(--ease2) both;}
+@keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Inputs */
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:13px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.field-hint{font-size:11px;color:var(--text3);font-weight:500;margin-left:auto;}
+.field input{
+  height:46px;background:rgba(255,255,255,0.85);
+  border:1.5px solid var(--glass-border);border-radius:var(--r3);
+  color:var(--text);font-family:var(--font);font-size:15px;
+  padding:0 16px;outline:none;transition:all .2s;width:100%;
+  -webkit-appearance:none;
+}
+.field input:focus{border-color:var(--accent);background:rgba(255,255,255,0.99);box-shadow:0 0 0 3px var(--accent-light);}
+.field input.error{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(232,58,74,0.12)!important;}
+.field input.ok{border-color:var(--green)!important;}
+.field-error{font-size:12px;color:var(--red);font-weight:600;display:none;}
+.field-error.show{display:block;}
+
+/* Password strength */
+.pw-strength{display:flex;gap:4px;margin-top:4px;}
+.pw-bar{height:3px;flex:1;border-radius:2px;background:rgba(200,195,230,0.4);transition:background .3s;}
+.pw-bar.weak{background:var(--red);}
+.pw-bar.medium{background:#f59e0b;}
+.pw-bar.strong{background:var(--green);}
+.pw-label{font-size:11px;color:var(--text3);margin-top:3px;font-weight:600;transition:color .3s;}
+
+/* Password toggle */
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:44px;}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;display:flex;align-items:center;}
+.pw-toggle:hover{color:var(--text);}
+.pw-toggle svg{width:18px;height:18px;}
+
+/* Username prefix */
+.username-wrap{position:relative;display:flex;align-items:center;}
+.username-at{
+  position:absolute;left:14px;font-size:15px;font-weight:700;
+  color:var(--text3);pointer-events:none;z-index:1;
+}
+.username-wrap input{padding-left:28px;}
+
+/* Submit button */
+.btn-submit{
+  height:50px;width:100%;border:none;border-radius:var(--r3);
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);
+  color:#fff;font-family:var(--font);font-size:16px;font-weight:800;
+  cursor:pointer;letter-spacing:-0.2px;
+  box-shadow:0 4px 16px var(--accent-light),inset 1px 1px 0 rgba(255,255,255,0.2);
+  transition:all .2s var(--ease2));margin-top:4px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-submit:hover:not(:disabled){filter:brightness(1.1);transform:scale(1.02) translateY(-1px);}
+.btn-submit:active:not(:disabled){transform:scale(0.98);}
+.btn-submit:disabled{opacity:0.55;cursor:not-allowed;filter:none;transform:none;}
+
+/* Spinner in button */
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:12px;color:var(--text3);font-size:12px;font-weight:600;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--glass-border);}
+
+/* ── VERIFICATIE STAP ── */
+.verify-panel{
+  display:none;flex-direction:column;align-items:center;text-align:center;gap:16px;
+  animation:panelIn .3s var(--ease2) both;
+}
+.verify-panel.active{display:flex;}
+.verify-icon{font-size:52px;margin-bottom:4px;}
+.verify-title{font-size:20px;font-weight:800;color:var(--text);}
+.verify-desc{font-size:14px;color:var(--text2);line-height:1.6;max-width:300px;}
+.verify-email-badge{
+  background:var(--accent-light);border:1px solid rgba(0,98,255,0.2);
+  border-radius:var(--r4);padding:8px 16px;
+  font-size:14px;font-weight:700;color:var(--accent);
+}
+.verify-code-row{display:flex;gap:8px;justify-content:center;margin:8px 0;}
+.verify-digit{
+  width:46px;height:56px;text-align:center;
+  background:rgba(255,255,255,0.85);border:1.5px solid var(--glass-border);
+  border-radius:14px;font-size:24px;font-weight:800;color:var(--text);
+  font-family:var(--font);outline:none;transition:all .15s;
+  -webkit-appearance:none;
+}
+.verify-digit:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
+.verify-resend{font-size:13px;color:var(--text3);font-weight:600;}
+.verify-resend button{background:none;border:none;color:var(--accent);font-weight:700;cursor:pointer;font-family:var(--font);font-size:13px;}
+.verify-resend button:hover{text-decoration:underline;}
+.verify-resend button:disabled{color:var(--text3);cursor:default;text-decoration:none;}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:rgba(252,250,255,0.99);border:1px solid rgba(200,195,230,0.7);
+  border-radius:var(--r);padding:12px 22px;font-size:14px;font-weight:700;
+  box-shadow:0 8px 32px rgba(80,60,160,0.2);
+  opacity:0;pointer-events:none;transition:all .25s var(--ease2);
+  white-space:nowrap;z-index:9999;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.err{background:#fff0f1;border-color:rgba(232,58,74,0.3);color:var(--red);}
+#toast.ok{background:#f0fdf8;border-color:rgba(24,182,114,0.3);color:var(--green);}
+
+/* CAPTCHA */
+.captcha-wrap{display:flex;justify-content:center;margin-top:4px;}
+
+/* back link */
+.back-link{text-align:center;font-size:13px;color:var(--text3);font-weight:600;margin-top:8px;}
+.back-link a{color:var(--accent);font-weight:700;text-decoration:none;}
+.back-link a:hover{text-decoration:underline;}
+
+@media(max-width:480px){
+  .login-card{padding:28px 20px 24px;border-radius:var(--r);}
+}
+</style>
+</head>
+<body>
+
+<div class="login-card" id="loginCard">
+  <!-- Logo -->
+  <div class="login-logo">
+    <div class="login-logo-mark">V</div>
+    <div class="login-logo-title">Velios<span>+</span></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="login-tabs" id="loginTabs">
+    <button class="login-tab active" onclick="switchTab('inloggen')">Inloggen</button>
+    <button class="login-tab" onclick="switchTab('registreren')">Account maken</button>
+  </div>
+
+  <!-- ── INLOGGEN ── -->
+  <div class="login-panel active" id="panelInloggen">
+    <div class="field">
+      <label>E-mailadres of gebruikersnaam</label>
+      <input type="text" id="li-identifier" placeholder="naam@example.com of @gebruikersnaam" autocomplete="username" autocapitalize="none">
+      <div class="field-error" id="li-id-err"></div>
+    </div>
+    <div class="field">
+      <label>Wachtwoord <span class="field-hint"><a href="#" onclick="showForgot();return false;" style="color:var(--accent);text-decoration:none;font-weight:600;">Vergeten?</a></span></label>
+      <div class="pw-wrap">
+        <input type="password" id="li-password" placeholder="Jouw wachtwoord" autocomplete="current-password">
+        <button class="pw-toggle" onclick="togglePw('li-password',this)" tabindex="-1" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="field-error" id="li-pw-err"></div>
+    </div>
+    <button class="btn-submit" id="btnInloggen" onclick="doLogin()">
+      Inloggen
+    </button>
+    <div class="back-link">Nog geen account? <a href="#" onclick="switchTab('registreren');return false;">Maak er een aan</a></div>
+  </div>
+
+  <!-- ── REGISTREREN ── -->
+  <div class="login-panel" id="panelRegistreren">
+    <div class="field">
+      <label>E-mailadres</label>
+      <input type="text" id="reg-email" placeholder="naam@example.com" autocomplete="email" autocapitalize="none" oninput="validateEmail()">
+      <div class="field-error" id="reg-email-err"></div>
+    </div>
+    <div class="field">
+      <label>Gebruikersnaam</label>
+      <div class="username-wrap">
+        <span class="username-at">@</span>
+        <input type="text" id="reg-username" placeholder="gebruikersnaam" autocomplete="off" autocapitalize="none" maxlength="30" oninput="validateUsername()">
+      </div>
+      <div class="field-error" id="reg-un-err"></div>
+    </div>
+    <div class="field">
+      <label>Weergavenaam</label>
+      <input type="text" id="reg-display" placeholder="Jouw naam" autocomplete="name" maxlength="40">
+      <div class="field-error" id="reg-disp-err"></div>
+    </div>
+    <div class="field">
+      <label>Wachtwoord</label>
+      <div class="pw-wrap">
+        <input type="password" id="reg-pw1" placeholder="Min. 8 tekens" autocomplete="new-password" oninput="checkPwStrength()">
+        <button class="pw-toggle" onclick="togglePw('reg-pw1',this)" tabindex="-1" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="pw-strength" id="pwStrengthBars">
+        <div class="pw-bar" id="bar1"></div>
+        <div class="pw-bar" id="bar2"></div>
+        <div class="pw-bar" id="bar3"></div>
+        <div class="pw-bar" id="bar4"></div>
+      </div>
+      <div class="pw-label" id="pwLabel"></div>
+      <div class="field-error" id="reg-pw1-err"></div>
+    </div>
+    <div class="field">
+      <label>Herhaal wachtwoord</label>
+      <div class="pw-wrap">
+        <input type="password" id="reg-pw2" placeholder="Zelfde wachtwoord" autocomplete="new-password" oninput="checkPwMatch()">
+        <button class="pw-toggle" onclick="togglePw('reg-pw2',this)" tabindex="-1" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="field-error" id="reg-pw2-err"></div>
+    </div>
+    <button class="btn-submit" id="btnRegistreren" onclick="doRegister()">
+      Account aanmaken
+    </button>
+    <div class="back-link">Al een account? <a href="#" onclick="switchTab('inloggen');return false;">Inloggen</a></div>
+  </div>
+
+  <!-- ── VERIFICATIE ── -->
+  <div class="verify-panel" id="panelVerify">
+    <div class="verify-icon">📬</div>
+    <div class="verify-title">Check je e-mail</div>
+    <div class="verify-desc">We hebben een verificatielink gestuurd naar:</div>
+    <div class="verify-email-badge" id="verifyEmailBadge">—</div>
+    <div class="verify-desc" style="margin-top:4px;">Klik op de link in de e-mail om je account te bevestigen. Daarna kun je inloggen.</div>
+    <button class="btn-submit" style="max-width:280px;" onclick="switchTab('inloggen')">
+      Terug naar inloggen
+    </button>
+    <div class="verify-resend">
+      Geen e-mail ontvangen? 
+      <button id="resendBtn" onclick="resendVerification()" disabled>Opnieuw versturen <span id="resendTimer"></span></button>
+    </div>
+  </div>
+
+  <!-- ── WACHTWOORD VERGETEN ── -->
+  <div class="login-panel" id="panelForgot">
+    <div style="font-size:14px;color:var(--text2);line-height:1.6;">Vul je e-mailadres in. We sturen je een link om je wachtwoord te resetten.</div>
+    <div class="field">
+      <label>E-mailadres</label>
+      <input type="text" id="forgot-email" placeholder="naam@example.com" autocomplete="email" autocapitalize="none">
+      <div class="field-error" id="forgot-err"></div>
+    </div>
+    <button class="btn-submit" id="btnForgot" onclick="doForgot()">Reset-link versturen</button>
+    <div class="back-link"><a href="#" onclick="switchTab('inloggen');return false;">← Terug naar inloggen</a></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+/* ── STATE ── */
+let currentTab = 'inloggen';
+let pendingEmail = '';
+let resendCountdown = null;
+let unCheckTimer = null;
+
+/* ── INIT ── */
+(async () => {
+  // Apply saved theme
+  const s = JSON.parse(localStorage.getItem('sd_theme') || '{}');
+  if (s.darkMode) {
+    document.body.classList.add('dark-mode');
+    document.getElementById('theme-meta').content = '#0a0812';
+  }
+  if (s.accentColor) applyAccent(s.accentColor);
+
+  // Redirect if already logged in
+  await VeliosAuth.redirectIfLoggedIn('index.html');
+
+  // Check if coming back from email confirm
+  const hash = window.location.hash;
+  if (hash.includes('access_token') || hash.includes('type=signup')) {
+    showToast('✅ E-mail bevestigd! Je kunt nu inloggen.', 'ok');
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+})();
+
+function applyAccent(color) {
+  const h = color.replace('#', '');
+  const r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+  const R = document.documentElement.style;
+  R.setProperty('--accent', color);
+  R.setProperty('--accent2', `rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
+  R.setProperty('--accent-light', `rgba(${r},${g},${b},0.12)`);
+}
+
+/* ── TAB SWITCHING ── */
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.login-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'inloggen') || (i === 1 && tab === 'registreren'));
+  });
+  document.getElementById('loginTabs').style.display = (tab === 'verify' || tab === 'forgot') ? 'none' : '';
+  document.getElementById('panelInloggen').classList.toggle('active', tab === 'inloggen');
+  document.getElementById('panelRegistreren').classList.toggle('active', tab === 'registreren');
+  document.getElementById('panelVerify').classList.toggle('active', tab === 'verify');
+  document.getElementById('panelForgot').classList.toggle('active', tab === 'forgot');
+  clearErrors();
+}
+
+function showForgot() { switchTab('forgot'); }
+
+/* ── VALIDATION HELPERS ── */
+function setErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.toggle('show', !!msg);
+}
+function clearErrors() {
+  document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+  document.querySelectorAll('.field input').forEach(i => i.classList.remove('error', 'ok'));
+}
+
+function validateEmail() {
+  const v = document.getElementById('reg-email').value.trim();
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  setErr('reg-email-err', v && !ok ? 'Ongeldig e-mailadres' : '');
+  document.getElementById('reg-email').classList.toggle('ok', ok && !!v);
+  document.getElementById('reg-email').classList.toggle('error', !ok && !!v);
+}
+
+let unCheckAbort = null;
+async function validateUsername() {
+  const raw = document.getElementById('reg-username').value;
+  const v = raw.toLowerCase().replace(/[^a-z0-9_.]/g, '');
+  if (raw !== v) document.getElementById('reg-username').value = v;
+
+  if (!v) { setErr('reg-un-err', ''); return; }
+  if (v.length < 3) { setErr('reg-un-err', 'Min. 3 tekens'); document.getElementById('reg-username').classList.add('error'); return; }
+  if (v.length > 20) { setErr('reg-un-err', 'Max. 20 tekens'); return; }
+  if (!/^[a-z][a-z0-9_.]*$/.test(v)) { setErr('reg-un-err', 'Moet beginnen met een letter'); return; }
+
+  setErr('reg-un-err', '');
+  clearTimeout(unCheckTimer);
+  unCheckTimer = setTimeout(async () => {
+    const exists = await VeliosAuth.usernameExists(v);
+    if (exists) {
+      setErr('reg-un-err', 'Gebruikersnaam al in gebruik');
+      document.getElementById('reg-username').classList.add('error');
+      document.getElementById('reg-username').classList.remove('ok');
+    } else {
+      setErr('reg-un-err', '');
+      document.getElementById('reg-username').classList.remove('error');
+      document.getElementById('reg-username').classList.add('ok');
+    }
+  }, 500);
+}
+
+const PW_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,20}$/;
+
+function checkPwStrength() {
+  const v = document.getElementById('reg-pw1').value;
+  const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3'), document.getElementById('bar4')];
+  const label = document.getElementById('pwLabel');
+  bars.forEach(b => b.className = 'pw-bar');
+
+  if (!v) { label.textContent = ''; return; }
+
+  let score = 0;
+  if (v.length >= 8) score++;
+  if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
+  if (/\d/.test(v)) score++;
+  if (v.length >= 14) score++;
+
+  const cls = score <= 1 ? 'weak' : score === 2 ? 'medium' : score === 3 ? 'medium' : 'strong';
+  const labels = ['', 'Zwak', 'Redelijk', 'Goed', 'Sterk'];
+  for (let i = 0; i < score; i++) bars[i].classList.add(cls);
+  label.textContent = labels[score] || '';
+  label.style.color = cls === 'weak' ? 'var(--red)' : cls === 'medium' ? '#f59e0b' : 'var(--green)';
+
+  checkPwMatch();
+}
+
+function checkPwMatch() {
+  const p1 = document.getElementById('reg-pw1').value;
+  const p2 = document.getElementById('reg-pw2').value;
+  if (!p2) { setErr('reg-pw2-err', ''); return; }
+  const match = p1 === p2;
+  setErr('reg-pw2-err', match ? '' : 'Wachtwoorden komen niet overeen');
+  document.getElementById('reg-pw2').classList.toggle('ok', match);
+  document.getElementById('reg-pw2').classList.toggle('error', !match);
+}
+
+function togglePw(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  btn.innerHTML = show
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+}
+
+/* ── LOGIN ── */
+async function doLogin() {
+  const btn = document.getElementById('btnInloggen');
+  const identifier = document.getElementById('li-identifier').value.trim();
+  const password = document.getElementById('li-password').value;
+
+  setErr('li-id-err', '');
+  setErr('li-pw-err', '');
+
+  if (!identifier) { setErr('li-id-err', 'Vul je e-mailadres of gebruikersnaam in'); return; }
+  if (!password) { setErr('li-pw-err', 'Vul je wachtwoord in'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="btn-spinner"></div> Inloggen…';
+
+  try {
+    let email = identifier;
+
+    // Username login: haal email op
+    if (!identifier.includes('@') || identifier.startsWith('@')) {
+      const un = identifier.replace(/^@/, '').toLowerCase();
+      const { data: profile } = await VeliosAuth.client
+        .from('profiles')
+        .select('id')
+        .eq('username', un)
+        .maybeSingle();
+
+      if (!profile) {
+        setErr('li-id-err', 'Gebruikersnaam niet gevonden');
+        btn.disabled = false; btn.textContent = 'Inloggen';
+        return;
+      }
+      // We need their email — stored in auth.users, not accessible directly
+      // Workaround: try login with a dummy and catch; better: store email in profiles
+      // For now show helpful message
+      setErr('li-id-err', 'Log in met je e-mailadres (gebruikersnaam-login volgt binnenkort)');
+      btn.disabled = false; btn.textContent = 'Inloggen';
+      return;
+    }
+
+    const { error } = await VeliosAuth.client.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      if (error.message.includes('Invalid login') || error.message.includes('invalid_credentials')) {
+        setErr('li-pw-err', 'Onjuist e-mailadres of wachtwoord');
+      } else if (error.message.includes('Email not confirmed')) {
+        setErr('li-id-err', 'Je e-mail is nog niet bevestigd. Check je inbox.');
+      } else {
+        setErr('li-pw-err', error.message);
+      }
+      btn.disabled = false; btn.textContent = 'Inloggen';
+      return;
+    }
+
+    showToast('✅ Welkom terug!', 'ok');
+    setTimeout(() => { window.location.href = 'index.html'; }, 600);
+
+  } catch (e) {
+    setErr('li-pw-err', 'Er ging iets mis. Probeer het opnieuw.');
+    btn.disabled = false; btn.textContent = 'Inloggen';
+  }
+}
+
+/* ── REGISTER ── */
+async function doRegister() {
+  const btn = document.getElementById('btnRegistreren');
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const username = document.getElementById('reg-username').value.trim().toLowerCase();
+  const displayName = document.getElementById('reg-display').value.trim();
+  const pw1 = document.getElementById('reg-pw1').value;
+  const pw2 = document.getElementById('reg-pw2').value;
+
+  clearErrors();
+  let hasErr = false;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setErr('reg-email-err', 'Ongeldig e-mailadres'); hasErr = true;
+  }
+  if (!username || username.length < 3) {
+    setErr('reg-un-err', 'Gebruikersnaam moet min. 3 tekens bevatten'); hasErr = true;
+  }
+  if (!displayName) {
+    setErr('reg-disp-err', 'Vul een weergavenaam in'); hasErr = true;
+  }
+  if (!PW_REGEX.test(pw1)) {
+    setErr('reg-pw1-err', 'Wachtwoord voldoet niet aan de eisen (8-20 tekens, hoofdletter, kleine letter, cijfer)');
+    hasErr = true;
+  }
+  if (pw1 !== pw2) {
+    setErr('reg-pw2-err', 'Wachtwoorden komen niet overeen'); hasErr = true;
+  }
+  if (hasErr) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="btn-spinner"></div> Account aanmaken…';
+
+  try {
+    // Check username again
+    const exists = await VeliosAuth.usernameExists(username);
+    if (exists) {
+      setErr('reg-un-err', 'Gebruikersnaam al in gebruik');
+      btn.disabled = false; btn.innerHTML = 'Account aanmaken';
+      return;
+    }
+
+    const { error } = await VeliosAuth.client.auth.signUp({
+      email,
+      password: pw1,
+      options: {
+        data: {
+          username: username,
+          display_name: displayName,
+        },
+        emailRedirectTo: window.location.origin + '/login.html',
+      }
+    });
+
+    if (error) {
+      if (error.message.includes('already registered')) {
+        setErr('reg-email-err', 'Dit e-mailadres is al in gebruik');
+      } else {
+        showToast('⚠️ ' + error.message, 'err');
+      }
+      btn.disabled = false; btn.innerHTML = 'Account aanmaken';
+      return;
+    }
+
+    // Show verify panel
+    pendingEmail = email;
+    document.getElementById('verifyEmailBadge').textContent = email;
+    switchTab('verify');
+    startResendTimer(60);
+
+  } catch (e) {
+    showToast('Er ging iets mis. Probeer het opnieuw.', 'err');
+    btn.disabled = false; btn.innerHTML = 'Account aanmaken';
+  }
+}
+
+/* ── FORGOT PASSWORD ── */
+async function doForgot() {
+  const btn = document.getElementById('btnForgot');
+  const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+  setErr('forgot-err', '');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setErr('forgot-err', 'Ongeldig e-mailadres'); return;
+  }
+  btn.disabled = true;
+  btn.innerHTML = '<div class="btn-spinner"></div>';
+  await VeliosAuth.client.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/account-options.html',
+  });
+  showToast('📧 Reset-link verstuurd (check ook spam)', 'ok');
+  btn.disabled = false; btn.textContent = 'Reset-link versturen';
+  setTimeout(() => switchTab('inloggen'), 2000);
+}
+
+/* ── RESEND ── */
+function startResendTimer(seconds) {
+  const btn = document.getElementById('resendBtn');
+  const timer = document.getElementById('resendTimer');
+  btn.disabled = true;
+  let s = seconds;
+  clearInterval(resendCountdown);
+  resendCountdown = setInterval(() => {
+    s--;
+    timer.textContent = `(${s}s)`;
+    if (s <= 0) {
+      clearInterval(resendCountdown);
+      btn.disabled = false;
+      timer.textContent = '';
+    }
+  }, 1000);
+}
+
+async function resendVerification() {
+  if (!pendingEmail) return;
+  await VeliosAuth.client.auth.resend({ type: 'signup', email: pendingEmail });
+  showToast('📧 Verificatie-e-mail opnieuw verstuurd', 'ok');
+  startResendTimer(60);
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+}
+
+/* ── ENTER KEY ── */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (currentTab === 'inloggen') doLogin();
+  else if (currentTab === 'registreren') doRegister();
+  else if (currentTab === 'forgot') doForgot();
+});
+</script>
+</body>
+</html>

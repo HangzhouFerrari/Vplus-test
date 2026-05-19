@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <g id="icon_download" transform="translate(-2433 -926)">
+    <rect id="Rectangle_20" data-name="Rectangle 20" width="256" height="256" transform="translate(2433 926)" fill="rgba(0,0,0,0)"/>
+    <path id="Path_186" data-name="Path 186" d="M0,0,5.667-3.964H246.155L256,0V45a29,29,0,0,1-29,29H29A29,29,0,0,1,0,45Z" transform="translate(2433 1108)" fill="rgba(255,255,255,0.2)"/>
+    <path id="Path_185" data-name="Path 185" d="M-2170,673a28.819,28.819,0,0,1-11.288-2.279,28.9,28.9,0,0,1-9.219-6.214,28.9,28.9,0,0,1-6.215-9.218A28.827,28.827,0,0,1-2199,644V600.5h.021A6,6,0,0,1-2193,595h8a6,6,0,0,1,5.98,5.5h.021V644a9.01,9.01,0,0,0,9,9h198a9.01,9.01,0,0,0,9-9V600.5h.021A6,6,0,0,1-1957,595h8a6,6,0,0,1,5.98,5.5h.021V644a28.827,28.827,0,0,1-2.279,11.289,28.9,28.9,0,0,1-6.214,9.218,28.918,28.918,0,0,1-9.219,6.214A28.818,28.818,0,0,1-1972,673Z" transform="translate(4632 509)" fill="#fff"/>
+    <rect id="Rectangle_38" data-name="Rectangle 38" width="30" height="170" rx="15" transform="translate(2546 940)" fill="#fff"/>
+    <path id="Polygon_1" data-name="Polygon 1" d="M58.9,5.635a9,9,0,0,1,12.209,0l41.981,38.752A9,9,0,0,1,106.981,60H23.019a9,9,0,0,1-6.1-15.613Z" transform="translate(2626 1140) rotate(180)" fill="#fff"/>
+  </g>
+</svg>

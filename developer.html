@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<script>
+if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
+  window.location.href = 'unsupported.html';
+}
+</script>
+<meta charset="UTF-8">
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velios+ — Developer Console</title>
+<link rel="icon" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-grad:linear-gradient(160deg,#f0eef9 0%,#ddd8f0 50%,#cfc8e8 100%);
+  --glass:rgba(255,255,255,0.90);
+  --glass-border:rgba(200,195,230,0.6);
+  --glass-shadow:0 4px 24px rgba(80,60,160,0.10),inset 1px 1px 0 rgba(255,255,255,1);
+  --text:#0b0f2a;--text2:#3d3a55;--text3:#7c7899;
+  --accent:#0062ff;--green:#18b672;--red:#e83a4a;
+  --r:20px;--r2:28px;--r3:14px;
+  --font:'DM Sans',sans-serif;
+  --ease:cubic-bezier(0,0,.47,1.15);
+}
+html{min-height:100vh;font-family:var(--font);color:var(--text);font-size:16px;overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
+body{min-height:100vh;background:var(--bg-grad);background-attachment:fixed;padding:0;}
+
+.container{max-width:1200px;margin:0 auto;padding:28px; width:100%}
+
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;padding:9px 18px;transition:all .2s var(--ease);outline:none;white-space:nowrap;}
+.btn-primary{background:linear-gradient(180deg,#0062ff 0%,rgba(0,98,255,0.85) 100%);color:#fff;box-shadow:0 2px 12px rgba(0,98,255,0.35),inset 1px 1px 0 rgba(255,255,255,0.25);}
+.btn-primary:hover{filter:brightness(1.15);transform:scale(1.04)translate(0,-1px)}
+.btn-glass{background:linear-gradient(180deg,rgba(255,255,255,0.9) 0%,rgba(255,255,255,0.75) 100%);color:var(--text);box-shadow:inset 1px 1px 0 rgba(255,255,255,1),0 2px 8px rgba(80,60,160,0.1);border:none;}
+.btn-glass:hover{background:rgba(255,255,255,0.95);transform:scale(1.04)}
+.btn-lg{padding:13px 26px;font-size:16px;border-radius:var(--r)}
+.btn-danger{background:linear-gradient(180deg,#e83a4a 0%,rgba(232,58,74,0.85) 100%);color:#fff;box-shadow:0 2px 12px rgba(232,58,74,0.3)}
+.btn-danger:hover{filter:brightness(1.15)}
+
+input,textarea,select{background:rgba(255,255,255,0.85);border:1px solid rgba(200,195,230,0.6);border-radius:var(--r3);color:var(--text);font-family:var(--font);font-size:15px;padding:11px 16px;outline:none;transition:all .2s;width:100%;box-shadow:inset 1px 1px 0 rgba(255,255,255,1),0 2px 6px rgba(80,60,160,0.06);}
+input:focus,textarea:focus,select:focus{border-color:#0062ff;background:rgba(255,255,255,0.98);box-shadow:0 0 0 3px rgba(0,98,255,0.12),inset 1px 1px 0 rgba(255,255,255,1);}
+
+/* Login Screen */
+.login-screen{position:fixed;inset:0;z-index:5000;background:var(--bg-grad);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(0)}
+.login-panel{background:rgba(252,250,255,0.99);border:1.5px solid rgba(200,195,230,0.8);border-radius:var(--r2);padding:40px;width:90%;max-width:420px;box-shadow:0 16px 64px rgba(80,60,160,0.2);text-align:center}
+.login-panel h1{font-size:28px;font-weight:800;margin-bottom:8px}
+.login-panel p{color:var(--text2);margin-bottom:24px;font-size:14px}
+.pin-input-group{margin-bottom:20px}
+.pin-input{text-align:center;font-size:18px;letter-spacing:8px;font-weight:700;font-family:monospace}
+.login-error{color:var(--red);font-size:13px;margin-bottom:12px;display:none}
+
+/* Main content */
+.content{display:none}
+.content.active{display:block}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.header h1{font-size:32px;font-weight:800}
+.header .btn-group{display:flex;gap:12px;align-items:center;margin-left:auto}
+
+.section{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r2);padding:28px;margin-bottom:24px;box-shadow:var(--glass-shadow)}
+.section h2{font-size:20px;font-weight:800;margin-bottom:16px;letter-spacing:-0.3px;border-bottom:2px solid rgba(66,85,255,0.15);padding-bottom:12px}
+
+.input-group{margin-bottom:16px}
+.input-group label{display:block;font-size:13px;color:var(--text2);font-weight:600;margin-bottom:6px}
+
+.vset-area{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.vset-input-wrap{grid-column:1/3}
+textarea#vset-content{min-height:200px;font-family:monospace;font-size:12px}
+
+.decoded-section{background:rgba(66,85,255,0.06);border:1px solid rgba(66,85,255,0.2);border-radius:var(--r);padding:16px;margin-top:16px}
+.decoded-section h3{font-size:14px;font-weight:700;margin-bottom:12px;color:#0062ff}
+
+.term-row{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(180,170,210,0.2)}
+.term-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.term-input{font-size:13px;padding:8px 12px}
+.term-input::placeholder{color:rgba(0,0,0,0.3)}
+.term-delete-btn{background:rgba(232,58,74,0.1);border:none;color:var(--red);border-radius:8px;cursor:pointer;font-size:16px;font-weight:700;transition:all .15s}
+.term-delete-btn:hover{background:rgba(232,58,74,0.2)}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(0,98,255,0.12);color:#0062ff}
+.badge-success{background:rgba(24,182,114,0.12);color:var(--green)}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.stat-card{background:rgba(0,98,255,0.05);border:1px solid rgba(0,98,255,0.2);border-radius:var(--r3);padding:12px;text-align:center}
+.stat-value{font-size:20px;font-weight:800;color:#0062ff}
+.stat-label{font-size:11px;color:var(--text2);font-weight:600;margin-top:4px}
+
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(252,250,255,0.99);border:1px solid rgba(200,195,230,0.7);border-radius:var(--r);padding:12px 20px;font-size:14px;font-weight:700;box-shadow:0 8px 32px rgba(80,60,160,0.2);opacity:0;transform:translateY(12px);pointer-events:none;transition:all .25s}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  .container{padding:16px}
+  .vset-area{grid-template-columns:1fr}
+  .vset-area .vset-input-wrap{grid-column:1}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="login-screen">
+  <div class="login-panel">
+    <div style="font-size:40px;margin-bottom:16px">🔐</div>
+    <h1>Developer Console</h1>
+    <p>Voer de pincode in voor toegang</p>
+    <div class="login-error" id="login-error">Pincode is ongeldig</div>
+    <div class="pin-input-group">
+      <input type="password" class="pin-input" id="pin-input" placeholder="••••••" maxlength="6" onkeydown="if(event.key==='Enter')verifyPin()">
+    </div>
+    <button class="btn btn-primary btn-lg" style="width:100%" onclick="verifyPin()">Inloggen</button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="main-content">
+  <div class="container">
+    <div class="header">
+      <h1>Developer Console</h1>
+      <div class="btn-group">
+        <a href="index.html" class="btn btn-glass btn-lg" style="text-decoration:none;">← Terug naar Home</a>
+        <button class="btn btn-primary btn-lg btn-logout" onclick="logout()">Uitloggen</button>
+      </div>
+    </div>
+
+    <!-- Decrypt & Edit Section -->
+    <div class="section">
+      <h2>.vset Decrypt & Edit</h2>
+      <div class="input-group">
+        <label>Plak .vset content of base64 gecodeerde string</label>
+        <textarea id="vset-content" placeholder='{"title":"","terms":[]}' onchange="autoDecrypt()"></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="decryptVset()">🔓 Decrypten</button>
+        <button class="btn btn-glass" onclick="clearVsetForm()">Wissen</button>
+      </div>
+
+      <div id="decoded-data" style="display:none;margin-top:24px">
+        <div class="decoded-section">
+          <h3>Gedecodeerd Bestand</h3>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-title">—</div>
+              <div class="stat-label">Titel</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-terms">0</div>
+              <div class="stat-label">Begrippen</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-vak">—</div>
+              <div class="stat-label">Vak</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-date">—</div>
+              <div class="stat-label">Datum</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Editable Terms -->
+        <div style="margin-top:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <label style="margin:0;font-weight:700">Begrippen bewerken</label>
+            <button class="btn btn-glass btn-sm" onclick="addTerm()" style="margin:0">+ Toevoegen</button>
+          </div>
+          <div id="terms-editor"></div>
+        </div>
+
+        <div class="actions" style="margin-top:20px">
+          <button class="btn btn-primary" onclick="exportVset()">💾 Opslaan als .vset</button>
+          <button class="btn btn-glass" onclick="copyToClipboard()">📋 Kopieren (Base64)</button>
+          <button class="btn btn-glass" onclick="viewJSON()">{ } JSON tonen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Geavanceerd Set Import -->
+    <div class="section">
+      <h2>🚀 Geavanceerd Set Import</h2>
+      <div class="input-group">
+        <label>Format: term1//def1^term2//def2^...</label>
+        <textarea id="advanced-import" placeholder='Biologie//Studie van leven^Cel//Kleinste eenheid van leven^Enzym//Eiwit dat reacties catalyseert' style="min-height:100px;font-family:monospace;font-size:12px"></textarea>
+      </div>
+      <div class="input-group">
+        <label>Set titel</label>
+        <input id="advanced-title" type="text" placeholder="Bijv. Biologie H5">
+      </div>
+      <div class="input-group">
+        <label>Vak</label>
+        <input id="advanced-vak" type="text" placeholder="Bijv. Biologie">
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="parseAdvancedFormat()">📥 Parseeren</button>
+        <button class="btn btn-glass" onclick="document.getElementById('advanced-import').value=''">Wissen</button>
+      </div>
+      <div id="advanced-preview" style="display:none;margin-top:16px;background:rgba(66,85,255,0.06);border:1px solid rgba(66,85,255,0.2);border-radius:var(--r);padding:16px">
+        <h3 style="font-size:14px;font-weight:700;color:#4255ff;margin-bottom:12px">Preview</h3>
+        <div id="advanced-terms" style="max-height:300px;overflow-y:auto"></div>
+        <div class="actions" style="margin-top:16px">
+          <button class="btn btn-primary" onclick="loadAdvancedToCurrentSet()">➕ Aan huidige set toevoegen</button>
+          <button class="btn btn-glass" onclick="createSetFromAdvanced()">📋 Nieuwe set maken</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Base64 to JSON Decoder -->
+    <div class="section">
+      <h2>🔍 Base64 → JSON Decoder</h2>
+      <div class="input-group">
+        <label>Plak een base64 string (van .vset bestand)</label>
+        <textarea id="b64-content" placeholder='JHJvbFNTZGp...' style="min-height:120px;font-family:monospace;font-size:12px"></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="base64ToJson()">🔓 Decoderen</button>
+        <button class="btn btn-glass" onclick="document.getElementById('b64-content').value=''">Wissen</button>
+      </div>
+      <div id="decoded-json-result" style="display:none;margin-top:16px;background:rgba(66,85,255,0.06);border:1px solid rgba(66,85,255,0.2);border-radius:var(--r);padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="font-size:14px;font-weight:700;color:#4255ff;margin:0">Gedecodeerd JSON</h3>
+          <button class="btn btn-glass btn-sm" onclick="copyJsonResult()">📋 Kopieren</button>
+        </div>
+        <textarea id="json-output" readonly style="min-height:180px;background:rgba(255,255,255,0.7);font-family:monospace;font-size:11px;resize:vertical"></textarea>
+      </div>
+    </div>
+
+    <!-- JSON/Base64 to Import Format -->
+    <div class="section">
+      <h2>🔄 JSON/Base64 → Import Format</h2>
+      <div class="input-group">
+        <label>Plak JSON of .vset Base64 om om te zetten naar term//def^ format</label>
+        <textarea id="conv-input" placeholder='{"title":...} of .vset code' style="min-height:100px;font-family:monospace;font-size:12px"></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="convertToImportFormat()">Converteer</button>
+        <button class="btn btn-glass" onclick="document.getElementById('conv-input').value=''; document.getElementById('conv-output-area').style.display='none';">Wissen</button>
+      </div>
+      <div id="conv-output-area" style="display:none;margin-top:16px;background:rgba(24,182,114,0.06);border:1px solid rgba(24,182,114,0.2);border-radius:var(--r);padding:16px">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Resultaat (kopieer naar Geavanceerd Import)</label>
+        <textarea id="conv-output" readonly style="min-height:100px;font-family:monospace;font-size:12px;background:rgba(255,255,255,0.7)"></textarea>
+        <button class="btn btn-glass btn-sm" style="margin-top:8px" onclick="copyToClipboardText(document.getElementById('conv-output').value)">📋 Kopieren</button>
+      </div>
+    </div>
+
+    <!-- Set Manager -->
+    <div class="section">
+      <h2>📂 Set Manager</h2>
+      <div class="input-group">
+        <label>Beschikbare sets</label>
+        <div id="sets-list" style="background:rgba(255,255,255,0.5);border:1px solid rgba(200,195,230,0.4);border-radius:var(--r3);padding:12px;max-height:240px;overflow-y:auto"></div>
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn btn-glass" onclick="loadSets()">🔄 Herladen</button>
+        <button class="btn btn-glass" onclick="exportAllSets()">⬇️ Alle sets exporteren</button>
+      </div>
+    </div>
+
+    <!-- Tools Section -->
+    <div class="section">
+      <h2>⚙️ Hulpprogramma's</h2>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <button class="btn btn-glass" style="width:100%;justify-content:center" onclick="clearLocalStorage()">🗑️ LocalStorage wissen</button>
+        <button class="btn btn-glass" style="width:100%;justify-content:center" onclick="showSystemInfo()">ℹ️ Systeeminfo</button>
+        <button class="btn btn-glass" style="width:100%;justify-content:center" onclick="testEncryption()">🔐 Encryptie testen</button>
+        <button class="btn btn-glass" style="width:100%;justify-content:center" onclick="generateDemoSet()">🎲 Demo set genereren</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   PINCODE VERIFICATION (HARDCODED)
+══════════════════════════════════════════ */
+const _pin=['2','3','7','8','9','0'];
+const HARDCODED_PIN=_pin.join('');
+
+function verifyPin(){
+  const pin=document.getElementById('pin-input').value.trim();
+  if(pin===HARDCODED_PIN){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-content').classList.add('active');
+    loadSets();
+    showToast('Ingelogd!');
+  }else{
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('pin-input').value='';
+    setTimeout(()=>{document.getElementById('login-error').style.display='none'},3000);
+  }
+}
+
+function logout(){
+  if(confirm('Zeker weten? Je wordt uitgelogd.')){
+    document.getElementById('main-content').classList.remove('active');
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('pin-input').value='';
+  }
+}
+
+/* ══════════════════════════════════════════
+   VSET ENCRYPTION/DECRYPTION
+══════════════════════════════════════════ */
+const _k=['S','t','u','d','y','D','e','c','k','V','S','e','t','2','0','2','5'];
+const VSET_KEY=_k.join('');
+
+function xorStr(str,key){
+  return str.split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^key.charCodeAt(i%key.length))).join('');
+}
+
+function encodeVset(obj){
+  const json=JSON.stringify(obj);
+  const xored=xorStr(json,VSET_KEY);
+  return btoa(unescape(encodeURIComponent(xored)));
+}
+
+function decodeVset(b64){
+  try{
+    const xored=decodeURIComponent(escape(atob(b64.trim())));
+    return JSON.parse(xorStr(xored,VSET_KEY));
+  }catch(e){
+    return null;
+  }
+}
+
+/* ══════════════════════════════════════════
+   DECRYPT & EDIT
+══════════════════════════════════════════ */
+let CURRENT_SET=null;
+
+function autoDecrypt(){
+  const val=document.getElementById('vset-content').value.trim();
+  if(val.length>50)decryptVset();
+}
+
+function decryptVset(){
+  const content=document.getElementById('vset-content').value.trim();
+  if(!content){showToast('Vul inhoud in');return;}
+
+  let set=null;
+
+  // Try decode as .vset
+  try{set=decodeVset(content);}catch(e){}
+
+  // Try parse as plain JSON
+  if(!set)try{set=JSON.parse(content);}catch(e){}
+
+  if(!set){showToast('Kan niet decrypten - ongeldig formaat');return;}
+
+  CURRENT_SET=set;
+  renderDecoded();
+}
+
+function renderDecoded(){
+  if(!CURRENT_SET){return;}
+
+  const s=CURRENT_SET;
+  document.getElementById('stat-title').textContent=esc(s.title||'(Geen titel)');
+  document.getElementById('stat-terms').textContent=s.terms?.length||0;
+  document.getElementById('stat-vak').textContent=esc(s.vak||'—');
+  document.getElementById('stat-date').textContent=esc(s.datum||'—');
+
+  const editor=document.getElementById('terms-editor');
+  editor.innerHTML=(s.terms||[]).map((t,i)=>`
+    <div class="term-row">
+      <input type="text" class="term-input" value="${esc(t.term)}" onchange="CURRENT_SET.terms[${i}].term=this.value" placeholder="Begrip">
+      <input type="text" class="term-input" value="${esc(t.def)}" onchange="CURRENT_SET.terms[${i}].def=this.value" placeholder="Definitie">
+      <button class="term-delete-btn" onclick="CURRENT_SET.terms.splice(${i},1);renderDecoded()">✕</button>
+    </div>
+  `).join('');
+
+  document.getElementById('decoded-data').style.display='block';
+}
+
+function addTerm(){
+  if(!CURRENT_SET)return;
+  CURRENT_SET.terms.push({term:'',def:''});
+  renderDecoded();
+}
+
+function exportVset(){
+  if(!CURRENT_SET){showToast('Geen set te exporteren');return;}
+  const encoded=encodeVset(CURRENT_SET);
+  const blob=new Blob([encoded],{type:'application/octet-stream'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(CURRENT_SET.slug||toSlug(CURRENT_SET.title)||'set')+'.vset';
+  a.click();
+  showToast('Gedownload!');
+}
+
+function copyToClipboard(){
+  if(!CURRENT_SET){showToast('Geen set');return;}
+  const encoded=encodeVset(CURRENT_SET);
+  navigator.clipboard.writeText(encoded).then(()=>showToast('Gekopieerd naar clipboard!'));
+}
+
+function viewJSON(){
+  if(!CURRENT_SET){showToast('Geen set');return;}
+  alert(JSON.stringify(CURRENT_SET,null,2));
+}
+
+function clearVsetForm(){
+  document.getElementById('vset-content').value='';
+  document.getElementById('decoded-data').style.display='none';
+  CURRENT_SET=null;
+}
+
+/* ══════════════════════════════════════════
+   BASE64 TO JSON DECODER
+══════════════════════════════════════════ */
+function base64ToJson(){
+  const b64=document.getElementById('b64-content').value.trim();
+  if(!b64){showToast('Plak eerst een base64 string');return;}
+
+  try{
+    // Decode base64
+    let decoded=atob(b64);
+
+    // Try to parse as XOR-encoded with VSET_KEY
+    try{
+      const xored=decodeURIComponent(escape(decoded));
+      const json=xorStr(xored,VSET_KEY);
+      const obj=JSON.parse(json);
+      displayJsonResult(obj);
+      return;
+    }catch(e){}
+
+    // Try direct JSON parse (plain base64)
+    try{
+      const obj=JSON.parse(decoded);
+      displayJsonResult(obj);
+      return;
+    }catch(e){}
+
+    // Try as UTF-8 JSON
+    try{
+      const utf8=new TextDecoder().decode(new Uint8Array(decoded.split('').map(c=>c.charCodeAt(0))));
+      const obj=JSON.parse(utf8);
+      displayJsonResult(obj);
+      return;
+    }catch(e){}
+
+    showToast('Kon niet decoderen - ongeldig formaat');
+  }catch(e){
+    showToast('Fout: '+e.message);
+  }
+}
+
+function displayJsonResult(obj){
+  const output=document.getElementById('json-output');
+  output.value=JSON.stringify(obj,null,2);
+  document.getElementById('decoded-json-result').style.display='block';
+  showToast('Gedecodeerd!');
+}
+
+function copyJsonResult(){
+  const output=document.getElementById('json-output');
+  if(!output.value){showToast('Niets om te kopieren');return;}
+  navigator.clipboard.writeText(output.value).then(()=>showToast('Gekopieerd!'));
+}
+
+/* ══════════════════════════════════════════
+   SET MANAGER
+══════════════════════════════════════════ */
+let AVAILABLE_SETS=[];
+
+async function loadSets(){
+  AVAILABLE_SETS=[];
+  const listEl=document.getElementById('sets-list');
+  listEl.innerHTML='<div style="color:var(--text3);font-size:13px">Laden...</div>';
+
+  // Load from /sets/ directory
+  try{
+    const resp=await fetch('sets/');
+    if(resp.ok){
+      const text=await resp.text();
+      const parser=new DOMParser();
+      const doc=parser.parseFromString(text,'text/html');
+      const links=doc.querySelectorAll('a[href*=".vset"]');
+
+      for(const link of links){
+        const filename=link.getAttribute('href');
+        if(filename.endsWith('.vset')){
+          try{
+            const sr=await fetch('sets/'+filename);
+            const content=await sr.text();
+            const set=decodeVset(content);
+            if(set){
+              AVAILABLE_SETS.push({filename,data:set});
+            }
+          }catch(e){}
+        }
+      }
+    }
+  }catch(e){}
+
+  // Load from localStorage
+  try{
+    const stored=JSON.parse(localStorage.getItem('sd_sets')||'[]');
+    stored.forEach((s,i)=>{
+      AVAILABLE_SETS.push({filename:`(Local) ${s.title}`,data:s,isLocal:true});
+    });
+  }catch(e){}
+
+  renderSetsList();
+}
+
+function renderSetsList(){
+  const el=document.getElementById('sets-list');
+  if(!AVAILABLE_SETS.length){
+    el.innerHTML='<div style="color:var(--text2);font-size:13px">Geen sets gevonden</div>';
+    return;
+  }
+
+  el.innerHTML=AVAILABLE_SETS.map((s,i)=>`
+    <div style="padding:8px;border-bottom:1px solid rgba(180,170,210,0.2);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .15s" onmouseover="this.style.background='rgba(66,85,255,0.05)'" onmouseout="this.style.background=''">
+      <div>
+        <div style="font-weight:700;font-size:13px">${esc(s.data.title)}</div>
+        <div style="color:var(--text3);font-size:11px">${s.data.terms.length} begrippen</div>
+      </div>
+      <button class="btn btn-glass btn-sm" onclick="loadSetToEditor(${i})">Laden</button>
+    </div>
+  `).join('');
+}
+
+function loadSetToEditor(idx){
+  const s=AVAILABLE_SETS[idx];
+  CURRENT_SET={...s.data};
+  document.getElementById('vset-content').value='(Geladen: '+s.filename+')';
+  renderDecoded();
+  document.querySelector('.container').scrollIntoView({behavior:'smooth'});
+}
+
+function exportAllSets(){
+  if(!AVAILABLE_SETS.length){showToast('Geen sets');return;}
+  const data=AVAILABLE_SETS.map(s=>s.data);
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='all-sets-'+Date.now()+'.json';
+  a.click();
+  showToast('Alle sets gedownload!');
+}
+
+/* ══════════════════════════════════════════
+   TOOLS
+══════════════════════════════════════════ */
+function clearLocalStorage(){
+  if(confirm('Alle sets in localStorage verwijderen? Dit kan niet ongedaan worden.')){
+    localStorage.clear();
+    showToast('LocalStorage gewist!');
+    loadSets();
+  }
+}
+
+function showSystemInfo(){
+  const info=`
+System Info:
+- User Agent: ${navigator.userAgent}
+- Language: ${navigator.language}
+- Platform: ${navigator.platform}
+- Cookies: ${navigator.cookieEnabled?'Enabled':'Disabled'}
+- Local Storage: ${localStorage.length} items
+- Session Storage: ${sessionStorage.length} items
+- Available VSET Key: ${VSET_KEY}
+  `;
+  alert(info);
+}
+
+function testEncryption(){
+  const testSet={title:'Test Set',terms:[{term:'Test Term',def:'Test Definition'}]};
+  const encoded=encodeVset(testSet);
+  const decoded=decodeVset(encoded);
+  const success=decoded.title===testSet.title;
+  alert('Encryptie test: '+(success?'✓ OK':'✗ FAILED')+'\n\nEncoded: '+encoded.substring(0,50)+'...');
+}
+
+function generateDemoSet(){
+  const demo={
+    id:'demo_'+Date.now(),
+    slug:'demo-set',
+    title:'Demo Set',
+    description:'Dit is een demo set voor testen',
+    vak:'Voorbeeld',
+    datum:new Date().toISOString().split('T')[0],
+    terms:[
+      {term:'Fotosynthese',def:'Proces waarbij planten licht omzetten in chemische energie'},
+      {term:'Mitochondria',def:'Organelletjes die energie produceren in cellen'},
+      {term:'Osmose',def:'Beweging van water door een semi-permeabel membraan'},
+      {term:'Homeostase',def:'Het handhaven van een stabiele interne omgeving'},
+    ]
+  };
+
+  CURRENT_SET=demo;
+  document.getElementById('vset-content').value='(Demo Set - nog niet opgeslagen)';
+  renderDecoded();
+  showToast('Demo set geladen!');
+}
+
+/* ══════════════════════════════════════════
+   ADVANCED SET IMPORT
+══════════════════════════════════════════ */
+let PARSED_TERMS=[];
+
+function parseAdvancedFormat(){
+  const input=document.getElementById('advanced-import').value.trim();
+  if(!input){showToast('Vul invoer in');return;}
+
+  PARSED_TERMS=[];
+  const pairs=input.split('^');
+
+  for(const pair of pairs){
+    const parts=pair.split('//');
+    if(parts.length===2){
+      const term=parts[0].trim();
+      const def=parts[1].trim();
+      if(term && def){
+        PARSED_TERMS.push({term,def});
+      }
+    }
+  }
+
+  if(!PARSED_TERMS.length){
+    showToast('Geen geldige begrippen gevonden');
+    return;
+  }
+
+  renderAdvancedPreview();
+  showToast('Geparseeerd: '+PARSED_TERMS.length+' begrippen');
+}
+
+function renderAdvancedPreview(){
+  const preview=document.getElementById('advanced-preview');
+  const terms=document.getElementById('advanced-terms');
+
+  terms.innerHTML=PARSED_TERMS.map((t,i)=>`
+    <div style="padding:8px;border-bottom:1px solid rgba(180,170,210,0.2);font-size:13px">
+      <div style="font-weight:700;color:var(--text)">${esc(t.term)}</div>
+      <div style="color:var(--text2);margin-top:4px;font-size:12px">${esc(t.def)}</div>
+    </div>
+  `).join('');
+
+  preview.style.display='block';
+}
+
+function loadAdvancedToCurrentSet(){
+  if(!CURRENT_SET){
+    showToast('Laad eerst een set of maak een nieuw aan');
+    return;
+  }
+
+  if(!PARSED_TERMS.length){
+    showToast('Parseeer eerst begrippen');
+    return;
+  }
+
+  // Add parsed terms to current set
+  CURRENT_SET.terms=(CURRENT_SET.terms||[]).concat(PARSED_TERMS);
+  renderDecoded();
+
+  showToast('✓ '+PARSED_TERMS.length+' begrippen toegevoegd!');
+  document.getElementById('advanced-import').value='';
+  document.getElementById('advanced-preview').style.display='none';
+  PARSED_TERMS=[];
+
+  // Scroll to terms editor
+  document.getElementById('terms-editor').scrollIntoView({behavior:'smooth'});
+}
+
+function createSetFromAdvanced(){
+  if(!PARSED_TERMS.length){
+    showToast('Parseeer eerst begrippen');
+    return;
+  }
+
+  const title=document.getElementById('advanced-title').value.trim()||'Nieuwe Set';
+  const vak=document.getElementById('advanced-vak').value.trim()||'Onbekend';
+
+  CURRENT_SET={
+    id:'set_'+Date.now(),
+    slug:toSlug(title),
+    title:title,
+    vak:vak,
+    datum:new Date().toISOString().split('T')[0],
+    description:'',
+    terms:PARSED_TERMS
+  };
+
+  document.getElementById('vset-content').value='(Nieuwe set - nog niet opgeslagen)';
+  renderDecoded();
+
+  showToast('✓ Nieuwe set gemaakt!');
+  document.getElementById('advanced-import').value='';
+  document.getElementById('advanced-preview').style.display='none';
+  PARSED_TERMS=[];
+
+  // Scroll to set editor
+  document.querySelector('.container').scrollIntoView({behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════
+   CONVERSION UTILS
+══════════════════════════════════════════ */
+function convertToImportFormat() {
+  const input = document.getElementById('conv-input').value.trim();
+  if(!input) { showToast('Plak eerst data'); return; }
+
+  let data = null;
+  try { data = decodeVset(input); } catch(e) {}
+  if(!data) { try { data = JSON.parse(input); } catch(e) {} }
+
+  if(!data || !data.terms) {
+    showToast('Ongeldige data of geen begrippen gevonden');
+    return;
+  }
+
+  const formatted = data.terms
+    .map(t => `${t.term.replace(/\/\//g, '/').replace(/\^/g, '')}//${t.def.replace(/\/\//g, '/').replace(/\^/g, '')}`)
+    .join('^');
+
+  document.getElementById('conv-output').value = formatted;
+  document.getElementById('conv-output-area').style.display = 'block';
+  showToast('Geconverteerd!');
+}
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function toSlug(str){
+  if(!str)return'set-'+Date.now();
+  return str.toLowerCase()
+    .replace(/[àáâäãåā]/g,'a').replace(/[èéêëē]/g,'e').replace(/[ìíîïī]/g,'i')
+    .replace(/[òóôöõøō]/g,'o').replace(/[ùúûüū]/g,'u').replace(/[ñ]/g,'n')
+    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').slice(0,60);
+}
+
+function esc(s){
+  if(!s)return'';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function copyToClipboardText(text) {
+  if(!text) return;
+  navigator.clipboard.writeText(text).then(() => showToast('Gekopieerd!'));
+}
+
+/* ══════════════════════════════════════════
+   KEYBOARD
+══════════════════════════════════════════ */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('pin-input')===document.activeElement){
+    verifyPin();
+  }
+});
+
+/* Auto-focus pin input */
+window.addEventListener('load',()=>{
+  document.getElementById('pin-input').focus();
+});
+</script>
+</body>
+</html>
