@@ -30,23 +30,12 @@
 html{min-height:100vh;font-family:var(--font);color:var(--text);font-size:16px;overflow-x:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
 body{min-height:100dvh;background:var(--bg-grad);background-attachment:fixed;display:flex;flex-direction:column;-webkit-touch-callout:none;}
 
-/* DARK MODE */
 body.dark-mode{--bg-grad:linear-gradient(180deg,#0a0812 0%,#10091e 100%);--glass:rgba(22,20,34,0.96);--glass2:rgba(22,20,34,0.85);--glass-border:rgba(64,60,100,0.6);--text:#fff;--text2:#c8c4e0;--text3:rgba(255,255,255,0.45);--glass-shadow:0 2px 10px rgba(0,0,0,0.6),inset 1px 1px 0 rgba(80,75,120,0.5);--glass-shadow-lg:0 8px 32px rgba(0,0,0,0.7),inset 1px 1px 0 rgba(80,75,120,0.5);}
-body.dark-mode input,body.dark-mode textarea{background:rgba(38,36,58,0.95)!important;border-color:var(--glass-border)!important;color:var(--text)!important;}
-body.dark-mode input:focus,body.dark-mode textarea:focus{background:rgba(48,46,72,0.99)!important;border-color:var(--accent)!important;}
-body.dark-mode input::placeholder,body.dark-mode textarea::placeholder{color:var(--text3)!important;}
+body.dark-mode input{background:rgba(38,36,58,0.95)!important;border-color:var(--glass-border)!important;color:var(--text)!important;}
+body.dark-mode input:focus{background:rgba(48,46,72,0.99)!important;border-color:var(--accent)!important;}
+body.dark-mode input::placeholder{color:var(--text3)!important;}
 
-/* NAV */
-nav{
-  position:sticky;top:0;z-index:200;
-  background:rgba(240,238,249,0.94);
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border-bottom:1px solid rgba(200,195,230,0.5);
-  padding:env(safe-area-inset-top,0px) 28px 0;
-  height:var(--nav-h);
-  display:flex;align-items:center;gap:16px;
-  transition:background .3s;
-}
+nav{position:sticky;top:0;z-index:200;background:rgba(240,238,249,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(200,195,230,0.5);padding:env(safe-area-inset-top,0px) 28px 0;height:var(--nav-h);display:flex;align-items:center;gap:16px;transition:background .3s;}
 body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--glass-border)!important;}
 .nav-back{width:40px;height:40px;border-radius:var(--r3);background:var(--glass);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s var(--ease);flex-shrink:0;color:var(--text2);}
 .nav-back:hover{background:#fff;transform:scale(1.08);box-shadow:var(--glass-shadow-lg);}
@@ -54,92 +43,70 @@ body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--gl
 .nav-title{font-size:18px;font-weight:800;letter-spacing:-0.4px;color:var(--text);}
 .nav-spacer{flex:1;}
 
-/* MAIN */
 .main{max-width:680px;margin:0 auto;padding:32px 28px 100px;width:100%;}
 @media(max-width:750px){.main{padding:20px 16px 100px;}}
 
-/* SECTION CARD */
-.section-card{
-  background:var(--glass);border:1px solid var(--glass-border);
-  border-radius:var(--r2);overflow:hidden;
-  box-shadow:var(--glass-shadow);
-  margin-bottom:20px;
-  animation:fadeUp .4s var(--ease2) both;
-}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.section-card-header{
-  padding:16px 22px 14px;
-  border-bottom:1px solid rgba(200,195,230,0.3);
-  display:flex;align-items:center;gap:8px;
-}
-.section-card-header-icon{font-size:18px;flex-shrink:0;}
-.section-card-title{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.2px;}
+
+/* SECTION CARD */
+.section-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--glass-shadow);margin-bottom:20px;animation:fadeUp .4s var(--ease2) both;}
+.section-card:nth-child(1){animation-delay:0s}
+.section-card:nth-child(2){animation-delay:.06s}
+.section-card:nth-child(3){animation-delay:.12s}
+.section-card:nth-child(4){animation-delay:.18s}
+.section-card:nth-child(5){animation-delay:.24s}
+.section-card:nth-child(6){animation-delay:.30s}
+.section-card-header{padding:15px 22px 13px;border-bottom:1px solid rgba(200,195,230,0.25);display:flex;align-items:center;gap:8px;}
+.section-card-icon{font-size:17px;flex-shrink:0;}
+.section-card-title{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-0.1px;}
 .section-card-body{padding:20px 22px;}
 
 /* AVATAR SECTION */
-.avatar-row{display:flex;align-items:center;gap:20px;margin-bottom:4px;}
-.avatar-display{
-  width:72px;height:72px;border-radius:20px;flex-shrink:0;
-  background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:28px;font-weight:800;overflow:hidden;
-  box-shadow:0 4px 16px var(--accent-light);
-  position:relative;cursor:pointer;transition:all .2s;
-}
-.avatar-display:hover .avatar-overlay{opacity:1;}
-.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;border-radius:inherit;}
-.avatar-overlay svg{width:22px;height:22px;color:#fff;}
-.avatar-display img{width:100%;height:100%;object-fit:cover;}
-.avatar-actions{display:flex;flex-direction:column;gap:8px;}
-.btn-avatar-upload{
-  height:36px;padding:0 16px;border-radius:var(--r4);
-  background:var(--accent-light);border:1px solid rgba(0,98,255,0.2);
-  color:var(--accent);font-family:var(--font);font-size:13px;font-weight:700;
-  cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;
-}
-.btn-avatar-upload:hover{background:rgba(0,98,255,0.2);}
-.btn-avatar-remove{
-  height:36px;padding:0 16px;border-radius:var(--r4);
-  background:rgba(232,58,74,0.07);border:1px solid rgba(232,58,74,0.15);
-  color:var(--red);font-family:var(--font);font-size:13px;font-weight:700;
-  cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;
-}
-.btn-avatar-remove:hover{background:rgba(232,58,74,0.14);}
-.avatar-hint{font-size:11px;color:var(--text3);font-weight:600;margin-top:4px;}
-#avatarFileInput{display:none;}
+.avatar-current-row{display:flex;align-items:center;gap:18px;margin-bottom:20px;}
+.avatar-big{width:72px;height:72px;border-radius:20px;overflow:hidden;flex-shrink:0;box-shadow:0 4px 16px var(--accent-light);position:relative;}
+.avatar-big img{width:100%;height:100%;object-fit:cover;}
+.avatar-big-emoji{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;}
+.avatar-big-info h3{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px;}
+.avatar-big-info p{font-size:12px;color:var(--text3);font-weight:600;line-height:1.5;}
 
-/* FORM FIELDS */
-.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
-.field:last-child{margin-bottom:0;}
-.field label{font-size:13px;font-weight:700;color:var(--text2);}
-.field input{
-  height:46px;background:rgba(255,255,255,0.88);
-  border:1.5px solid var(--glass-border);border-radius:var(--r3);
-  color:var(--text);font-family:var(--font);font-size:15px;
-  padding:0 16px;outline:none;transition:all .2s;width:100%;
-  -webkit-appearance:none;
+/* PRESET GRID */
+.avatar-grid-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.avatar-preset-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+@media(max-width:400px){.avatar-preset-grid{grid-template-columns:repeat(4,1fr);}}
+.avatar-preset{
+  aspect-ratio:1;border-radius:16px;overflow:hidden;cursor:pointer;
+  border:2.5px solid transparent;transition:all .2s var(--ease2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
 }
-.field input:focus{border-color:var(--accent);background:rgba(255,255,255,0.99);box-shadow:0 0 0 3px var(--accent-light);}
+.avatar-preset:hover{transform:scale(1.1);box-shadow:0 4px 16px rgba(0,98,255,0.15);}
+.avatar-preset.selected{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light),0 4px 16px rgba(0,98,255,0.15);transform:scale(1.08);}
+.avatar-preset img{width:100%;height:100%;object-fit:cover;pointer-events:none;}
+
+.btn-save-avatar{margin-top:16px;height:42px;padding:0 22px;border-radius:var(--r3);background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:all .2s var(--ease2);box-shadow:0 2px 12px var(--accent-light),inset 1px 1px 0 rgba(255,255,255,0.2);display:inline-flex;align-items:center;gap:8px;}
+.btn-save-avatar:hover:not(:disabled){filter:brightness(1.12);transform:scale(1.03);}
+.btn-save-avatar:disabled{opacity:.5;cursor:not-allowed;filter:none;transform:none;}
+
+/* FORM */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.field:last-of-type{margin-bottom:0;}
+.field label{font-size:13px;font-weight:700;color:var(--text2);}
+.field input{height:46px;background:rgba(255,255,255,0.88);border:1.5px solid var(--glass-border);border-radius:var(--r3);color:var(--text);font-family:var(--font);font-size:15px;padding:0 16px;outline:none;transition:all .2s;width:100%;-webkit-appearance:none;}
+.field input:focus{border-color:var(--accent);background:rgba(255,255,255,.99);box-shadow:0 0 0 3px var(--accent-light);}
 .field input.ok{border-color:var(--green);}
 .field input.error{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,58,74,0.1);}
-.field input:disabled{opacity:.5;cursor:not-allowed;}
 .field-hint{font-size:11px;color:var(--text3);font-weight:600;margin-top:2px;}
 .field-error{font-size:12px;color:var(--red);font-weight:600;display:none;margin-top:2px;}
 .field-error.show{display:block;}
-
-/* USERNAME PREFIX */
 .username-wrap{position:relative;display:flex;align-items:center;}
 .username-at{position:absolute;left:14px;font-size:15px;font-weight:700;color:var(--text3);pointer-events:none;z-index:1;}
 .username-wrap input{padding-left:28px;}
-
-/* PASSWORD TOGGLE */
 .pw-wrap{position:relative;}
 .pw-wrap input{padding-right:44px;}
 .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;display:flex;align-items:center;}
 .pw-toggle:hover{color:var(--text);}
 .pw-toggle svg{width:18px;height:18px;}
-
-/* PASSWORD STRENGTH */
 .pw-strength{display:flex;gap:4px;margin-top:6px;}
 .pw-bar{height:3px;flex:1;border-radius:2px;background:rgba(200,195,230,0.4);transition:background .3s;}
 .pw-bar.weak{background:var(--red);}
@@ -147,65 +114,54 @@ body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--gl
 .pw-bar.strong{background:var(--green);}
 .pw-label{font-size:11px;color:var(--text3);margin-top:3px;font-weight:600;}
 
-/* SAVE BUTTON */
-.btn-save{
-  height:44px;padding:0 24px;border-radius:var(--r3);
-  background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);
-  border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:800;
-  cursor:pointer;transition:all .2s var(--ease2);
-  box-shadow:0 2px 12px var(--accent-light),inset 1px 1px 0 rgba(255,255,255,0.2);
-  display:inline-flex;align-items:center;gap:8px;
-  margin-top:4px;
-}
-.btn-save:hover:not(:disabled){filter:brightness(1.12);transform:scale(1.03) translateY(-1px);}
+.btn-save{height:44px;padding:0 24px;border-radius:var(--r3);background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:all .2s var(--ease2);box-shadow:0 2px 12px var(--accent-light),inset 1px 1px 0 rgba(255,255,255,0.2);display:inline-flex;align-items:center;gap:8px;margin-top:4px;}
+.btn-save:hover:not(:disabled){filter:brightness(1.12);transform:scale(1.03);}
 .btn-save:active:not(:disabled){transform:scale(0.98);}
-.btn-save:disabled{opacity:.55;cursor:not-allowed;filter:none;transform:none;}
+.btn-save:disabled{opacity:.5;cursor:not-allowed;filter:none;transform:none;}
 
-/* SESSIONS */
-.session-list{display:flex;flex-direction:column;gap:8px;}
-.session-item{
-  display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;
-  padding:12px 14px;background:rgba(255,255,255,0.5);
-  border:1px solid rgba(200,195,230,0.3);border-radius:14px;
-  transition:background .15s;
-}
+/* SESSION */
+.session-item{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:12px 14px;background:rgba(255,255,255,0.5);border:1px solid rgba(200,195,230,0.3);border-radius:14px;}
 body.dark-mode .session-item{background:rgba(40,38,60,0.5)!important;border-color:var(--glass-border)!important;}
-.session-item.current{background:var(--accent-light)!important;border-color:rgba(0,98,255,0.25)!important;}
+.session-item.current-session{background:var(--accent-light)!important;border-color:rgba(0,98,255,0.25)!important;}
 .session-icon{width:36px;height:36px;border-radius:10px;background:rgba(0,98,255,0.1);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;}
 .session-icon svg{width:18px;height:18px;}
 .session-name{font-size:13px;font-weight:700;color:var(--text);}
-.session-meta{font-size:11px;color:var(--text3);font-weight:600;margin-top:2px;}
+.session-meta{font-size:11px;color:var(--text3);font-weight:600;margin-top:1px;}
 .session-badge{font-size:10px;font-weight:800;color:var(--accent);background:var(--accent-light);padding:2px 8px;border-radius:20px;white-space:nowrap;}
-.btn-revoke{height:30px;padding:0 12px;border-radius:var(--r4);background:rgba(232,58,74,0.08);border:1px solid rgba(232,58,74,0.2);color:var(--red);font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.btn-revoke:hover{background:rgba(232,58,74,0.16);}
 
-/* DANGER ZONE */
+/* DANGER */
 .danger-section{border-color:rgba(232,58,74,0.25)!important;}
-.danger-section .section-card-header{background:rgba(232,58,74,0.05);}
-.danger-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid rgba(200,195,230,0.25);}
+.danger-section .section-card-header{background:rgba(232,58,74,0.04);}
+.danger-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid rgba(200,195,230,0.2);}
 .danger-row:last-child{border-bottom:none;padding-bottom:0;}
 .danger-row-text h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .danger-row-text p{font-size:12px;color:var(--text3);font-weight:600;line-height:1.5;}
 .btn-danger{height:36px;padding:0 16px;border-radius:var(--r4);background:rgba(232,58,74,0.08);border:1px solid rgba(232,58,74,0.2);color:var(--red);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
 .btn-danger:hover{background:rgba(232,58,74,0.16);}
-.btn-danger-solid{height:36px;padding:0 16px;border-radius:var(--r4);background:var(--red);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.btn-danger-solid{height:36px;padding:0 16px;border-radius:var(--r4);background:var(--red);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;flex-shrink:0;}
 .btn-danger-solid:hover{filter:brightness(1.1);}
 
 /* MODAL */
-.modal-bg{position:fixed;inset:0;z-index:2000;background:rgba(140,130,185,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;animation:modalIn .25s ease both;}
-@keyframes modalIn{from{opacity:0}to{opacity:1}}
-.modal-panel{background:rgba(255,255,255,0.99);border:1.5px solid var(--glass-border);border-radius:var(--r2);padding:28px;width:90%;max-width:400px;box-shadow:0 16px 64px rgba(80,60,160,0.22);animation:panelIn .3s var(--ease2) both;}
-@keyframes panelIn{from{opacity:0;transform:scale(0.92) translateY(16px)}to{opacity:1;transform:none}}
+.modal-bg{position:fixed;inset:0;z-index:2000;background:rgba(140,130,185,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;}
+.modal-panel{background:rgba(255,255,255,0.99);border:1.5px solid var(--glass-border);border-radius:var(--r2);padding:26px;width:90%;max-width:400px;box-shadow:0 16px 64px rgba(80,60,160,0.22);animation:fadeUp .3s var(--ease2) both;}
 body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(--glass-border)!important;}
-.modal-title{font-size:18px;font-weight:800;letter-spacing:-0.3px;margin-bottom:8px;color:var(--text);}
-.modal-desc{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:20px;}
+.modal-title{font-size:17px;font-weight:800;margin-bottom:7px;color:var(--text);}
+.modal-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:18px;}
+.modal-confirm-field{margin:0 0 16px;}
+.modal-confirm-field input{height:44px;background:rgba(255,255,255,0.88);border:1.5px solid var(--glass-border);border-radius:var(--r3);color:var(--text);font-family:var(--font);font-size:15px;padding:0 16px;outline:none;width:100%;transition:all .2s;}
+.modal-confirm-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
-.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;padding:9px 18px;transition:all .2s var(--ease);outline:none;}
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;padding:9px 18px;transition:all .2s;outline:none;}
 .btn-glass{background:var(--glass);color:var(--text);box-shadow:var(--glass-shadow);border:1px solid var(--glass-border);}
 .btn-glass:hover{background:rgba(255,255,255,.95);transform:scale(1.03);}
 .btn-red{background:var(--red);color:#fff;box-shadow:0 2px 10px rgba(232,58,74,0.3);}
 .btn-red:hover{filter:brightness(1.1);transform:scale(1.03);}
-.modal-confirm-field{margin:12px 0;}
+.btn-red:disabled{opacity:.5;cursor:not-allowed;filter:none;transform:none;}
+
+/* SPINNER */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+.spinner-accent{border-color:rgba(0,98,255,0.15);border-top-color:var(--accent);}
 
 /* TOAST */
 #toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(252,250,255,.99);border:1px solid rgba(200,195,230,.7);border-radius:var(--r);padding:12px 20px;font-size:14px;font-weight:700;box-shadow:0 8px 32px rgba(80,60,160,.2);opacity:0;transform:translateY(12px);pointer-events:none;transition:all .25s var(--ease2);}
@@ -213,72 +169,52 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 #toast.ok{background:#f0fdf8;border-color:rgba(24,182,114,.3);color:var(--green);}
 #toast.err{background:#fff0f1;border-color:rgba(232,58,74,.3);color:var(--red);}
 @media(max-width:750px){#toast{bottom:calc(env(safe-area-inset-bottom,0px)+16px);left:16px;right:16px;text-align:center;}}
-
-/* SPINNER */
-@keyframes spin{to{transform:rotate(360deg)}}
-.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
-.spinner-accent{border-color:var(--accent-light);border-top-color:var(--accent);}
-
-/* SKELETON */
-.skeleton{background:linear-gradient(90deg,rgba(200,195,230,0.3) 25%,rgba(200,195,230,0.5) 50%,rgba(200,195,230,0.3) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--r);}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* Stagger animations */
-.section-card:nth-child(1){animation-delay:.0s}
-.section-card:nth-child(2){animation-delay:.06s}
-.section-card:nth-child(3){animation-delay:.12s}
-.section-card:nth-child(4){animation-delay:.18s}
-.section-card:nth-child(5){animation-delay:.24s}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <button class="nav-back" onclick="window.location.href='index.html'" title="Terug">
+  <button class="nav-back" onclick="window.location.href='index.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
   </button>
   <div class="nav-title">Account beheren</div>
   <div class="nav-spacer"></div>
 </nav>
 
-<!-- MAIN -->
 <div class="main">
 
   <!-- 1. PROFIELFOTO -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-header-icon">🖼️</div>
+      <div class="section-card-icon">🖼️</div>
       <div class="section-card-title">Profielfoto</div>
     </div>
     <div class="section-card-body">
-      <div class="avatar-row">
-        <div class="avatar-display" id="avatarDisplay" onclick="document.getElementById('avatarFileInput').click()">
-          <span id="avatarInitial">…</span>
-          <div class="avatar-overlay">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          </div>
+      <!-- Huidige foto -->
+      <div class="avatar-current-row">
+        <div class="avatar-big" id="avatarBig">
+          <div class="avatar-big-emoji" id="avatarBigContent">…</div>
         </div>
-        <div class="avatar-actions">
-          <button class="btn-avatar-upload" onclick="document.getElementById('avatarFileInput').click()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Foto uploaden
-          </button>
-          <button class="btn-avatar-remove" id="btnRemoveAvatar" onclick="removeAvatar()" style="display:none">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            Foto verwijderen
-          </button>
-          <div class="avatar-hint">JPG, PNG of WebP. Maximaal 2 MB.</div>
+        <div class="avatar-big-info">
+          <h3>Kies een profielfoto</h3>
+          <p>Kies een van de beschikbare foto's hieronder. De foto wordt direct bijgewerkt op je profiel.</p>
         </div>
       </div>
-      <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" onchange="handleAvatarUpload(event)">
+
+      <!-- Preset galerij -->
+      <div class="avatar-grid-label">Kies een avatar</div>
+      <div class="avatar-preset-grid" id="avatarGrid"></div>
+
+      <button class="btn-save-avatar" id="btnSaveAvatar" onclick="saveAvatar()" disabled>
+        Foto opslaan
+      </button>
     </div>
   </div>
 
-  <!-- 2. PROFIEL GEGEVENS -->
+  <!-- 2. PROFIEL -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-header-icon">✏️</div>
+      <div class="section-card-icon">✏️</div>
       <div class="section-card-title">Profielgegevens</div>
     </div>
     <div class="section-card-body">
@@ -295,42 +231,38 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
         </div>
         <div class="field-error" id="err-username"></div>
       </div>
-      <button class="btn-save" id="btnSaveProfile" onclick="saveProfile()" disabled>
-        Opslaan
-      </button>
+      <button class="btn-save" id="btnSaveProfile" onclick="saveProfile()" disabled>Opslaan</button>
     </div>
   </div>
 
-  <!-- 3. E-MAILADRES -->
+  <!-- 3. E-MAIL -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-header-icon">📧</div>
+      <div class="section-card-icon">📧</div>
       <div class="section-card-title">E-mailadres</div>
     </div>
     <div class="section-card-body">
       <div class="field">
-        <label>Huidig e-mailadres</label>
+        <label>E-mailadres</label>
         <input type="text" id="editEmail" placeholder="naam@example.com" autocapitalize="none" oninput="markDirty('email')">
         <div class="field-hint">Je ontvangt een bevestigingsmail op het nieuwe adres.</div>
         <div class="field-error" id="err-email"></div>
       </div>
-      <button class="btn-save" id="btnSaveEmail" onclick="saveEmail()" disabled>
-        E-mail bijwerken
-      </button>
+      <button class="btn-save" id="btnSaveEmail" onclick="saveEmail()" disabled>E-mail bijwerken</button>
     </div>
   </div>
 
   <!-- 4. WACHTWOORD -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-header-icon">🔑</div>
+      <div class="section-card-icon">🔑</div>
       <div class="section-card-title">Wachtwoord wijzigen</div>
     </div>
     <div class="section-card-body">
       <div class="field">
         <label>Huidig wachtwoord</label>
         <div class="pw-wrap">
-          <input type="password" id="pwCurrent" placeholder="Huidig wachtwoord" autocomplete="current-password" oninput="markDirty('pw')">
+          <input type="password" id="pwCurrent" placeholder="Huidig wachtwoord" autocomplete="current-password" oninput="checkPwReady()">
           <button class="pw-toggle" onclick="togglePw('pwCurrent',this)" type="button" tabindex="-1">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
@@ -340,46 +272,41 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
       <div class="field">
         <label>Nieuw wachtwoord</label>
         <div class="pw-wrap">
-          <input type="password" id="pwNew" placeholder="Min. 8 tekens" autocomplete="new-password" oninput="checkNewPwStrength()">
+          <input type="password" id="pwNew" placeholder="Min. 8 tekens" autocomplete="new-password" oninput="checkPwStrength()">
           <button class="pw-toggle" onclick="togglePw('pwNew',this)" type="button" tabindex="-1">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
-        <div class="pw-strength" id="newPwBars">
+        <div class="pw-strength">
           <div class="pw-bar" id="nb1"></div><div class="pw-bar" id="nb2"></div>
           <div class="pw-bar" id="nb3"></div><div class="pw-bar" id="nb4"></div>
         </div>
-        <div class="pw-label" id="newPwLabel"></div>
+        <div class="pw-label" id="pwStrLabel"></div>
         <div class="field-error" id="err-pw-new"></div>
       </div>
       <div class="field">
         <label>Herhaal nieuw wachtwoord</label>
         <div class="pw-wrap">
-          <input type="password" id="pwConfirm" placeholder="Zelfde wachtwoord" autocomplete="new-password" oninput="checkPwConfirm()">
+          <input type="password" id="pwConfirm" placeholder="Zelfde wachtwoord" autocomplete="new-password" oninput="checkPwMatch()">
           <button class="pw-toggle" onclick="togglePw('pwConfirm',this)" type="button" tabindex="-1">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
         <div class="field-error" id="err-pw-confirm"></div>
       </div>
-      <button class="btn-save" id="btnSavePw" onclick="savePassword()" disabled>
-        Wachtwoord wijzigen
-      </button>
+      <button class="btn-save" id="btnSavePw" onclick="savePassword()" disabled>Wachtwoord wijzigen</button>
     </div>
   </div>
 
-  <!-- 5. APPARATEN / SESSIES -->
+  <!-- 5. APPARATEN -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-header-icon">📱</div>
+      <div class="section-card-icon">📱</div>
       <div class="section-card-title">Ingelogde apparaten</div>
     </div>
     <div class="section-card-body">
-      <div class="session-list" id="sessionList">
-        <div class="skeleton" style="height:60px;border-radius:14px;"></div>
-        <div class="skeleton" style="height:60px;border-radius:14px;margin-top:8px;"></div>
-      </div>
-      <button class="btn-danger" style="margin-top:16px;width:100%;height:40px;border-radius:var(--r3);" onclick="showRevokeAllModal()">
+      <div id="sessionArea"></div>
+      <button class="btn-danger" style="margin-top:14px;width:100%;height:40px;border-radius:var(--r3);" onclick="showRevokeModal()">
         Alle andere sessies beëindigen
       </button>
     </div>
@@ -388,7 +315,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
   <!-- 6. GEVAARZONE -->
   <div class="section-card danger-section">
     <div class="section-card-header">
-      <div class="section-card-header-icon">⚠️</div>
+      <div class="section-card-icon">⚠️</div>
       <div class="section-card-title" style="color:var(--red)">Gevarenzone</div>
     </div>
     <div class="section-card-body">
@@ -402,38 +329,38 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
       <div class="danger-row">
         <div class="danger-row-text">
           <h4>Account verwijderen</h4>
-          <p>Verwijdert je account en alle bijbehorende data permanent. Dit kan niet ongedaan worden gemaakt.</p>
+          <p>Verwijdert je account en alle data permanent. Dit kan niet ongedaan worden gemaakt.</p>
         </div>
-        <button class="btn-danger-solid" onclick="showDeleteModal()">Account verwijderen</button>
+        <button class="btn-danger-solid" onclick="showDeleteModal()">Verwijderen</button>
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- MODAL: sessies beëindigen -->
+<!-- Revoke modal -->
 <div class="modal-bg" id="revokeModal" style="display:none">
   <div class="modal-panel">
     <div class="modal-title">Andere sessies beëindigen?</div>
     <div class="modal-desc">Je blijft ingelogd op dit apparaat, maar op alle andere apparaten wordt je uitgelogd.</div>
     <div class="modal-footer">
       <button class="btn btn-glass" onclick="closeModal('revokeModal')">Annuleren</button>
-      <button class="btn btn-red" id="revokeConfirmBtn" onclick="revokeAllSessions()">Beëindigen</button>
+      <button class="btn btn-red" id="revokeBtn" onclick="revokeOtherSessions()">Beëindigen</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: account verwijderen -->
+<!-- Delete modal -->
 <div class="modal-bg" id="deleteModal" style="display:none">
   <div class="modal-panel">
     <div class="modal-title">Account verwijderen?</div>
     <div class="modal-desc">Dit is onomkeerbaar. Al je sets, gegevens en synchronisaties worden permanent verwijderd. Typ <strong>VERWIJDER</strong> om te bevestigen.</div>
     <div class="modal-confirm-field">
-      <input type="text" id="deleteConfirmInput" placeholder="VERWIJDER" autocapitalize="characters" oninput="checkDeleteConfirm()" style="text-transform:uppercase;">
+      <input type="text" id="deleteInput" placeholder="VERWIJDER" autocapitalize="characters" oninput="checkDelete()">
     </div>
     <div class="modal-footer">
       <button class="btn btn-glass" onclick="closeModal('deleteModal')">Annuleren</button>
-      <button class="btn btn-red" id="deleteConfirmBtn" onclick="deleteAccount()" disabled>Definitief verwijderen</button>
+      <button class="btn btn-red" id="deleteBtn" onclick="deleteAccount()" disabled>Definitief verwijderen</button>
     </div>
   </div>
 </div>
@@ -443,11 +370,31 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script>
+/* ── PRESET AVATARS ──
+   10 emoji-gebaseerde avatars met achtergrondkleur.
+   Geen externe afbeeldingen nodig — werkt altijd, ook offline.
+*/
+const AVATARS = [
+  { emoji: '🦊', bg: 'linear-gradient(135deg,#ff9a4d,#ff6b35)' },
+  { emoji: '🐺', bg: 'linear-gradient(135deg,#8b9dc3,#5c6bc0)' },
+  { emoji: '🐸', bg: 'linear-gradient(135deg,#5dd45d,#2e9e2e)' },
+  { emoji: '🐼', bg: 'linear-gradient(135deg,#e8e8e8,#a0a0a0)' },
+  { emoji: '🦁', bg: 'linear-gradient(135deg,#ffd166,#f4a329)' },
+  { emoji: '🐙', bg: 'linear-gradient(135deg,#c77dff,#9b5de5)' },
+  { emoji: '🦋', bg: 'linear-gradient(135deg,#74c0fc,#339af0)' },
+  { emoji: '🐉', bg: 'linear-gradient(135deg,#ff6b6b,#e63946)' },
+  { emoji: '🌙', bg: 'linear-gradient(135deg,#2d2d5e,#4a4080)' },
+  { emoji: '⚡', bg: 'linear-gradient(135deg,#ffe066,#f4c430)' },
+];
+
 const PW_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,20}$/;
+
 let profile = null;
 let currentUser = null;
-let dirtyFields = {profile:false, email:false, pw:false};
+let selectedAvatarIdx = null;   // index in AVATARS, or null if unchanged
+let dirtyFields = { profile: false, email: false, pw: false };
 let unCheckTimer = null;
+let unCheckOk = false;
 let toastTimer;
 
 /* ── INIT ── */
@@ -464,125 +411,139 @@ let toastTimer;
   if (!profile) { window.location.href = 'login.html'; return; }
 
   populateFields();
-  loadSessions();
-
-  // Handle password reset redirect (from email link)
-  const hash = window.location.hash;
-  if (hash.includes('type=recovery')) {
-    showToast('Je kunt nu een nieuw wachtwoord instellen.', 'ok');
-    document.getElementById('pwNew').scrollIntoView({behavior:'smooth', block:'center'});
-  }
+  renderAvatarGrid();
+  renderCurrentAvatar();
+  renderSession();
 })();
 
 function applyTheme() {
   const s = JSON.parse(localStorage.getItem('sd_theme') || '{}');
   if (s.darkMode) { document.body.classList.add('dark-mode'); document.getElementById('theme-meta').content = '#0a0812'; }
-  if (s.accentColor) {
-    const h = s.accentColor.replace('#','');
-    const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
-    const R=document.documentElement.style;
-    R.setProperty('--accent',s.accentColor);
-    R.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
-    R.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
-  }
+  if (s.accentColor) setAccentCss(s.accentColor);
+}
+function setAccentCss(color) {
+  const h = color.replace('#','');
+  const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+  const R=document.documentElement.style;
+  R.setProperty('--accent',color);
+  R.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
+  R.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
 }
 
-/* ── POPULATE ── */
+/* ── POPULATE FIELDS ── */
 function populateFields() {
   document.getElementById('editDisplayName').value = profile.display_name || '';
   document.getElementById('editUsername').value = profile.username || '';
   document.getElementById('editEmail').value = currentUser.email || '';
+}
 
-  // Avatar
-  const initial = (profile.display_name?.[0] || profile.username?.[0] || '?').toUpperCase();
-  const disp = document.getElementById('avatarDisplay');
-  const initEl = document.getElementById('avatarInitial');
-  if (profile.avatar_url) {
-    initEl.innerHTML = `<img src="${profile.avatar_url}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">`;
-    document.getElementById('btnRemoveAvatar').style.display = 'flex';
+/* ── CURRENT AVATAR DISPLAY ── */
+function renderCurrentAvatar() {
+  const el = document.getElementById('avatarBigContent');
+  const bigWrap = document.getElementById('avatarBig');
+
+  // Check if current avatar_url is one of our presets
+  const stored = profile.avatar_url || '';
+  const presetMatch = AVATARS.findIndex((_, i) => stored === avatarDataUrl(i));
+
+  if (presetMatch >= 0) {
+    const av = AVATARS[presetMatch];
+    bigWrap.style.background = av.bg;
+    el.textContent = av.emoji;
+    el.style.background = '';
+  } else if (stored) {
+    // Legacy or external URL
+    el.innerHTML = `<img src="${stored}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">`;
+    bigWrap.style.background = '';
   } else {
-    initEl.textContent = initial;
+    // Fallback: initial
+    const initial = (profile.display_name?.[0] || profile.username?.[0] || '?').toUpperCase();
+    bigWrap.style.background = 'linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%)';
+    el.textContent = initial;
+    el.style.fontSize = '26px';
+    el.style.color = '#fff';
+    el.style.fontWeight = '800';
   }
 }
 
-/* ── DIRTY TRACKING ── */
-function markDirty(section) {
-  dirtyFields[section] = true;
-  if (section === 'profile') document.getElementById('btnSaveProfile').disabled = false;
-  if (section === 'email') document.getElementById('btnSaveEmail').disabled = false;
-  if (section === 'pw') checkPwSaveReady();
+/* We encode the avatar as a small JSON string stored as avatar_url.
+   Format: "preset:N" where N is the index. Simple, no storage bucket needed. */
+function avatarDataUrl(idx) {
+  return `preset:${idx}`;
 }
 
-/* ── AVATAR ── */
-async function handleAvatarUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+/* ── AVATAR GRID ── */
+function renderAvatarGrid() {
+  const currentUrl = profile.avatar_url || '';
+  const grid = document.getElementById('avatarGrid');
+  grid.innerHTML = AVATARS.map((av, i) => {
+    const isSelected = currentUrl === avatarDataUrl(i);
+    return `<div class="avatar-preset${isSelected ? ' selected' : ''}"
+      style="background:${av.bg}"
+      onclick="selectAvatar(${i})"
+      title="Avatar ${i+1}">
+      ${av.emoji}
+    </div>`;
+  }).join('');
+}
 
-  if (file.size > 2 * 1024 * 1024) { showToast('Bestand te groot (max 2 MB)', 'err'); return; }
+function selectAvatar(idx) {
+  selectedAvatarIdx = idx;
+  // Update grid selection
+  document.querySelectorAll('.avatar-preset').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  // Preview in big display
+  const av = AVATARS[idx];
+  const bigWrap = document.getElementById('avatarBig');
+  const el = document.getElementById('avatarBigContent');
+  bigWrap.style.background = av.bg;
+  el.innerHTML = '';
+  el.textContent = av.emoji;
+  el.style.fontSize = '36px';
+  el.style.color = '';
+  el.style.fontWeight = '';
+  // Enable save
+  document.getElementById('btnSaveAvatar').disabled = false;
+}
 
-  const btn = document.querySelector('.btn-avatar-upload');
+async function saveAvatar() {
+  if (selectedAvatarIdx === null) return;
+  const btn = document.getElementById('btnSaveAvatar');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner spinner-accent" style="border-top-color:var(--accent)"></div> Uploaden…';
+  btn.innerHTML = '<div class="spinner"></div> Opslaan…';
 
   try {
-    const ext = file.name.split('.').pop();
-    const path = `avatars/${currentUser.id}.${ext}`;
-
-    // Upload to Supabase Storage
-    const { error: upErr } = await VeliosAuth.client.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true, contentType: file.type });
-
-    if (upErr) throw upErr;
-
-    const { data: urlData } = VeliosAuth.client.storage.from('avatars').getPublicUrl(path);
-    const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
-
-    await VeliosAuth.client.from('profiles').update({ avatar_url: avatarUrl }).eq('id', currentUser.id);
-    profile.avatar_url = avatarUrl;
-
-    // Update display
-    document.getElementById('avatarInitial').innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">`;
-    document.getElementById('btnRemoveAvatar').style.display = 'flex';
+    const newUrl = avatarDataUrl(selectedAvatarIdx);
+    const { error } = await VeliosAuth.client.from('profiles')
+      .update({ avatar_url: newUrl })
+      .eq('id', currentUser.id);
+    if (error) throw error;
+    profile.avatar_url = newUrl;
     showToast('✅ Profielfoto bijgewerkt', 'ok');
-
+    btn.disabled = true; // keep disabled until a different one is chosen
   } catch (e) {
-    // Storage bucket might not exist yet — show helpful message
-    const msg = e.message?.includes('Bucket not found')
-      ? 'Maak eerst een "avatars" bucket aan in Supabase Storage (Dashboard → Storage → New bucket → naam: avatars, public: aan)'
-      : 'Upload mislukt: ' + e.message;
-    showToast(msg, 'err');
+    showToast('Opslaan mislukt: ' + e.message, 'err');
+    btn.disabled = false;
   }
-
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Foto uploaden';
-  event.target.value = '';
+  btn.innerHTML = 'Foto opslaan';
 }
 
-async function removeAvatar() {
-  await VeliosAuth.client.from('profiles').update({ avatar_url: null }).eq('id', currentUser.id);
-  profile.avatar_url = null;
-  const initial = (profile.display_name?.[0] || profile.username?.[0] || '?').toUpperCase();
-  document.getElementById('avatarInitial').textContent = initial;
-  document.getElementById('btnRemoveAvatar').style.display = 'none';
-  showToast('Profielfoto verwijderd', 'ok');
-}
+/* ── Also update renderHeader in login / nav to decode preset: format ──
+   Add this helper to supabase-client.js or inline wherever avatars are shown: */
+// window.VeliosAvatarData = { AVATARS, avatarDataUrl };  // exposed below
 
 /* ── PROFILE SAVE ── */
-let unCheckOk = false;
 async function validateUsernameEdit() {
   const raw = document.getElementById('editUsername').value;
   const v = raw.toLowerCase().replace(/[^a-z0-9_.]/g,'');
   if (raw !== v) document.getElementById('editUsername').value = v;
-
   markDirty('profile');
   setErr('err-username','');
   document.getElementById('editUsername').classList.remove('ok','error');
-
   if (v === profile.username) { unCheckOk = true; return; }
   if (v.length < 3) { setErr('err-username','Min. 3 tekens'); unCheckOk = false; return; }
   if (!/^[a-z][a-z0-9_.]*$/.test(v)) { setErr('err-username','Moet beginnen met een letter'); unCheckOk = false; return; }
-
   clearTimeout(unCheckTimer);
   unCheckTimer = setTimeout(async () => {
     const exists = await VeliosAuth.usernameExists(v);
@@ -597,80 +558,69 @@ async function validateUsernameEdit() {
   }, 500);
 }
 
+function markDirty(section) {
+  dirtyFields[section] = true;
+  if (section === 'profile') document.getElementById('btnSaveProfile').disabled = false;
+  if (section === 'email') document.getElementById('btnSaveEmail').disabled = false;
+}
+
 async function saveProfile() {
   const displayName = document.getElementById('editDisplayName').value.trim();
   const username = document.getElementById('editUsername').value.trim().toLowerCase();
-
   setErr('err-display',''); setErr('err-username','');
   if (!displayName) { setErr('err-display','Vul een weergavenaam in'); return; }
   if (username.length < 3) { setErr('err-username','Min. 3 tekens'); return; }
   if (!unCheckOk && username !== profile.username) { setErr('err-username','Controleer gebruikersnaam'); return; }
-
   const btn = document.getElementById('btnSaveProfile');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Opslaan…';
-
   try {
     const { error } = await VeliosAuth.client.from('profiles')
       .update({ display_name: displayName, username })
       .eq('id', currentUser.id);
     if (error) throw error;
-    profile.display_name = displayName;
-    profile.username = username;
+    profile.display_name = displayName; profile.username = username;
     showToast('✅ Profiel opgeslagen', 'ok');
-    dirtyFields.profile = false;
-  } catch (e) {
-    showToast('Opslaan mislukt: ' + e.message, 'err');
-    btn.disabled = false;
-  }
-  btn.disabled = false; btn.textContent = 'Opslaan';
+    dirtyFields.profile = false; btn.disabled = false;
+  } catch (e) { showToast('Opslaan mislukt: ' + e.message, 'err'); btn.disabled = false; }
+  btn.textContent = 'Opslaan';
 }
 
-/* ── EMAIL SAVE ── */
 async function saveEmail() {
   const email = document.getElementById('editEmail').value.trim().toLowerCase();
   setErr('err-email','');
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('err-email','Ongeldig e-mailadres'); return; }
   if (email === currentUser.email) { setErr('err-email','Dit is al je huidige e-mailadres'); return; }
-
   const btn = document.getElementById('btnSaveEmail');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Bijwerken…';
-
   try {
     const { error } = await VeliosAuth.client.auth.updateUser({ email });
     if (error) throw error;
     showToast('📧 Bevestigingsmail verstuurd naar ' + email, 'ok');
     dirtyFields.email = false;
-  } catch (e) {
-    showToast('Mislukt: ' + e.message, 'err');
-  }
+  } catch (e) { showToast('Mislukt: ' + e.message, 'err'); }
   btn.disabled = false; btn.textContent = 'E-mail bijwerken';
 }
 
 /* ── PASSWORD ── */
-function checkNewPwStrength() {
+function checkPwStrength() {
   const v = document.getElementById('pwNew').value;
   const bars = ['nb1','nb2','nb3','nb4'].map(id => document.getElementById(id));
-  const label = document.getElementById('newPwLabel');
+  const label = document.getElementById('pwStrLabel');
   bars.forEach(b => b.className = 'pw-bar');
-  if (!v) { label.textContent = ''; checkPwSaveReady(); return; }
-
+  if (!v) { label.textContent = ''; checkPwReady(); return; }
   let score = 0;
   if (v.length >= 8) score++;
   if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
   if (/\d/.test(v)) score++;
   if (v.length >= 14) score++;
-
   const cls = score <= 1 ? 'weak' : score <= 2 ? 'medium' : 'strong';
   const labels = ['','Zwak','Redelijk','Goed','Sterk'];
   for (let i = 0; i < score; i++) bars[i].classList.add(cls);
   label.textContent = labels[score] || '';
   label.style.color = cls === 'weak' ? 'var(--red)' : cls === 'medium' ? '#f59e0b' : 'var(--green)';
-
-  checkPwConfirm();
-  checkPwSaveReady();
+  checkPwMatch(); checkPwReady();
 }
-
-function checkPwConfirm() {
+function checkPwMatch() {
   const p1 = document.getElementById('pwNew').value;
   const p2 = document.getElementById('pwConfirm').value;
   if (!p2) { setErr('err-pw-confirm',''); return; }
@@ -678,137 +628,89 @@ function checkPwConfirm() {
   setErr('err-pw-confirm', match ? '' : 'Wachtwoorden komen niet overeen');
   document.getElementById('pwConfirm').classList.toggle('ok', match);
   document.getElementById('pwConfirm').classList.toggle('error', !match);
-  checkPwSaveReady();
+  checkPwReady();
 }
-
-function checkPwSaveReady() {
-  const current = document.getElementById('pwCurrent').value;
-  const newPw = document.getElementById('pwNew').value;
-  const confirm = document.getElementById('pwConfirm').value;
-  const ready = current.length > 0 && PW_REGEX.test(newPw) && newPw === confirm;
-  document.getElementById('btnSavePw').disabled = !ready;
+function checkPwReady() {
+  const cur = document.getElementById('pwCurrent').value;
+  const nw = document.getElementById('pwNew').value;
+  const con = document.getElementById('pwConfirm').value;
+  document.getElementById('btnSavePw').disabled = !(cur && PW_REGEX.test(nw) && nw === con);
 }
-
 async function savePassword() {
-  const current = document.getElementById('pwCurrent').value;
-  const newPw = document.getElementById('pwNew').value;
-  setErr('err-pw-current',''); setErr('err-pw-new',''); setErr('err-pw-confirm','');
-
-  if (!PW_REGEX.test(newPw)) {
-    setErr('err-pw-new','Wachtwoord voldoet niet (8-20 tekens, hoofd-, kleine letter, cijfer)');
-    return;
-  }
-
+  const cur = document.getElementById('pwCurrent').value;
+  const nw = document.getElementById('pwNew').value;
+  setErr('err-pw-current',''); setErr('err-pw-new','');
+  if (!PW_REGEX.test(nw)) { setErr('err-pw-new','8-20 tekens, hoofd-, kleine letter, cijfer'); return; }
   const btn = document.getElementById('btnSavePw');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Wijzigen…';
-
   try {
-    // Verify current password first by re-signing in
-    const { error: signErr } = await VeliosAuth.client.auth.signInWithPassword({
-      email: currentUser.email, password: current
-    });
-    if (signErr) {
-      setErr('err-pw-current','Huidig wachtwoord is onjuist');
-      btn.disabled = false; btn.textContent = 'Wachtwoord wijzigen';
-      return;
-    }
-
-    const { error } = await VeliosAuth.client.auth.updateUser({ password: newPw });
+    const { error: signErr } = await VeliosAuth.client.auth.signInWithPassword({ email: currentUser.email, password: cur });
+    if (signErr) { setErr('err-pw-current','Huidig wachtwoord is onjuist'); btn.disabled = false; btn.textContent = 'Wachtwoord wijzigen'; return; }
+    const { error } = await VeliosAuth.client.auth.updateUser({ password: nw });
     if (error) throw error;
-
     showToast('✅ Wachtwoord gewijzigd', 'ok');
     document.getElementById('pwCurrent').value = '';
     document.getElementById('pwNew').value = '';
     document.getElementById('pwConfirm').value = '';
-    ['nb1','nb2','nb3','nb4'].forEach(id => document.getElementById(id).className = 'pw-bar');
-    document.getElementById('newPwLabel').textContent = '';
-    dirtyFields.pw = false;
-  } catch (e) {
-    showToast('Mislukt: ' + e.message, 'err');
-  }
+    ['nb1','nb2','nb3','nb4'].forEach(id => document.getElementById(id).className='pw-bar');
+    document.getElementById('pwStrLabel').textContent = '';
+  } catch (e) { showToast('Mislukt: ' + e.message, 'err'); }
   btn.disabled = false; btn.textContent = 'Wachtwoord wijzigen';
 }
 
-/* ── SESSIONS ── */
-async function loadSessions() {
-  const list = document.getElementById('sessionList');
-  try {
-    // Supabase doesn't expose session list directly in client SDK
-    // We show the current session with device info
-    const ua = navigator.userAgent;
-    let device = 'Onbekend apparaat';
-    let icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>`;
-
-    if (/iPad|Tablet/.test(ua)) { device = 'Tablet'; }
-    else if (/iPhone|Android.*Mobile/.test(ua)) { device = 'Smartphone'; }
-    else if (/Mac/.test(ua)) {
-      device = 'Mac';
-      icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
-    } else if (/Win/.test(ua)) {
-      device = 'Windows pc';
-      icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
-    }
-
-    const browser = /Chrome/.test(ua) ? 'Chrome' : /Firefox/.test(ua) ? 'Firefox' : /Safari/.test(ua) ? 'Safari' : /Edge/.test(ua) ? 'Edge' : 'Browser';
-
-    list.innerHTML = `
-      <div class="session-item current">
-        <div class="session-icon">${icon}</div>
-        <div>
-          <div class="session-name">${device} — ${browser}</div>
-          <div class="session-meta">Dit apparaat · Nu actief</div>
-        </div>
-        <div class="session-badge">Huidig</div>
+/* ── SESSION ── */
+function renderSession() {
+  const ua = navigator.userAgent;
+  let device = 'Onbekend apparaat';
+  let iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>`;
+  if (/iPad|Tablet/.test(ua)) device = 'Tablet';
+  else if (/iPhone|Android.*Mobile/.test(ua)) device = 'Smartphone';
+  else if (/Mac/.test(ua)) { device = 'Mac'; iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`; }
+  else if (/Win/.test(ua)) { device = 'Windows pc'; iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`; }
+  const browser = /Chrome/.test(ua)&&!/Edg/.test(ua) ? 'Chrome' : /Firefox/.test(ua) ? 'Firefox' : /Edg/.test(ua) ? 'Edge' : /Safari/.test(ua) ? 'Safari' : 'Browser';
+  document.getElementById('sessionArea').innerHTML = `
+    <div class="session-item current-session">
+      <div class="session-icon">${iconSvg}</div>
+      <div>
+        <div class="session-name">${device} — ${browser}</div>
+        <div class="session-meta">Dit apparaat · Nu actief</div>
       </div>
-      <div style="font-size:12px;color:var(--text3);font-weight:600;margin-top:8px;line-height:1.5;">
-        Supabase toont alleen de huidige sessie via de client-SDK. Gebruik "Alle andere sessies beëindigen" om op andere apparaten uit te loggen.
-      </div>`;
-  } catch (e) {
-    list.innerHTML = `<div style="font-size:13px;color:var(--text3);">Sessies kunnen niet worden geladen.</div>`;
-  }
+      <div class="session-badge">Huidig</div>
+    </div>
+    <p style="font-size:11px;color:var(--text3);font-weight:600;margin-top:10px;line-height:1.5;">Gebruik "Alle andere sessies beëindigen" om op andere apparaten uit te loggen.</p>`;
 }
 
-/* ── REVOKE ALL SESSIONS ── */
-function showRevokeAllModal() { document.getElementById('revokeModal').style.display = 'flex'; }
-async function revokeAllSessions() {
-  const btn = document.getElementById('revokeConfirmBtn');
+function showRevokeModal() { document.getElementById('revokeModal').style.display = 'flex'; }
+async function revokeOtherSessions() {
+  const btn = document.getElementById('revokeBtn');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
   try {
     await VeliosAuth.client.auth.signOut({ scope: 'others' });
     closeModal('revokeModal');
     showToast('✅ Andere sessies beëindigd', 'ok');
-    await loadSessions();
-  } catch (e) {
-    showToast('Mislukt: ' + e.message, 'err');
-  }
+  } catch (e) { showToast('Mislukt: ' + e.message, 'err'); }
   btn.disabled = false; btn.textContent = 'Beëindigen';
 }
 
-/* ── SIGN OUT ── */
+/* ── SIGN OUT / DELETE ── */
 async function doSignOut() {
   await VeliosAuth.signOut();
   window.location.href = 'login.html';
 }
-
-/* ── DELETE ACCOUNT ── */
 function showDeleteModal() {
-  document.getElementById('deleteConfirmInput').value = '';
-  document.getElementById('deleteConfirmBtn').disabled = true;
+  document.getElementById('deleteInput').value = '';
+  document.getElementById('deleteBtn').disabled = true;
   document.getElementById('deleteModal').style.display = 'flex';
 }
-function checkDeleteConfirm() {
-  const v = document.getElementById('deleteConfirmInput').value.toUpperCase();
-  document.getElementById('deleteConfirmBtn').disabled = v !== 'VERWIJDER';
+function checkDelete() {
+  document.getElementById('deleteBtn').disabled =
+    document.getElementById('deleteInput').value.toUpperCase() !== 'VERWIJDER';
 }
 async function deleteAccount() {
-  const btn = document.getElementById('deleteConfirmBtn');
+  const btn = document.getElementById('deleteBtn');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
   try {
-    // Delete profile (cascades to sets + synced_sets via DB)
     await VeliosAuth.client.from('profiles').delete().eq('id', currentUser.id);
-    // Delete auth user via admin — this requires a server-side call.
-    // As a workaround we sign out and show a message.
-    // For full deletion: set up a Supabase Edge Function.
     await VeliosAuth.client.auth.signOut();
     showToast('Account verwijderd. Tot ziens!', 'ok');
     setTimeout(() => { window.location.href = 'login.html'; }, 1200);
@@ -823,8 +725,7 @@ function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function setErr(id, msg) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.textContent = msg;
-  el.classList.toggle('show', !!msg);
+  el.textContent = msg; el.classList.toggle('show', !!msg);
 }
 function togglePw(inputId, btn) {
   const inp = document.getElementById(inputId);
@@ -836,19 +737,40 @@ function togglePw(inputId, btn) {
 }
 function showToast(msg, type='') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show' + (type ? ' '+type : '');
+  t.textContent = msg; t.className = 'show'+(type?' '+type:'');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+  toastTimer = setTimeout(()=>{ t.className=''; }, 3500);
 }
-
-// Warn on unsaved changes
 window.addEventListener('beforeunload', e => {
-  if (Object.values(dirtyFields).some(Boolean)) {
-    e.preventDefault();
-    e.returnValue = '';
-  }
+  if (Object.values(dirtyFields).some(Boolean)) { e.preventDefault(); e.returnValue=''; }
 });
+
+/* ── EXPOSE voor gebruik in andere pagina's ──
+   Voeg dit toe aan je nav/login/my-account code zodat avatars overal goed weergegeven worden:
+
+   function renderAvatar(avatarUrl, fallbackInitial) {
+     if (!avatarUrl) return fallbackInitial;
+     if (avatarUrl.startsWith('preset:')) {
+       const idx = parseInt(avatarUrl.split(':')[1]);
+       const AVLIST = [
+         { emoji:'🦊', bg:'linear-gradient(135deg,#ff9a4d,#ff6b35)' },
+         { emoji:'🐺', bg:'linear-gradient(135deg,#8b9dc3,#5c6bc0)' },
+         { emoji:'🐸', bg:'linear-gradient(135deg,#5dd45d,#2e9e2e)' },
+         { emoji:'🐼', bg:'linear-gradient(135deg,#e8e8e8,#a0a0a0)' },
+         { emoji:'🦁', bg:'linear-gradient(135deg,#ffd166,#f4a329)' },
+         { emoji:'🐙', bg:'linear-gradient(135deg,#c77dff,#9b5de5)' },
+         { emoji:'🦋', bg:'linear-gradient(135deg,#74c0fc,#339af0)' },
+         { emoji:'🐉', bg:'linear-gradient(135deg,#ff6b6b,#e63946)' },
+         { emoji:'🌙', bg:'linear-gradient(135deg,#2d2d5e,#4a4080)' },
+         { emoji:'⚡', bg:'linear-gradient(135deg,#ffe066,#f4c430)' },
+       ];
+       const av = AVLIST[idx];
+       if (!av) return fallbackInitial;
+       return { type:'preset', emoji: av.emoji, bg: av.bg };
+     }
+     return { type:'img', url: avatarUrl };
+   }
+*/
 </script>
 </body>
 </html>
