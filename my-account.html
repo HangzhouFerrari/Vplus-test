@@ -30,187 +30,107 @@
 html{min-height:100vh;font-family:var(--font);color:var(--text);font-size:16px;overflow-x:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
 body{min-height:100dvh;background:var(--bg-grad);background-attachment:fixed;display:flex;flex-direction:column;-webkit-touch-callout:none;}
 
-/* DARK MODE */
 body.dark-mode{--bg-grad:linear-gradient(180deg,#0a0812 0%,#10091e 100%);--glass:rgba(22,20,34,0.96);--glass2:rgba(22,20,34,0.85);--glass-border:rgba(64,60,100,0.6);--text:#fff;--text2:#c8c4e0;--text3:rgba(255,255,255,0.45);--glass-shadow:0 2px 10px rgba(0,0,0,0.6),inset 1px 1px 0 rgba(80,75,120,0.5);--glass-shadow-lg:0 8px 32px rgba(0,0,0,0.7),inset 1px 1px 0 rgba(80,75,120,0.5);}
 
-/* NAV */
-nav{
-  position:sticky;top:0;z-index:200;
-  background:rgba(240,238,249,0.92);
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border-bottom:1px solid rgba(200,195,230,0.5);
-  padding:env(safe-area-inset-top,0px) 28px 0;
-  height:var(--nav-h);
-  display:flex;align-items:center;gap:16px;
-  transition:background .3s;
-}
-body.dark-mode nav{background:rgba(12,10,22,0.95)!important;border-color:var(--glass-border)!important;}
-.nav-back{
-  width:40px;height:40px;border-radius:var(--r3);
-  background:var(--glass);border:1px solid var(--glass-border);
-  box-shadow:var(--glass-shadow);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .2s var(--ease);flex-shrink:0;
-  color:var(--text2);
-}
+nav{position:sticky;top:0;z-index:200;background:rgba(240,238,249,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(200,195,230,0.5);padding:env(safe-area-inset-top,0px) 28px 0;height:var(--nav-h);display:flex;align-items:center;gap:16px;transition:background .3s;}
+body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--glass-border)!important;}
+.nav-back{width:40px;height:40px;border-radius:var(--r3);background:var(--glass);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s var(--ease);flex-shrink:0;color:var(--text2);}
 .nav-back:hover{background:#fff;transform:scale(1.08);box-shadow:var(--glass-shadow-lg);}
 .nav-back svg{width:18px;height:18px;}
 .nav-title{font-size:18px;font-weight:800;letter-spacing:-0.4px;color:var(--text);}
 .nav-spacer{flex:1;}
 
-/* MAIN */
 .main{max-width:860px;margin:0 auto;padding:32px 28px 80px;width:100%;}
 @media(max-width:750px){.main{padding:20px 16px 100px;}}
 
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
 /* PAGE HEADER */
-.page-header{margin-bottom:32px;animation:fadeUp .45s var(--ease2) both;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.page-header{margin-bottom:28px;animation:fadeUp .4s var(--ease2) both;}
 .page-header-inner{display:flex;align-items:center;gap:16px;}
-.page-avatar{
-  width:64px;height:64px;border-radius:18px;
-  background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:26px;font-weight:800;
-  overflow:hidden;flex-shrink:0;
-  box-shadow:0 4px 16px var(--accent-light);
-}
+.page-avatar{width:64px;height:64px;border-radius:18px;background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:800;overflow:hidden;flex-shrink:0;box-shadow:0 4px 16px var(--accent-light);}
 .page-avatar img{width:100%;height:100%;object-fit:cover;}
-.page-header-text h1{font-size:24px;font-weight:800;letter-spacing:-0.5px;color:var(--text);}
-.page-header-text p{font-size:14px;color:var(--text3);font-weight:600;margin-top:2px;}
+.page-header-text h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;color:var(--text);}
+.page-header-text p{font-size:13px;color:var(--text3);font-weight:600;margin-top:2px;}
 
 /* SYNC METER */
-.sync-meter-wrap{
-  background:var(--glass);border:1px solid var(--glass-border);
-  border-radius:var(--r2);padding:20px 24px;
-  box-shadow:var(--glass-shadow);margin-bottom:28px;
-  animation:fadeUp .45s var(--ease2) .05s both;
-}
-.sync-meter-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sync-meter-wrap{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r2);padding:20px 24px;box-shadow:var(--glass-shadow);margin-bottom:24px;animation:fadeUp .4s var(--ease2) .05s both;}
+.sync-meter-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .sync-meter-title{font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;}
-.sync-meter-title svg{width:16px;height:16px;color:var(--accent);}
+.sync-meter-title svg{width:15px;height:15px;color:var(--accent);}
 .sync-count-label{font-size:13px;font-weight:700;color:var(--text3);}
 .sync-count-label span{color:var(--accent);font-size:15px;}
 .sync-track{height:8px;background:rgba(200,195,230,0.4);border-radius:4px;overflow:hidden;}
-.sync-fill{
-  height:100%;border-radius:4px;
-  background:linear-gradient(90deg,var(--accent) 0%,var(--accent2) 100%);
-  transition:width .6s var(--ease2);
-  box-shadow:0 0 8px var(--accent-light);
-}
+.sync-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent) 0%,var(--accent2) 100%);transition:width .7s var(--ease2);box-shadow:0 0 8px var(--accent-light);}
 .sync-fill.full{background:linear-gradient(90deg,var(--orange) 0%,var(--red) 100%);}
-.sync-slots{display:flex;gap:6px;margin-top:10px;}
-.sync-slot{
-  flex:1;height:4px;border-radius:2px;
-  background:rgba(200,195,230,0.3);
-  transition:background .3s;
-}
+.sync-slots{display:flex;gap:5px;margin-top:10px;}
+.sync-slot{flex:1;height:4px;border-radius:2px;background:rgba(200,195,230,0.3);transition:background .3s;}
 .sync-slot.used{background:var(--accent);}
 .sync-slot.used.full{background:var(--red);}
 
 /* SECTION */
-.section{margin-bottom:32px;animation:fadeUp .45s var(--ease2) .1s both;}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.section-title{font-size:17px;font-weight:800;letter-spacing:-0.3px;color:var(--text);display:flex;align-items:center;gap:8px;}
+.section{margin-bottom:28px;animation:fadeUp .4s var(--ease2) .1s both;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-title{font-size:16px;font-weight:800;letter-spacing:-0.2px;color:var(--text);display:flex;align-items:center;gap:8px;}
 .section-title-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);opacity:.8;flex-shrink:0;}
 
-/* SYNCED SET CARD */
-.synced-grid{display:flex;flex-direction:column;gap:10px;}
-.synced-card{
-  background:var(--glass);border:1px solid var(--glass-border);
-  border-radius:var(--r);padding:16px 20px;
-  box-shadow:var(--glass-shadow);
-  display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
-  position:relative;overflow:hidden;
-  transition:transform .2s var(--ease),box-shadow .2s var(--ease);
-  animation:cardSlideIn .35s var(--ease2) both;
-}
-@keyframes cardSlideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+/* SYNCED CARD */
+@keyframes cardIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.synced-grid{display:flex;flex-direction:column;gap:8px;}
+.synced-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r);padding:14px 18px;box-shadow:var(--glass-shadow);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;position:relative;overflow:hidden;transition:transform .2s var(--ease),box-shadow .2s var(--ease);}
 .synced-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.65;}
 .synced-card:hover{transform:translateX(4px);box-shadow:var(--glass-shadow-lg);}
-.synced-card-info h3{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.2px;margin-bottom:4px;}
-.synced-card-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
-.synced-badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.synced-card-info h3{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-0.2px;margin-bottom:4px;}
+.synced-card-meta{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
 .badge-purple{background:var(--accent-light);color:var(--accent);}
-.badge-gray{background:rgba(120,110,150,0.15);color:var(--text2);}
-.synced-card-date{font-size:11px;color:var(--text3);font-weight:600;margin-top:4px;}
-.synced-card-actions{display:flex;gap:6px;align-items:center;}
-.btn-unsync{
-  height:34px;padding:0 14px;border-radius:var(--r4);
-  background:rgba(232,58,74,0.08);border:1px solid rgba(232,58,74,0.2);
-  color:var(--red);font-family:var(--font);font-size:12px;font-weight:700;
-  cursor:pointer;transition:all .15s;white-space:nowrap;
-  display:flex;align-items:center;gap:5px;
-}
-.btn-unsync:hover{background:rgba(232,58,74,0.15);transform:scale(1.04);}
-.btn-unsync svg{width:13px;height:13px;}
+.badge-gray{background:rgba(120,110,150,0.14);color:var(--text2);}
+.synced-card-date{font-size:11px;color:var(--text3);font-weight:600;margin-top:3px;}
+.btn-unsync{height:32px;padding:0 12px;border-radius:var(--r4);background:rgba(232,58,74,0.08);border:1px solid rgba(232,58,74,0.2);color:var(--red);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+.btn-unsync:hover{background:rgba(232,58,74,0.16);transform:scale(1.04);}
+.btn-unsync svg{width:12px;height:12px;}
 
-/* ADD SYNC CARD */
-.add-sync-card{
-  background:linear-gradient(135deg,var(--accent-light) 0%,rgba(0,98,255,0.04) 100%);
-  border:1.5px dashed rgba(0,98,255,0.3);
-  border-radius:var(--r);padding:20px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;text-align:center;cursor:pointer;
-  transition:all .2s var(--ease);min-height:80px;
-}
-.add-sync-card:hover{background:var(--accent-light);border-color:var(--accent);transform:scale(1.01);}
-.add-sync-card.disabled{opacity:.4;cursor:not-allowed;}
-.add-sync-card.disabled:hover{transform:none;background:linear-gradient(135deg,var(--accent-light) 0%,rgba(0,98,255,0.04) 100%);}
-.add-sync-title{font-size:14px;font-weight:700;color:var(--accent);}
-.add-sync-desc{font-size:12px;color:var(--text3);font-weight:600;}
-
-/* LOCAL SETS */
+/* LOCAL CARD */
 .local-grid{display:flex;flex-direction:column;gap:8px;}
-.local-card{
-  background:var(--glass);border:1px solid var(--glass-border);
-  border-radius:var(--r);padding:14px 18px;
-  box-shadow:var(--glass-shadow);
-  display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
-  transition:all .2s var(--ease);
-}
+.local-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r);padding:13px 18px;box-shadow:var(--glass-shadow);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;transition:transform .2s var(--ease),box-shadow .2s var(--ease);}
 .local-card:hover{transform:translateX(3px);box-shadow:var(--glass-shadow-lg);}
-.local-card-info h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
-.local-card-meta{font-size:12px;color:var(--text3);font-weight:600;}
-.btn-sync{
-  height:32px;padding:0 12px;border-radius:var(--r4);
-  background:var(--accent-light);border:1px solid rgba(0,98,255,0.2);
-  color:var(--accent);font-family:var(--font);font-size:12px;font-weight:700;
-  cursor:pointer;transition:all .15s;white-space:nowrap;
-  display:flex;align-items:center;gap:4px;
-}
+.local-card-info h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.local-card-meta{font-size:11px;color:var(--text3);font-weight:600;}
+.btn-sync{height:32px;padding:0 12px;border-radius:var(--r4);background:var(--accent-light);border:1px solid rgba(0,98,255,0.2);color:var(--accent);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px;}
 .btn-sync:hover{background:rgba(0,98,255,0.2);transform:scale(1.04);}
 .btn-sync:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 .btn-sync svg{width:12px;height:12px;}
 
-/* EMPTY STATE */
-.empty-state{
-  text-align:center;padding:48px 20px;
-  color:var(--text3);font-size:14px;font-weight:600;
-}
-.empty-state-icon{font-size:44px;margin-bottom:12px;display:block;}
-.empty-state h3{font-size:17px;font-weight:800;color:var(--text2);margin-bottom:6px;}
+/* EMPTY */
+.empty-state{text-align:center;padding:36px 20px;color:var(--text3);}
+.empty-icon{font-size:40px;display:block;margin-bottom:10px;}
+.empty-state h3{font-size:15px;font-weight:800;color:var(--text2);margin-bottom:4px;}
+.empty-state p{font-size:13px;font-weight:600;}
 
-/* LOADING */
-.skeleton{background:linear-gradient(90deg,rgba(200,195,230,0.3) 25%,rgba(200,195,230,0.5) 50%,rgba(200,195,230,0.3) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--r);}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.skeleton-card{height:72px;margin-bottom:10px;}
+/* LIMIT NOTICE */
+.limit-notice{font-size:12px;color:var(--text3);font-weight:600;text-align:center;padding:10px;background:rgba(240,123,32,0.06);border:1px solid rgba(240,123,32,0.2);border-radius:var(--r4);margin-top:8px;}
 
 /* MODAL */
-.modal-bg{position:fixed;inset:0;z-index:2000;background:rgba(140,130,185,0.55);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;animation:modalBgIn .25s ease both;}
-@keyframes modalBgIn{from{opacity:0}to{opacity:1}}
-.modal-panel{background:rgba(255,255,255,0.99);border:1.5px solid var(--glass-border);border-radius:var(--r2);padding:28px;width:90%;max-width:440px;box-shadow:0 16px 64px rgba(80,60,160,0.22);animation:modalPanelIn .3s var(--ease2) both;}
-@keyframes modalPanelIn{from{opacity:0;transform:scale(0.92) translateY(16px)}to{opacity:1;transform:none}}
-body.dark-mode .modal-panel{background:rgb(18,17,28)!important;border-color:var(--glass-border)!important;}
-.modal-title{font-size:18px;font-weight:800;letter-spacing:-0.3px;margin-bottom:8px;color:var(--text);}
-.modal-desc{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:20px;}
+.modal-bg{position:fixed;inset:0;z-index:2000;background:rgba(140,130,185,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;}
+.modal-panel{background:rgba(255,255,255,0.99);border:1.5px solid var(--glass-border);border-radius:var(--r2);padding:26px;width:90%;max-width:400px;box-shadow:0 16px 64px rgba(80,60,160,0.22);animation:fadeUp .3s var(--ease2) both;}
+body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(--glass-border)!important;}
+.modal-title{font-size:17px;font-weight:800;letter-spacing:-0.3px;margin-bottom:7px;color:var(--text);}
+.modal-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:18px;}
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;}
 .btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;padding:9px 18px;transition:all .2s var(--ease);outline:none;}
-.btn-primary{background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);color:#fff;box-shadow:0 2px 12px var(--accent-light);}
-.btn-primary:hover{filter:brightness(1.12);transform:scale(1.04) translateY(-1px);}
 .btn-glass{background:var(--glass);color:var(--text);box-shadow:var(--glass-shadow);border:1px solid var(--glass-border);}
-.btn-glass:hover{background:rgba(255,255,255,.95);transform:scale(1.04);}
+.btn-glass:hover{background:rgba(255,255,255,.95);transform:scale(1.03);}
 .btn-danger{background:rgba(232,58,74,0.1);color:var(--red);border:1px solid rgba(232,58,74,0.25);}
 .btn-danger:hover{background:rgba(232,58,74,0.18);}
+.btn-danger:disabled{opacity:.5;cursor:not-allowed;}
+
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,rgba(200,195,230,0.3) 25%,rgba(200,195,230,0.5) 50%,rgba(200,195,230,0.3) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--r);}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* SPINNER */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:14px;height:14px;border:2px solid rgba(0,98,255,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 
 /* TOAST */
 #toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(252,250,255,.99);border:1px solid rgba(200,195,230,.7);border-radius:var(--r);padding:12px 20px;font-size:14px;font-weight:700;box-shadow:0 8px 32px rgba(80,60,160,.2);opacity:0;transform:translateY(12px);pointer-events:none;transition:all .25s var(--ease2);}
@@ -218,27 +138,20 @@ body.dark-mode .modal-panel{background:rgb(18,17,28)!important;border-color:var(
 #toast.ok{background:#f0fdf8;border-color:rgba(24,182,114,.3);color:var(--green);}
 #toast.err{background:#fff0f1;border-color:rgba(232,58,74,.3);color:var(--red);}
 @media(max-width:750px){#toast{bottom:calc(env(safe-area-inset-bottom,0px)+16px);left:16px;right:16px;text-align:center;}}
-
-/* SPINNER */
-@keyframes spin{to{transform:rotate(360deg)}}
-.spinner{width:18px;height:18px;border:2px solid rgba(0,98,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <button class="nav-back" onclick="window.location.href='index.html'" title="Terug">
+  <button class="nav-back" onclick="window.location.href='index.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
   </button>
   <div class="nav-title">Mijn account</div>
   <div class="nav-spacer"></div>
 </nav>
 
-<!-- MAIN -->
 <div class="main">
 
-  <!-- Profiel header -->
   <div class="page-header">
     <div class="page-header-inner">
       <div class="page-avatar" id="pageAvatar">…</div>
@@ -254,7 +167,7 @@ body.dark-mode .modal-panel{background:rgb(18,17,28)!important;border-color:var(
     <div class="sync-meter-header">
       <div class="sync-meter-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-        Gesynchroniseerde sets
+        Synchronisatie
       </div>
       <div class="sync-count-label"><span id="meterCount">0</span>/5 slots gebruikt</div>
     </div>
@@ -263,7 +176,7 @@ body.dark-mode .modal-panel{background:rgb(18,17,28)!important;border-color:var(
   </div>
 
   <!-- Gesynchroniseerde sets -->
-  <div class="section" style="animation-delay:.1s">
+  <div class="section">
     <div class="section-header">
       <div class="section-title">
         <div class="section-title-dot"></div>
@@ -271,34 +184,33 @@ body.dark-mode .modal-panel{background:rgb(18,17,28)!important;border-color:var(
       </div>
     </div>
     <div class="synced-grid" id="syncedGrid">
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton" style="height:68px;margin-bottom:4px;"></div>
+      <div class="skeleton" style="height:68px;"></div>
     </div>
   </div>
 
-  <!-- Lokale sets om te synchroniseren -->
-  <div class="section" style="animation-delay:.18s" id="localSection">
+  <!-- Lokale sets -->
+  <div class="section" style="animation-delay:.15s">
     <div class="section-header">
       <div class="section-title">
         <div class="section-title-dot" style="background:var(--orange)"></div>
-        Lokale sets synchroniseren
+        Lokale sets
       </div>
     </div>
-    <div style="font-size:13px;color:var(--text3);font-weight:600;margin-bottom:12px;">
-      Sets die je lokaal hebt opgeslagen, maar nog niet gesynchroniseerd zijn. Synchroniseer ze om ze op al je apparaten te gebruiken.
-    </div>
+    <p style="font-size:13px;color:var(--text3);font-weight:600;margin-bottom:12px;">Al je zelfgemaakte sets. Synchroniseer ze om ze op al je apparaten te gebruiken (max. 5).</p>
     <div class="local-grid" id="localGrid">
-      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton" style="height:60px;margin-bottom:4px;"></div>
+      <div class="skeleton" style="height:60px;"></div>
     </div>
   </div>
 
 </div>
 
-<!-- Desync confirm modal -->
+<!-- Desync modal -->
 <div class="modal-bg" id="desyncModal" style="display:none">
   <div class="modal-panel">
     <div class="modal-title">Set desynchroniseren?</div>
-    <div class="modal-desc" id="desyncModalDesc">Deze set wordt niet meer gesynchroniseerd. Je lokale kopie blijft gewoon beschikbaar.</div>
+    <div class="modal-desc" id="desyncDesc">Deze set wordt niet meer gesynchroniseerd tussen je apparaten. Je lokale kopie blijft beschikbaar.</div>
     <div class="modal-footer">
       <button class="btn btn-glass" onclick="closeDesyncModal()">Annuleren</button>
       <button class="btn btn-danger" id="desyncConfirmBtn" onclick="confirmDesync()">Desynchroniseren</button>
@@ -326,55 +238,58 @@ let toastTimer;
   profile = await VeliosAuth.getProfile();
   if (!profile) { window.location.href = 'login.html'; return; }
 
-  renderProfileHeader();
+  renderHeader();
   await loadData();
 })();
 
 function applyTheme() {
   const s = JSON.parse(localStorage.getItem('sd_theme') || '{}');
   if (s.darkMode) { document.body.classList.add('dark-mode'); document.getElementById('theme-meta').content = '#0a0812'; }
-  if (s.accentColor) {
-    const h = s.accentColor.replace('#','');
-    const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
-    const R=document.documentElement.style;
-    R.setProperty('--accent',s.accentColor);
-    R.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
-    R.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
-  }
+  if (s.accentColor) setAccentCss(s.accentColor);
+}
+function setAccentCss(color) {
+  const h = color.replace('#','');
+  const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+  const R=document.documentElement.style;
+  R.setProperty('--accent',color);
+  R.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
+  R.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
 }
 
-/* ── PROFILE HEADER ── */
-function renderProfileHeader() {
+function renderHeader() {
   const initial = (profile.display_name?.[0] || profile.username?.[0] || '?').toUpperCase();
   const av = document.getElementById('pageAvatar');
-  av.innerHTML = profile.avatar_url ? `<img src="${profile.avatar_url}" alt="avatar">` : initial;
-  document.getElementById('headerName').textContent = profile.display_name || profile.username;
-  document.getElementById('headerUsername').textContent = '@' + profile.username;
+  if (profile.avatar_url) {
+    av.innerHTML = `<img src="${profile.avatar_url}" alt="avatar">`;
+  } else {
+    av.textContent = initial;
+  }
+  document.getElementById('headerName').textContent = profile.display_name || profile.username || '—';
+  document.getElementById('headerUsername').textContent = '@' + (profile.username || '—');
 }
 
-/* ── LOAD DATA ── */
+/* ── LOAD ALL DATA ── */
 async function loadData() {
   const [syncedRaw, count] = await Promise.all([
     VeliosAuth.getSyncedSets(),
     VeliosAuth.getSyncCount(),
   ]);
   syncedSets = syncedRaw;
-
-  // Local sets from localStorage
   localSets = getLocalSets();
 
   updateSyncMeter(count);
-  renderSyncedSets(count);
+  renderSyncedSets();
   renderLocalSets(count);
 }
 
+/* ── GET LOCAL SETS from sd_sets ── */
 function getLocalSets() {
   try {
-    const raw = localStorage.getItem('velios_sets') || localStorage.getItem('sets');
+    const raw = localStorage.getItem('sd_sets');
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed;
-    return Object.values(parsed);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
   } catch { return []; }
 }
 
@@ -385,44 +300,39 @@ function updateSyncMeter(count) {
   const fill = document.getElementById('syncFill');
   fill.style.width = pct + '%';
   fill.className = 'sync-fill' + (count >= 5 ? ' full' : '');
-
-  const slots = document.getElementById('syncSlots');
-  slots.innerHTML = Array.from({length:5}, (_,i) =>
-    `<div class="sync-slot${i < count ? ' used' + (count >= 5 ? ' full' : '') : ''}"></div>`
+  document.getElementById('syncSlots').innerHTML = Array.from({length:5}, (_,i) =>
+    `<div class="sync-slot${i < count ? ' used'+(count>=5?' full':'') : ''}"></div>`
   ).join('');
 }
 
 /* ── SYNCED SETS ── */
-function renderSyncedSets(count) {
+function renderSyncedSets() {
   const grid = document.getElementById('syncedGrid');
   if (!syncedSets.length) {
     grid.innerHTML = `<div class="empty-state">
-      <span class="empty-state-icon">☁️</span>
+      <span class="empty-icon">☁️</span>
       <h3>Geen gesynchroniseerde sets</h3>
-      <p>Synchroniseer je lokale sets hieronder.</p>
+      <p>Synchroniseer hieronder een lokale set.</p>
     </div>`;
     return;
   }
-
   grid.innerHTML = syncedSets.map((item, i) => {
-    const set = item.sets || item;
-    const syncDate = new Date(item.synced_at).toLocaleDateString('nl-NL', {day:'numeric',month:'long',year:'numeric'});
-    const pairs = Array.isArray(set.data) ? set.data.length : 0;
-    return `<div class="synced-card" style="animation-delay:${i*50}ms">
+    const set = item.sets || {};
+    const terms = Array.isArray(set.data) ? set.data.length : 0;
+    const date = new Date(item.synced_at).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+    return `<div class="synced-card" style="animation:cardIn .35s var(--ease2) ${i*50}ms both">
       <div class="synced-card-info">
         <h3>${esc(set.naam || 'Naamloze set')}</h3>
         <div class="synced-card-meta">
-          ${set.vak ? `<span class="synced-badge badge-purple">${esc(set.vak)}</span>` : ''}
-          <span class="synced-badge badge-gray">${pairs} paar${pairs !== 1 ? 'en' : ''}</span>
+          ${set.vak ? `<span class="badge badge-purple">${esc(set.vak)}</span>` : ''}
+          <span class="badge badge-gray">${terms} term${terms!==1?'en':''}</span>
         </div>
-        <div class="synced-card-date">Gesynchroniseerd op ${syncDate}</div>
+        <div class="synced-card-date">Gesynchroniseerd op ${date}</div>
       </div>
-      <div class="synced-card-actions">
-        <button class="btn-unsync" onclick="askDesync('${item.set_id}','${esc(set.naam || 'Naamloze set')}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Desync
-        </button>
-      </div>
+      <button class="btn-unsync" onclick="askDesync('${item.set_id}','${esc(set.naam||'Naamloze set')}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Desync
+      </button>
     </div>`;
   }).join('');
 }
@@ -430,71 +340,87 @@ function renderSyncedSets(count) {
 /* ── LOCAL SETS ── */
 function renderLocalSets(syncCount) {
   const grid = document.getElementById('localGrid');
-  const syncedIds = new Set(syncedSets.map(s => s.set_id));
-  const unsyncedLocal = localSets.filter(s => !syncedIds.has(s.id));
   const limitReached = syncCount >= 5;
 
-  if (!unsyncedLocal.length) {
-    grid.innerHTML = `<div class="empty-state" style="padding:28px 20px">
-      <span style="font-size:32px;display:block;margin-bottom:8px;">✅</span>
-      <p style="color:var(--text2);">Alle lokale sets zijn al gesynchroniseerd.</p>
+  if (!localSets.length) {
+    grid.innerHTML = `<div class="empty-state" style="padding:24px 20px">
+      <span class="empty-icon">📭</span>
+      <h3>Geen lokale sets gevonden</h3>
+      <p>Maak eerst sets aan in Velios+.</p>
     </div>`;
     return;
   }
 
-  grid.innerHTML = unsyncedLocal.map((set, i) => {
-    const pairs = Array.isArray(set.pairs || set.data) ? (set.pairs || set.data).length : 0;
-    return `<div class="local-card" style="animation:cardSlideIn .35s var(--ease2) ${i*40}ms both">
+  // Mark which local sets are already synced (by matching title+vak since local IDs differ from Supabase IDs)
+  const syncedTitles = new Set(syncedSets.map(s => (s.sets?.naam||'').toLowerCase()));
+
+  grid.innerHTML = localSets.map((set, i) => {
+    const terms = Array.isArray(set.terms) ? set.terms.length : 0;
+    const title = set.title || set.naam || 'Naamloze set';
+    const alreadySynced = syncedTitles.has(title.toLowerCase());
+    const disabled = limitReached || alreadySynced;
+
+    return `<div class="local-card" style="animation:cardIn .35s var(--ease2) ${i*40}ms both">
       <div class="local-card-info">
-        <h3>${esc(set.naam || set.title || 'Naamloze set')}</h3>
-        <div class="local-card-meta">${set.vak ? esc(set.vak) + ' · ' : ''}${pairs} paar${pairs !== 1 ? 'en' : ''} · Lokaal opgeslagen</div>
+        <h3>${esc(title)}</h3>
+        <div class="local-card-meta">
+          ${set.vak ? esc(set.vak) + ' · ' : ''}${terms} term${terms!==1?'en':''} · Lokaal
+          ${alreadySynced ? ' · <span style="color:var(--green);font-weight:700;">✓ Al gesynchroniseerd</span>' : ''}
+        </div>
       </div>
-      <button class="btn-sync" ${limitReached ? 'disabled title="Je hebt het maximum van 5 gesynchroniseerde sets bereikt"' : ''} onclick="doSync('${set.id || set.naam}',${i})">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-        ${limitReached ? 'Limiet bereikt' : 'Synchroniseer'}
-      </button>
+      ${alreadySynced
+        ? `<span class="badge badge-purple" style="flex-shrink:0">Gesynchroniseerd</span>`
+        : `<button class="btn-sync" ${disabled?'disabled':''} onclick="doSync('${set.id}',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            ${limitReached ? 'Limiet bereikt' : 'Synchroniseer'}
+          </button>`
+      }
     </div>`;
   }).join('');
 
   if (limitReached) {
-    grid.insertAdjacentHTML('beforeend', `<div style="font-size:12px;color:var(--text3);font-weight:600;text-align:center;padding:8px;">
-      Je hebt het maximum van 5 gesynchroniseerde sets bereikt. Desynchroniseer een set om ruimte te maken.
+    grid.insertAdjacentHTML('beforeend', `<div class="limit-notice">
+      Je hebt het maximum van 5 gesynchroniseerde sets bereikt. Desynchroniseer een set hierboven om ruimte te maken.
     </div>`);
   }
 }
 
-/* ── SYNC LOCAL SET ── */
-async function doSync(setId, idx) {
-  const btn = document.querySelectorAll('.btn-sync')[idx];
-  if (!btn || btn.disabled) return;
-
-  const set = localSets.find(s => (s.id || s.naam) === setId);
+/* ── DO SYNC ── */
+async function doSync(localId, btn) {
+  if (btn.disabled) return;
+  const set = localSets.find(s => s.id === localId);
   if (!set) { showToast('Set niet gevonden', 'err'); return; }
 
+  const origHtml = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;margin:0"></div>';
+  btn.innerHTML = '<div class="spinner"></div>';
 
   try {
-    // Upload set to Supabase
-    const uploaded = await VeliosAuth.uploadSet(set);
-    // Sync it
+    // Upload set to Supabase (map sd_sets fields → sets table fields)
+    const uploaded = await VeliosAuth.uploadSet({
+      naam: set.title || set.naam || 'Naamloze set',
+      vak: set.vak || '',
+      beschrijving: set.description || '',
+      // Store terms array as data
+      data: set.terms || [],
+    });
     await VeliosAuth.syncSet(uploaded.id);
     showToast('✅ Set gesynchroniseerd!', 'ok');
     await loadData();
   } catch (e) {
     const msg = e.message === 'sync_limit_reached'
-      ? 'Je hebt het maximum van 5 gesynchroniseerde sets bereikt'
+      ? 'Maximum van 5 gesynchroniseerde sets bereikt'
       : 'Synchroniseren mislukt: ' + e.message;
     showToast(msg, 'err');
     btn.disabled = false;
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>Synchroniseer`;
+    btn.innerHTML = origHtml;
   }
 }
 
 /* ── DESYNC ── */
 function askDesync(setId, naam) {
   pendingDesyncId = setId;
-  document.getElementById('desyncModalDesc').textContent =
+  document.getElementById('desyncDesc').textContent =
     `"${naam}" wordt niet meer gesynchroniseerd. Je lokale kopie blijft gewoon beschikbaar.`;
   document.getElementById('desyncModal').style.display = 'flex';
 }
@@ -521,10 +447,9 @@ async function confirmDesync() {
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg, type='') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show' + (type ? ' '+type : '');
+  t.textContent = msg; t.className = 'show'+(type?' '+type:'');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  toastTimer = setTimeout(()=>{ t.className=''; }, 3000);
 }
 </script>
 </body>
