@@ -809,7 +809,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
 .account-login-btn {
   height: 40px; padding: 0 16px;
   border-radius: var(--r3);
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+  background: rgb(255, 191, 0);
   border: none;
   color: #fff;
   font-family: var(--font);
@@ -2114,7 +2114,7 @@ function showCreateModal(id) {
     </div>
     <div class="two-col" style="margin-bottom:16px">
       <div class="input-group"><label>Omschrijving</label><textarea id="c-desc" style="min-height:56px" oninput="ceSaveDraft()">${esc(s?.description||'')}</textarea></div>
-      <div class="input-group"><label>Datum</label><input id="c-datum" type="date" value="${esc(s?.datum||'')}" oninput="ceSaveDraft()"></div>
+      <div class="input-group"><label>Datum toetsafname</label><input id="c-datum" type="date" value="${esc(s?.datum||'')}" oninput="ceSaveDraft()"></div>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
