@@ -29,8 +29,7 @@ let jsPDFCheckInterval = setInterval(function() {
     clearInterval(jsPDFCheckInterval);
   }
 }, 100);
-setTimeout(() => { if (jsPDFCheckInterval) clearInterval(jsPDFCheckInterval); }, 10000);
-</script>
+setTimeout(() => { if (jsPDFCheckInterval) clearInterval(jsPDFCheckInterval); }, 10000);</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -158,8 +157,9 @@ nav{
 .btn-red:hover{filter:brightness(1.15);transform:scale(1.04)}
 .btn-lg{padding:13px 26px;font-size:16px;border-radius:var(--r)}
 .btn-sm{padding:6px 12px;font-size:13px;border-radius:var(--r4)}
-.btn-icon{width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(255,255,255,0.9) 0%,rgba(255,255,255,0.75) 100%);box-shadow:inset 1px 1px 0 rgba(255,255,255,1),0 2px 8px rgba(80,60,160,0.1);border:none;border-radius: var(--r3);cursor:pointer;}
+.btn-icon{width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(255,255,255,0.9) 0%,rgba(255,255,255,0.75) 100%);box-shadow:inset 1px 1px 0 rgba(255,255,255,1),0 2px 8px rgba(80,60,160,0.1);border:none;border-radius: var(--r3);cursor:pointer;transition:all .2s var(--ease);}
 .btn-icon:hover{background:rgba(255,255,255,0.95);transform:scale(1.08)}
+.btn-icon:active{transform:scale(0.9)}
 
 /* ─── BASE INPUT/SELECT ─── */
 input,textarea{background:rgba(255,255,255,0.85);border:1px solid rgba(200,195,230,0.6);border-radius:var(--r3);color:var(--text);font-family:var(--font);font-size:15px;padding:11px 16px;outline:none;transition:all .2s;width:100%;box-shadow:inset 1px 1px 0 rgba(255,255,255,0.2),0 2px 6px rgba(80,60,160,0.06);-webkit-appearance:none;appearance:none;}
@@ -303,6 +303,32 @@ svg.flame-icon{width:22px;height:22px;display:none}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 .copy-inp-correct{border-color:var(--green)!important;background:rgba(24,182,114,0.08)!important;box-shadow:0 0 0 3px rgba(24,182,114,0.18)!important;}
 
+/* ── TERMS SEARCH ── */
+.search-btn{width:40px;height:40px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-border);padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s var(--ease);box-shadow:var(--glass-shadow);flex-shrink:0;font-family:var(--font);}
+.search-btn:hover{background:rgba(255,255,255,0.98);transform:scale(1.08);box-shadow:var(--glass-shadow-lg)}
+.search-btn:active{transform:scale(0.9)}
+.search-btn svg{width:18px;height:18px;color:var(--text2)}
+#searchBox{display:none;align-items:center;gap:16px;position:fixed;top:calc(74px + env(safe-area-inset-top, 0px));left:0;right:0;width:100%;z-index:150;background:rgba(240,238,249,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(200,195,230,0.5);padding:12px 28px;margin-top:10px;margin-left:10px;margin-right:10px;border-radius:20px;box-shadow:var(--glass-shadow)}
+#searchBox[style*="display:flex"]{display:flex !important}
+.search-icon{width:20px;height:20px;color:var(--text2);flex-shrink:0}
+.search-input{background:var(--glass);border:none;font-family:var(--font);font-size:16px;color:var(--text);outline:none;flex:1;width:100%;min-width:0}
+.search-input::placeholder{color:var(--text3)}
+.search-label{color:var(--text2);font-size:14px;font-weight:600;white-space:nowrap}
+.search-info{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.search-counter{font-size:13px;color:var(--text2);font-weight:600;text-align:right}
+.search-nav-btn{width:32px;height:32px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-border);padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;box-shadow:var(--glass-shadow);flex-shrink:0;color:var(--text2);font-family:var(--font)}
+.search-nav-btn:hover:not(:disabled){background:rgba(255,255,255,0.98);transform:scale(1.05);box-shadow:var(--glass-shadow-lg)}
+.search-nav-btn:disabled{opacity:0.3;cursor:not-allowed}
+.search-nav-btn svg{width:14px;height:14px}
+.search-close-btn{width:40px;height:40px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-border);padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s var(--ease);box-shadow:var(--glass-shadow);flex-shrink:0;color:var(--text2);font-family:var(--font)}
+.search-close-btn:hover{background:rgba(255,255,255,0.98);transform:scale(1.08);box-shadow:var(--glass-shadow-lg)}
+.search-close-btn:active{transform:scale(0.96)}
+.search-close-btn svg{width:18px;height:18px}
+body.dark-mode #searchBox{background:var(--glass);border-color:var(--glass-border)}
+body.dark-mode .search-input{color:var(--text)}
+.term-highlight--active{background:var(--accent-light);color:var(--accent);padding:2px 4px;border-radius:3px;font-weight:600}
+.term-highlight--dim{background:rgba(120,115,150,0.15);color:var(--text);padding:2px 4px;border-radius:3px;font-weight:600}
+body.dark-mode .term-highlight--dim{background:rgba(200,200,220,0.15);}
 /* ── COMBINE MODAL ── */
 .combine-search{width:100%;padding:10px 14px;border:1px solid var(--glass-border);border-radius:var(--r3);font-family:var(--font);font-size:14px;margin-bottom:12px;background:rgba(255,255,255,0.85);}
 .combine-sets-list{max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
@@ -452,6 +478,7 @@ if ('serviceWorker' in navigator) {
     <div class="nav-spacer" style="flex:1"></div>
     <div id="nav-set-title" class="nav-set-title" style="font-weight:800;font-size:16px;color:var(--text)"></div>
     <div style="display:none;gap:8px;align-items:center" id="nav-right-btns">
+      <div class="search-container" id="searchContainer"><svg class="search-btn" id="searchBtn" onclick="openTermsSearch()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></div>
       <button class="btn-icon" id="help-btn" onclick="showCurrentHelp()" title="Help">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(255,255,255,0)" d="M0 0h256v256H0z"/><g data-name="Group 28" fill="var(--text)"><path data-name="Path 210" d="M128 246a119 119 0 0 1-23.781-2.4 117.4 117.4 0 0 1-22.15-6.876 118 118 0 0 1-20.044-10.88 119 119 0 0 1-17.464-14.409 119 119 0 0 1-14.409-17.464 118 118 0 0 1-10.879-20.044 117.4 117.4 0 0 1-6.876-22.15A119 119 0 0 1 10 128a119 119 0 0 1 2.4-23.781 117.4 117.4 0 0 1 6.876-22.15 118 118 0 0 1 10.879-20.044 119 119 0 0 1 14.409-17.464 119 119 0 0 1 17.464-14.409 118 118 0 0 1 20.044-10.879 117.4 117.4 0 0 1 22.15-6.876A119 119 0 0 1 128 10a119 119 0 0 1 23.781 2.4 117.4 117.4 0 0 1 22.15 6.876 118 118 0 0 1 20.044 10.879 119 119 0 0 1 17.464 14.409 119 119 0 0 1 14.409 17.464 118 118 0 0 1 10.879 20.044 117.4 117.4 0 0 1 6.876 22.15A119 119 0 0 1 246 128a119 119 0 0 1-2.4 23.781 117.4 117.4 0 0 1-6.876 22.15 118 118 0 0 1-10.879 20.044 119 119 0 0 1-14.409 17.464 119 119 0 0 1-17.464 14.409 118 118 0 0 1-20.044 10.88 117.4 117.4 0 0 1-22.15 6.876A119 119 0 0 1 128 246m-12.094-48c.205.011.42.016.657.016a15.8 15.8 0 0 0 5.6-1.023 15.7 15.7 0 0 0 5.357-3.383 15.32 15.32 0 0 0 4.451-10.837 15.33 15.33 0 0 0-4.451-10.837 15.7 15.7 0 0 0-5.357-3.383 15.8 15.8 0 0 0-5.6-1.024c-.219 0-.441 0-.66.014a16 16 0 0 0-.624-.012 16.1 16.1 0 0 0-5.672 1.027 16 16 0 0 0-5.412 3.373 15.1 15.1 0 0 0-3.365 4.961 15.1 15.1 0 0 0-1.184 5.876 15.1 15.1 0 0 0 1.184 5.876 15.1 15.1 0 0 0 3.365 4.961 16.1 16.1 0 0 0 5.412 3.376 16.1 16.1 0 0 0 5.672 1.029c.206 0 .416 0 .623-.012Zm-3.288-76.537a8.94 8.94 0 0 0-6.467 2.737 8.94 8.94 0 0 0-2.538 6.549L104 143.2a9.955 9.955 0 0 0 9.994 9.692h6.313a7.3 7.3 0 0 0 7.311-7.014 7.5 7.5 0 0 1 2.258-5.02 8.55 8.55 0 0 1 5.07-2.392 62.4 62.4 0 0 0 16.478-4.126 34.2 34.2 0 0 0 15.87-13.088c3.788-5.83 5.709-13.32 5.709-22.26 0-8.681-1.921-16.17-5.709-22.259a36.5 36.5 0 0 0-15.87-13.956 53.8 53.8 0 0 0-22.277-4.794c-.346 0-.7 0-1.044.01-9.375 0-17.547 1.807-24.288 5.37a38.4 38.4 0 0 0-15.58 14.546 39 39 0 0 0-4.368 11.3 7.32 7.32 0 0 0 1.49 6.246 9.42 9.42 0 0 0 7.311 3.35h4.635c6.273 0 10.648-6.185 12.7-9.872l.094-.166.01-.017a18.1 18.1 0 0 1 6.967-6.639 22.36 22.36 0 0 1 10.155-2.45c.227 0 .457 0 .682.01.176 0 .356-.006.533-.006a22.25 22.25 0 0 1 9.921 2.348 16.5 16.5 0 0 1 6.871 6.639A20.83 20.83 0 0 1 147.651 99c0 4.664-.911 8.507-2.709 11.423a17.83 17.83 0 0 1-7.455 6.737 38 38 0 0 1-11.128 3.318 91.4 91.4 0 0 1-13.313.978Z" opacity=".4"/><path data-name="Path 209" d="M113.991 152.9a10 10 0 0 1-9.991-9.7l-.384-12.461a9.01 9.01 0 0 1 9-9.286 91 91 0 0 0 13.741-.976 38 38 0 0 0 11.128-3.319 17.86 17.86 0 0 0 7.454-6.736q2.711-4.388 2.711-11.422a20.8 20.8 0 0 0-2.419-10.349 16.56 16.56 0 0 0-6.87-6.639 22.1 22.1 0 0 0-10.454-2.342 22.26 22.26 0 0 0-10.838 2.44 18.1 18.1 0 0 0-6.969 6.643l-.1.184c-2.737 4.923-7.064 9.872-12.7 9.872h-4.634c-5.388 0-9.94-4.33-8.8-9.6a39 39 0 0 1 4.367-11.3 38.5 38.5 0 0 1 15.579-14.539Q113.973 58 128.1 58a54.15 54.15 0 0 1 23.32 4.784 36.6 36.6 0 0 1 15.871 13.956Q173 85.917 173 99q0 13.473-5.709 22.259a34.37 34.37 0 0 1-15.87 13.088 62.4 62.4 0 0 1-16.477 4.126 8.02 8.02 0 0 0-7.328 7.412 7.316 7.316 0 0 1-7.311 7.015Zm1.917 45.1a16.15 16.15 0 0 1-11.708-4.4 15.185 15.185 0 0 1 0-21.674 16.15 16.15 0 0 1 11.709-4.388 15.82 15.82 0 0 1 11.612 4.393 15.417 15.417 0 0 1 0 21.674A15.82 15.82 0 0 1 115.91 198z"/></g></svg>
       </button>
@@ -507,6 +534,7 @@ if ('serviceWorker' in navigator) {
     </div>
   </div>
 </nav>
+<div id="searchBox"><input type="text" class="search-input" id="termsSearchInput" placeholder="Zoeken..." onkeyup="filterTerms()" onkeydown="handleSearchKeydown(event)"><div class="search-info"><span class="search-counter" id="searchCounter">0/0</span><button class="search-nav-btn" id="searchPrev" onclick="prevTermResult()" disabled title="Vorige"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button><button class="search-nav-btn" id="searchNext" onclick="nextTermResult()" disabled title="Volgende"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button><button class="search-close-btn" id="searchCloseBtn" onclick="closeTermsSearch()" title="Sluiten"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div></div>
 <div class="screen" id="main-screen">
   <div class="loading-screen" id="loading">
     <div class="loading-spinner"></div>
@@ -1591,7 +1619,20 @@ let _tt;function showToast(msg){const t=document.getElementById('toast');t.textC
 
 /* ── KEYBOARD ── */
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeModal();document.getElementById('milestone-overlay').classList.remove('active');if(openDD)closeDD(openDD);}
+  // Ctrl+F / Cmd+F opent zoekbalk
+  if((e.ctrlKey||e.metaKey)&&e.key==='f'){
+    if(currentMode==='home'){
+      e.preventDefault();
+      openTermsSearch();
+      return;
+    }
+  }
+  if(e.key==='Escape'){
+    closeModal();
+    document.getElementById('milestone-overlay').classList.remove('active');
+    if(openDD)closeDD(openDD);
+    if(termsSearchState.active)closeTermsSearch();
+  }
   if(currentMode==='flashcards'){
     if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
     if(e.key==='ArrowLeft'){e.preventDefault();fcMark(false);}
@@ -1829,6 +1870,179 @@ function downloadVset(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=(SET.slug||toSlug(SET.title))+'.vset';a.click();URL.revokeObjectURL(url);
   showToast('✓ .vset bestand gedownload!');closeDD('set-menu');
+}
+
+let termsSearchState={active:false,matches:[],currentIdx:-1,highlighted:false};
+
+function openTermsSearch(){
+  const searchBox=document.getElementById('searchBox');
+  const input=document.getElementById('termsSearchInput');
+  searchBox.style.display='flex';
+  input.focus();
+  termsSearchState.active=true;
+}
+
+function closeTermsSearch(){
+  const searchBox=document.getElementById('searchBox');
+  const input=document.getElementById('termsSearchInput');
+  searchBox.style.display='none';
+  input.value='';
+  termsSearchState={active:false,matches:[],currentIdx:-1,highlighted:false};
+  restoreTermsHTML();
+  const termsList=document.querySelector('.terms-list');
+  if(termsList) termsList.querySelectorAll('.term-item').forEach(el=>el.style.display='');
+}
+
+// Sla originele innerHTML op zodat we altijd kunnen resetten
+function saveTermsHTML(){
+  const termsList=document.querySelector('.terms-list');
+  if(!termsList)return;
+  termsList.querySelectorAll('.term-item').forEach((item,i)=>{
+    if(!item.dataset.originalHtml) item.dataset.originalHtml = item.innerHTML;
+  });
+}
+
+function restoreTermsHTML(){
+  const termsList=document.querySelector('.terms-list');
+  if(!termsList)return;
+  termsList.querySelectorAll('.term-item').forEach(item=>{
+    if(item.dataset.originalHtml) item.innerHTML = item.dataset.originalHtml;
+  });
+}
+
+function filterTerms(){
+  const input=document.getElementById('termsSearchInput');
+  const query=input.value.toLowerCase().trim();
+  const termsList=document.querySelector('.terms-list');
+  if(!termsList)return;
+
+  // Zorg dat originele HTML opgeslagen is
+  saveTermsHTML();
+  // Reset naar origineel
+  restoreTermsHTML();
+
+  termsSearchState.matches=[];
+  termsSearchState.currentIdx=-1;
+
+  if(!query){
+    termsList.querySelectorAll('.term-item').forEach(el=>el.style.display='');
+    document.getElementById('searchCounter').textContent='0/0';
+    document.getElementById('searchNext').disabled=true;
+    document.getElementById('searchPrev').disabled=true;
+    return;
+  }
+
+  const allItems=Array.from(termsList.querySelectorAll('.term-item'));
+  allItems.forEach((item,idx)=>{
+  // Haal tekst op zonder de label-divs (BEGRIP / DEFINITIE)
+  const labelText = Array.from(item.querySelectorAll('.term-label'))
+    .map(l=>l.textContent).join(' ').toLowerCase();
+  const fullText = item.textContent.toLowerCase();
+  const searchableText = fullText.replace(labelText, '');
+  
+  if(searchableText.includes(query)){
+    item.style.display='';
+    termsSearchState.matches.push({item,idx});
+  }else{
+    item.style.display='none';
+  }
+});
+
+  // Highlight alle matches met dim stijl
+  termsSearchState.matches.forEach(({item})=>applyHighlight(item,query,false));
+
+  updateSearchCounter();
+  if(termsSearchState.matches.length>0){
+    termsSearchState.currentIdx=0;
+    activateCurrentMatch(query);
+  }else{
+    document.getElementById('searchCounter').textContent='Geen resultaten gevonden';
+  }
+}
+
+function activateCurrentMatch(query){
+  if(!query){
+    const input=document.getElementById('termsSearchInput');
+    query=input.value.toLowerCase().trim();
+  }
+  if(!query||termsSearchState.currentIdx<0)return;
+
+  // Reset alles naar origineel en hermarkeer
+  restoreTermsHTML();
+  termsSearchState.matches.forEach(({item},i)=>{
+    applyHighlight(item,query,i===termsSearchState.currentIdx);
+  });
+
+  const currentItem=termsSearchState.matches[termsSearchState.currentIdx].item;
+  currentItem.scrollIntoView({behavior:'smooth',block:'center'});
+  termsSearchState.highlighted=true;
+  updateSearchCounter();
+}
+
+function applyHighlight(item, query, isCurrent){
+  const allDivs = item.querySelectorAll('div');
+  allDivs.forEach(div=>{
+    // Sla label-divs over (BEGRIP / DEFINITIE tekst)
+    if(div.classList.contains('term-label')) return;
+    // Sla containers over die weer divs bevatten (alleen leaf-divs met echte tekst)
+    const hasChildDivs = div.querySelector('div');
+    if(hasChildDivs) return;
+    walkAndHighlight(div, query, isCurrent);
+  });
+}
+function highlightInContainer(container, query, isCurrent){
+  // Gebruik innerHTML-based replace op alleen tekstnodes, veilig via recursie
+  walkAndHighlight(container, query, isCurrent);
+}
+
+function walkAndHighlight(node, query, isCurrent){
+  if(node.nodeType===Node.TEXT_NODE){
+    const text=node.textContent;
+    if(text.toLowerCase().includes(query)){
+      const regex=new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+      const cls=isCurrent?'term-highlight term-highlight--active':'term-highlight term-highlight--dim';
+      const wrapper=document.createElement('span');
+      wrapper.innerHTML=text.replace(regex,`<span class="${cls}">$1</span>`);
+      node.parentNode.replaceChild(wrapper,node);
+    }
+    return;
+  }
+  // Sla highlight-spans over (niet opnieuw highlighten)
+  if(node.classList&&node.classList.contains('term-highlight'))return;
+  // Kloon childNodes want we muteren de lijst
+  Array.from(node.childNodes).forEach(child=>walkAndHighlight(child,query,isCurrent));
+}
+
+function highlightCurrentMatch(){
+  const input=document.getElementById('termsSearchInput');
+  const query=input.value.toLowerCase().trim();
+  activateCurrentMatch(query);
+}
+
+function nextTermResult(){
+  if(termsSearchState.matches.length===0)return;
+  termsSearchState.currentIdx=(termsSearchState.currentIdx+1)%termsSearchState.matches.length;
+  highlightCurrentMatch();
+}
+
+function prevTermResult(){
+  if(termsSearchState.matches.length===0)return;
+  termsSearchState.currentIdx=(termsSearchState.currentIdx-1+termsSearchState.matches.length)%termsSearchState.matches.length;
+  highlightCurrentMatch();
+}
+
+function updateSearchCounter(){
+  const total=termsSearchState.matches.length;
+  const current=total>0?termsSearchState.currentIdx+1:0;
+  document.getElementById('searchCounter').textContent=`${current}/${total}`;
+  document.getElementById('searchNext').disabled=total<=1;
+  document.getElementById('searchPrev').disabled=total<=1;
+}
+
+function handleSearchKeydown(e){
+  if(e.key==='Escape'){closeTermsSearch();}
+  else if(e.key==='ArrowDown'){e.preventDefault();nextTermResult();}
+  else if(e.key==='ArrowUp'){e.preventDefault();prevTermResult();}
 }
 
 boot();
