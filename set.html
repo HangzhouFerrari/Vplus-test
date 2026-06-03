@@ -471,11 +471,23 @@ body.dark-mode .term-highlight--dim{background:rgba(200,200,220,0.15);}
 }
 .star-btn:hover { transform: scale(1.1); }
 .star-btn:active { transform: scale(0.9); }
-.star-btn svg { transition: all .2s var(--ease2); }
-.star-btn.starred svg { fill: #f5a623; stroke: #f5a623; filter: drop-shadow(0 0 4px rgba(245,166,35,0.6)); }
+.star-btn svg { transition: all .2s var(--ease2); color: var(--text); }
+.star-btn svg { fill: none; stroke: var(--text); }
+.star-btn.starred svg { fill: var(--accent); stroke: var(--accent); filter: drop-shadow(0 0 4px rgba(0,98,255,0.4)); }
 body.dark-mode .star-btn {
   background: rgba(50,50,70,0.7) !important;
   box-shadow: inset 1px 1px 0 rgba(88,93,120,0.5), 0 2px 8px rgba(0,0,0,0.4) !important;
+}
+
+body.dark-mode .card-star-btn {
+  background: rgba(50,50,70,0.7) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: inset 1px 1px 0 rgba(88,93,120,0.5), 0 2px 8px rgba(0,0,0,0.4) !important;
+}
+
+body.dark-mode .card-star-btn.starred {
+  background: linear-gradient(180deg,rgba(0,98,255,0.25),rgba(0,117,255,0.2)) !important;
+  box-shadow: 0 18px 44px rgba(0,98,255,0.2) !important;
 }
 
 .card-star-btn {
@@ -496,9 +508,9 @@ body.dark-mode .star-btn {
   z-index: 20;
 }
 .card-star-btn:hover { transform: scale(1.05); }
-.card-star-btn svg { transition: all .2s var(--ease2); }
-.card-star-btn.starred { background: linear-gradient(180deg,rgba(255,250,220,0.98),rgba(255,241,173,0.95)); }
-.card-star-btn.starred svg { fill: #f5a623; stroke: #f5a623; }
+.card-star-btn svg { transition: all .2s var(--ease2); fill: none; stroke: var(--text); }
+.card-star-btn.starred { background: linear-gradient(180deg,rgba(255,250,220,0.98),rgba(255,241,173,0.95)); box-shadow: 0 18px 44px rgba(0,98,255,0.15); }
+.card-star-btn.starred svg { fill: var(--accent); stroke: var(--accent); }
 
 /* term-item flex aanpassen voor ster-knop */
 .term-item { position: relative; }
@@ -565,6 +577,7 @@ body.dark-mode .set-info-card-nav { background:rgba(20, 15, 40, 0.55) !important
   border-color: transparent;
   box-shadow: 0 2px 12px rgba(0,98,255,0.35), inset 1px 1px 0 rgba(255,255,255,0.25);
 }
+.star-mode-btn svg { fill: var(--accent); stroke: var(--accent); }
 .star-mode-btn.active svg { stroke: #fff !important; fill: #fff !important; }
 .star-mode-btn.active span { color: #fff !important; }
 
@@ -979,7 +992,7 @@ showOnboarding('set');
                 <div><div class="term-label">Definitie</div><div style="color:var(--text2);font-size:14px">${renderTerm(t,'def')}</div></div>
               </div>
               <button class="star-btn${starred?' starred':''}" onclick="toggleStarTerm(event,${i})" title="${starred?'Ster verwijderen':'Markeer als moeilijk'}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="${starred?'#f5a623':'none'}" stroke="${starred?'#f5a623':'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               </button>
             </div>`;
           }).join('')}
@@ -1046,7 +1059,7 @@ showOnboarding('set');
         </div>
         <div class="set-info-card-footer">
           <button class="star-mode-btn${starModeActive?' active':''}" id="star-mode-btn" onclick="toggleStarMode()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="${starModeActive?'var(--accent)':'none'}" stroke="${starModeActive?'#fff':'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span>Alleen termen met een ster leren</span>
           </button>
         </div>
@@ -1106,11 +1119,6 @@ function updateModeStarButtons(){
   btns.forEach(btn=>{
     btn.classList.toggle('starred', starred);
     btn.title = starred ? 'Ster verwijderen' : 'Markeer als moeilijk';
-    const svg=btn.querySelector('svg');
-    if(svg){
-      svg.setAttribute('fill', starred?'#f5a623':'none');
-      svg.setAttribute('stroke', starred?'#f5a623':'currentColor');
-    }
   });
 }
 // Toggle ster op een term
@@ -1128,8 +1136,6 @@ function toggleStarTerm(e,idx){
     if(btn){
       const isStarred=starred.includes(idx);
       btn.classList.toggle('starred',isStarred);
-      const svg=btn.querySelector('svg');
-      if(svg){svg.setAttribute('fill',isStarred?'#f5a623':'none');svg.setAttribute('stroke',isStarred?'#f5a623':'currentColor');}
     }
   }
   // Update teller in kaart
@@ -1137,6 +1143,8 @@ function toggleStarTerm(e,idx){
   if(disp)disp.textContent=starred.length+' termen met ster';
   // Reset actieve modi zodat ze de nieuwe sterren oppikken bij volgende start
   FC._active=false; ST._active=false;
+  // Update zichtbare star-knoppen in actieve modi (flashcards / stampen)
+  try{ updateModeStarButtons(); }catch(e){}
 }
 
 // Ster-modus actief?
@@ -1393,10 +1401,10 @@ function renderFlashcards(){
       <div class="progress-row"><div class="progress-track"><div class="progress-fill" id="fc-prog" style="width:0%"></div></div>${streakCircleHTML('fc-streak',FC.streak||0)}</div>
       <div style="text-align:center;font-size:13px;color:var(--text3);margin-bottom:14px" id="fc-ctr"></div>
       <div class="fc-card-scene" id="fc-scene" onclick="fcFlip()" style="position:relative;">
-        <button class="card-star-btn fc-star-btn${isCurrentStarred?' starred':''}" title="${isCurrentStarred?'Ster verwijderen':'Markeer als moeilijk'}" onclick="event.stopPropagation();toggleStarCurrentTerm(event, ${currentTermIndex})">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="${isCurrentStarred?'#f5a623':'none'}" stroke="${isCurrentStarred?'#f5a623':'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </button>
         <div class="fc-card-inner" id="fc-inner">
+          <button class="card-star-btn fc-star-btn${isCurrentStarred?' starred':''}" title="${isCurrentStarred?'Ster verwijderen':'Markeer als moeilijk'}" onclick="event.stopPropagation();toggleStarCurrentTerm(event, ${currentTermIndex})">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
           <div class="fc-face"><div class="fc-face-label" id="fc-fl"></div><div class="fc-face-text" id="fc-ft"></div></div>
           <div class="fc-face fc-face-back"><div class="fc-face-label" id="fc-bl"></div><div class="fc-face-text" id="fc-bt"></div></div>
         </div>
@@ -1411,7 +1419,7 @@ function renderFlashcards(){
     </div>`;
   fcUpdate();if(FC._finished)showFCResults();
 }
-function fcUpdate(){const t=FC.terms[FC.idx];if(!t)return;const fi=FC.front==='term';document.getElementById('fc-fl').textContent=fi?'Begrip':'Definitie';document.getElementById('fc-ft').innerHTML=fi?renderTerm(t,'term')+renderImages(t):renderTerm(t,'def');document.getElementById('fc-bl').textContent=fi?'Definitie':'Begrip';document.getElementById('fc-bt').innerHTML=fi?renderTerm(t,'def'):renderTerm(t,'term')+renderImages(t);document.getElementById('fc-inner').classList.remove('flipped');FC.flipped=false;document.getElementById('fc-prog').style.width=Math.round((FC.idx/FC.terms.length)*100)+'%';document.getElementById('fc-ctr').textContent=`${FC.idx+1} / ${FC.terms.length}`;updateStreakCircle('fc-streak',FC.streak||0);const ks=document.getElementById('fc-known-stat');if(ks)ks.textContent=`✓ ${FC.known.size} van ${FC.terms.length} gekend`;const starBtn=document.querySelector('.fc-card-scene .card-star-btn');if(starBtn){const starIdx=getTermIndex(t);const starred=starIdx>=0&&isTermStarred(getSetStorageId(),starIdx);starBtn.classList.toggle('starred',starred);const svg=starBtn.querySelector('svg');if(svg){svg.setAttribute('fill',starred?'#f5a623':'none');svg.setAttribute('stroke',starred?'#f5a623':'currentColor');}starBtn.title=starred?'Ster verwijderen':'Markeer als moeilijk';starBtn.onclick=(e)=>{e.stopPropagation();toggleStarCurrentTerm(e,starIdx);};}}
+function fcUpdate(){const t=FC.terms[FC.idx];if(!t)return;const fi=FC.front==='term';document.getElementById('fc-fl').textContent=fi?'Begrip':'Definitie';document.getElementById('fc-ft').innerHTML=fi?renderTerm(t,'term')+renderImages(t):renderTerm(t,'def');document.getElementById('fc-bl').textContent=fi?'Definitie':'Begrip';document.getElementById('fc-bt').innerHTML=fi?renderTerm(t,'def'):renderTerm(t,'term')+renderImages(t);document.getElementById('fc-inner').classList.remove('flipped');FC.flipped=false;document.getElementById('fc-prog').style.width=Math.round((FC.idx/FC.terms.length)*100)+'%';document.getElementById('fc-ctr').textContent=`${FC.idx+1} / ${FC.terms.length}`;updateStreakCircle('fc-streak',FC.streak||0);const ks=document.getElementById('fc-known-stat');if(ks)ks.textContent=`✓ ${FC.known.size} van ${FC.terms.length} gekend`;const starBtn=document.querySelector('.fc-card-inner .card-star-btn');if(starBtn){const starIdx=getTermIndex(t);const starred=starIdx>=0&&isTermStarred(getSetStorageId(),starIdx);starBtn.classList.toggle('starred',starred);starBtn.title=starred?'Ster verwijderen':'Markeer als moeilijk';starBtn.onclick=(e)=>{e.stopPropagation();toggleStarCurrentTerm(e,starIdx);};}}
 function fcFlip(){FC.flipped=!FC.flipped;document.getElementById('fc-inner').classList.toggle('flipped',FC.flipped);}
 function fcMark(known){
   if(FC._finished)return;
@@ -1627,7 +1635,7 @@ function stRenderQ(){
   el.innerHTML=`
     <div class="st-qbox" style="animation:cardLeft .3s var(--ease2);position:relative;">
       <button class="card-star-btn st-star-btn${currentStStarred?' starred':''}" title="${currentStStarred?'Ster verwijderen':'Markeer als moeilijk'}" onclick="event.stopPropagation();toggleStarCurrentTerm(event, ${currentStIndex})">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="${currentStStarred?'#f5a623':'none'}" stroke="${currentStStarred?'#f5a623':'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </button>
       <div class="st-qlabel">${qlabel}${isRetry?' <span style="font-size:10px;background:rgba(232,58,74,0.15);color:var(--red);padding:2px 8px;border-radius:20px;margin-left:6px">Herhaling</span>':''}</div>
       <div class="st-qtext">${ST._dir==='term'?renderTerm(ST._currentT,'term')+renderImages(ST._currentT):renderTerm(ST._currentT,'def')}</div>
