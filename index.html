@@ -136,7 +136,7 @@ body.dark-mode .search-box::placeholder {
 }
 
 body.dark-mode .sidebar {
-  background: rgba(20, 18, 28, 0.6) !important;
+  background: rgba(20, 18, 28, 1) !important;
   border-right-color: var(--glass-border) !important;
 }
 
@@ -240,6 +240,10 @@ nav{
 .btn-icon{width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:var(--glass);border:2px solid var(--glass-border);border-radius:var(--r3);cursor:pointer;transition:all .2s var(--ease);}
 .btn-icon:hover{background:rgba(255,255,255,0.95);transform:scale(1.08);}
 .btn-icon:active{transform:scale(0.9);}
+.btn-sm-nav{padding:5px 10px;font-size:13px;border-radius:var(--r4);height:40px;width:40px;aspect-ratio:1 / 1;}
+.btn-sm-nav:hover{transform:scale(1.0) !important; filter:brightness(1.0) !important}
+.btn-sm-nav:active{transform:scale(0.9) !important;filter:brightness(0.95) !important}
+.btn-sm-nav svg{width:28px !important;height:28px !important}
 
 .sidebar{
   position:fixed;left:0;top:64px;z-index:180;
@@ -263,6 +267,8 @@ nav{
 }
 
 @media(min-width:750px){
+.btn-sm-nav{display:none !important}
+
 .sidebar-btn:not(.active):hover {
   transform: scale(1.1);
 }
@@ -529,6 +535,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
 .text-muted{color:var(--text2)}.text-sm{font-size:13px}
 
 @media(max-width:750px){
+  .btn-sm-header{display:none !important}
   #zoeken .mobile-search-wrapper {
     width: 100%;
     box-sizing: border-box;
@@ -543,12 +550,26 @@ textarea{resize:vertical;min-height:72px;line-height:1.5}
   nav .btn-primary span { display: none; }
   nav .nav-spacer { display: none !important; }
   .screen{padding:16px;margin-left:0;margin-bottom:80px;overflow-x:hidden;max-width:100%;width:100%}
-  .sidebar{
-    left:0; right:0; bottom:0; top:auto;
-    width:100%; height: calc(84px + env(safe-area-inset-bottom, 0px));
-    flex-direction:row; justify-content:space-around; align-items:center;
-    padding:0; border-right:none; border-top:1px solid var(--glass-border);
-    background: rgba(255,255,255,0.6); padding-bottom: env(safe-area-inset-bottom, 0px);
+  .sidebar {
+    position: fixed;
+    left: 24px; 
+    right: 24px; 
+    bottom: 16px; 
+    top: auto;
+    width: auto;
+    max-width: 500px;
+    margin: 0 auto;
+    height: 64px; 
+    display: flex; 
+    flex-direction: row; 
+    justify-content: space-around; 
+    align-items: center;
+    background: rgba(255, 255, 255, 1);
+    border: 2px solid var(--glass-border);
+    border-radius: 32px; 
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    padding: 0 16px; 
+    box-sizing: border-box;
   }
   .sidebar .sidebar-btn { width: auto; height: 100%; border-radius: 0; flex: 1; }
   .sidebar div[style*="height:1px"], .sidebar div[style*="flex:1"], #recent-sidebar { display: none !important; }
@@ -945,7 +966,7 @@ body.dark-mode .acc-dd-sep { background: rgba(64,73,112,0.5); }
       <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><rect data-name="Rectangle 28" width="170" height="170" rx="85" transform="translate(2460 953)" fill="var(--text)" opacity=".4"/><path data-name="Rectangle 26" d="M2545 978a60 60 0 1 0 60 60 60.07 60.07 0 0 0-60-60m0-25a85 85 0 1 1-85 85 85 85 0 0 1 85-85" fill="var(--text)"/><rect data-name="Rectangle 27" width="30" height="94" rx="15" transform="rotate(-45 2612.226 -2568.255)" fill="var(--text)" opacity=".6"/></g></svg>
       <input type="text" class="search-box" id="search-box" placeholder="Zoek sets... (naam, vak, datum)">
     </div>
-    <button class="btn btn-primary btn-sm" onclick="showCreateModal()">
+    <button class="btn btn-primary btn-sm btn-sm-header" onclick="showCreateModal()">
       <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(255,255,255,0)" d="M0 0h256v256H0z"/><g data-name="Group 28" fill="#fff"><path data-name="Rectangle 20" d="M71.766 10h112.468A61.766 61.766 0 0 1 246 71.766v112.468A61.766 61.766 0 0 1 184.234 246H71.766A61.766 61.766 0 0 1 10 184.234V71.766A61.766 61.766 0 0 1 71.766 10" opacity=".4"/><path data-name="Path 207" d="M124.5 198a9.626 9.626 0 0 1-9.626-9.626v-47.25h-47.25A9.625 9.625 0 0 1 58 131.5v-7a9.625 9.625 0 0 1 9.625-9.625h47.25v-47.25A9.626 9.626 0 0 1 124.5 58h7a9.625 9.625 0 0 1 9.626 9.625v47.25h47.25A9.625 9.625 0 0 1 198 124.5v7a9.625 9.625 0 0 1-9.625 9.625h-47.25v47.25A9.626 9.626 0 0 1 131.5 198Z"/></g></svg>
       <span>Nieuwe set</span>
     </button>
@@ -1022,6 +1043,9 @@ body.dark-mode .acc-dd-sep { background: rgba(64,73,112,0.5); }
       <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="191.999" viewBox="0 0 256 191.999"><g fill="var(--text)"><path data-name="Path 148" d="M0 38.631C0 22.366 14.014 9.18 31.3 9.18h193.4c17.288 0 31.3 13.186 31.3 29.451v123.917c0 16.265-14.014 29.451-31.3 29.451H31.301c-17.287 0-31.3-13.186-31.3-29.451Z" opacity=".4"/><rect data-name="Rectangle 4" width="216" height="141" rx="14" transform="translate(22 34)" opacity=".4"/><path data-name="Path 150" d="M0 25.239C0 11.3 11.051 0 24.683 0h60.792a55.17 55.17 0 0 1 45.235 23.844l2.625 3.768a55.17 55.17 0 0 0 45.235 23.844h52.747c13.632 0 24.684 11.3 24.684 25.239v90.066C256 180.7 244.949 192 231.316 192H24.683C11.051 192 0 180.7 0 166.761Z"/></g></svg>
       <div class="sidebar-label">Bestanden</div>
     </div>
+    <button class="btn btn-primary btn-sm-nav" onclick="showCreateModal()">
+      <svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(255,255,255,0)" d="M0 0h256v256H0z"/><g data-name="Group 28" fill="#fff"><path data-name="Rectangle 20" d="M71.766 10h112.468A61.766 61.766 0 0 1 246 71.766v112.468A61.766 61.766 0 0 1 184.234 246H71.766A61.766 61.766 0 0 1 10 184.234V71.766A61.766 61.766 0 0 1 71.766 10" opacity=".4"/><path data-name="Path 207" d="M124.5 198a9.626 9.626 0 0 1-9.626-9.626v-47.25h-47.25A9.625 9.625 0 0 1 58 131.5v-7a9.625 9.625 0 0 1 9.625-9.625h47.25v-47.25A9.626 9.626 0 0 1 124.5 58h7a9.625 9.625 0 0 1 9.626 9.625v47.25h47.25A9.625 9.625 0 0 1 198 124.5v7a9.625 9.625 0 0 1-9.625 9.625h-47.25v47.25A9.626 9.626 0 0 1 131.5 198Z"/></g></svg>
+    </button>
     <div class="sidebar-btn" onclick="showPage('vakken')" title="Vakken">
       <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path fill="rgba(255,255,255,0)" d="M0 0h256v256H0z"/><g data-name="Group 15" transform="translate(-2019 818)" fill="var(--text)"><rect data-name="Rectangle 26" width="104" height="104" rx="30" transform="translate(2032 -805)"/><rect data-name="Rectangle 27" width="104" height="104" rx="30" transform="translate(2158 -805)"/><rect data-name="Rectangle 28" width="104" height="104" rx="30" transform="translate(2158 -679)" opacity=".4"/><rect data-name="Rectangle 29" width="104" height="104" rx="30" transform="translate(2032 -679)"/></g></svg>
       <div class="sidebar-label">Vakken</div>
