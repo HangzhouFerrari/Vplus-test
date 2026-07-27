@@ -680,7 +680,7 @@ function renderSession() {
     <p style="font-size:11px;color:var(--text3);font-weight:600;margin-top:10px;line-height:1.5;">Gebruik "Alle andere sessies beëindigen" om op andere apparaten uit te loggen.</p>`;
 }
 
-function showRevokeModal() { document.getElementById('revokeModal').style.display = 'flex'; }
+function showRevokeModal() { document.getElementById('revokeModal').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
 async function revokeOtherSessions() {
   const btn = document.getElementById('revokeBtn');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
@@ -701,6 +701,7 @@ function showDeleteModal() {
   document.getElementById('deleteInput').value = '';
   document.getElementById('deleteBtn').disabled = true;
   document.getElementById('deleteModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 function checkDelete() {
   document.getElementById('deleteBtn').disabled =
@@ -721,7 +722,7 @@ async function deleteAccount() {
 }
 
 /* ── UTILS ── */
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; document.body.style.overflow = ''; }
 function setErr(id, msg) {
   const el = document.getElementById(id);
   if (!el) return;

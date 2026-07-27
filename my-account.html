@@ -423,9 +423,11 @@ function askDesync(setId, naam) {
   document.getElementById('desyncDesc').textContent =
     `"${naam}" wordt niet meer gesynchroniseerd. Je lokale kopie blijft gewoon beschikbaar.`;
   document.getElementById('desyncModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 function closeDesyncModal() {
   document.getElementById('desyncModal').style.display = 'none';
+  document.body.style.overflow = '';
   pendingDesyncId = null;
 }
 async function confirmDesync() {

@@ -1,0 +1,15 @@
+[
+  {"name":"Biologie","slug":"biologie","image":"assets/subjects/placeholder.svg","color":"#168a68"},
+  {"name":"Duits","slug":"duits","image":"assets/subjects/placeholder.svg","color":"#b94747"},
+  {"name":"Geschiedenis","slug":"geschiedenis","image":"assets/subjects/placeholder.svg","color":"#8a6238"},
+  {"name":"Grieks","slug":"grieks","image":"assets/subjects/placeholder.svg","color":"#5168b6"},
+  {"name":"Latijn","slug":"latijn","image":"assets/subjects/placeholder.svg","color":"#8a4f77"},
+  {"name":"Nederlands","slug":"nederlands","image":"assets/subjects/placeholder.svg","color":"#d06b32"},
+  {"name":"Natuurkunde","slug":"natuurkunde","image":"assets/subjects/placeholder.svg","color":"#316f9e"},
+  {"name":"Scheikunde","slug":"scheikunde","image":"assets/subjects/placeholder.svg","color":"#6a55a5"},
+  {"name":"Aardrijkskunde","slug":"aardrijkskunde","image":"assets/subjects/placeholder.svg","color":"#477b42"},
+  {"name":"Economie","slug":"economie","image":"assets/subjects/placeholder.svg","color":"#397e78"},
+  {"name":"Engels","slug":"engels","image":"assets/subjects/placeholder.svg","color":"#9b4452"},
+  {"name":"Frans","slug":"frans","image":"assets/subjects/placeholder.svg","color":"#3c5f9b"},
+  {"name":"Overig","slug":"overig","image":"assets/subjects/placeholder.svg","color":"#62636a"}
+]
