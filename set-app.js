@@ -7,41 +7,63 @@ let jsPDFCheckInterval = setInterval(function() {
 }, 100);
 setTimeout(() => { if (jsPDFCheckInterval) clearInterval(jsPDFCheckInterval); }, 10000);
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW reg failed:', err));
-  });
-}
-
 const _k=['S','t','u','d','y','D','e','c','k','V','S','e','t','2','0','2','5'];
 const VSET_KEY=_k.join('');
 function xorStr(str,key){return str.split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^key.charCodeAt(i%key.length))).join('');}
 function decodeVset(b64){const xored=decodeURIComponent(escape(atob(b64.trim())));return JSON.parse(xorStr(xored,VSET_KEY));}
 
 /* ── THEME LOADING ── */
+function getSetThemeSettings(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('sd_theme')||'null')||{};
+    return {darkMode:!!saved.darkMode,followSystem:!!saved.followSystem,accentColor:saved.accentColor||'#0062ff'};
+  }catch(e){return {darkMode:false,followSystem:false,accentColor:'#0062ff'};}
+}
+
+function setSystemPrefersDark(){
+  return !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+
+function setEffectiveDarkMode(settings){
+  return settings.followSystem?setSystemPrefersDark():settings.darkMode;
+}
+
 function loadThemeSettings(){
   try{
-    const saved=JSON.parse(localStorage.getItem('sd_theme')||'null');
-    if(saved){
-      const root=document.documentElement.style;
-      const body=document.body;
-      if(saved.darkMode){
-        body.classList.add('dark-mode');
-        root.setProperty('--bg-grad','#000');
-        root.setProperty('--glass','#1c1c1e');
-        root.setProperty('--glass2','#1c1c1e');
-        root.setProperty('--text','#ffffff');
-        root.setProperty('--text2','#e9e9e9');
-        root.setProperty('--text3','rgba(255,255,255,0.65)');
-        root.setProperty('--glass-border','rgba(62, 64, 70, 0.56)');
-        root.setProperty('--glass-shadow','none');
-        root.setProperty('--glass-shadow-lg','none');
-        // Update CSS variables for selects in dark mode
-        root.setProperty('--select-bg','#2c2c2e');
-        root.setProperty('--select-color','#ffffff');
-        root.setProperty('--select-border','rgba(62, 64, 70, 0.56)');
-      }
-      if(saved.accentColor&&saved.accentColor!=='#0062ff'){
+    const saved=getSetThemeSettings();
+    const root=document.documentElement.style;
+    const body=document.body;
+    const darkMode=setEffectiveDarkMode(saved);
+    body.classList.toggle('dark-mode',darkMode);
+    document.getElementById('theme-color-meta')?.setAttribute('content',darkMode?'#000000':'#f2f2f7');
+    if(darkMode){
+      root.setProperty('--bg-grad','#000');
+      root.setProperty('--glass','#1c1c1e');
+      root.setProperty('--glass2','#1c1c1e');
+      root.setProperty('--text','#ffffff');
+      root.setProperty('--text2','#e9e9e9');
+      root.setProperty('--text3','rgba(255,255,255,0.65)');
+      root.setProperty('--glass-border','rgba(62,64,70,0.56)');
+      root.setProperty('--glass-shadow','none');
+      root.setProperty('--glass-shadow-lg','none');
+      root.setProperty('--select-bg','#2c2c2e');
+      root.setProperty('--select-color','#ffffff');
+      root.setProperty('--select-border','rgba(62,64,70,0.56)');
+    }else{
+      root.setProperty('--bg-grad','#f2f2f7');
+      root.setProperty('--glass','rgba(255,255,255,0.90)');
+      root.setProperty('--glass2','rgba(255,255,255,0.80)');
+      root.setProperty('--text','#0b0f2a');
+      root.setProperty('--text2','#3d3a55');
+      root.setProperty('--text3','#7c7899');
+      root.setProperty('--glass-border','rgba(200,195,230,0.6)');
+      root.setProperty('--glass-shadow','none');
+      root.setProperty('--glass-shadow-lg','none');
+      root.setProperty('--select-bg','rgba(255,255,255,0.9)');
+      root.setProperty('--select-color','#0b0f2a');
+      root.setProperty('--select-border','rgba(200,195,225,0.6)');
+    }
+    if(saved.accentColor&&saved.accentColor!=='#0062ff'){
         root.setProperty('--accent',saved.accentColor);
         const hex=saved.accentColor.replace('#','');
         const r=parseInt(hex.substr(0,2),16);
@@ -49,13 +71,21 @@ function loadThemeSettings(){
         const b=parseInt(hex.substr(4,2),16);
         root.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
         root.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
-      }else{
+    }else{
         root.setProperty('--accent','#0062ff');
         root.setProperty('--accent2','#0075ff');
         root.setProperty('--accent-light','rgba(0,98,255,0.12)');
-      }
     }
   }catch(e){console.error('Theme load error:',e);}
+}
+
+if(window.matchMedia){
+  const setSystemThemeQuery=window.matchMedia('(prefers-color-scheme: dark)');
+  const handleSetSystemThemeChange=()=>{
+    if(getSetThemeSettings().followSystem)loadThemeSettings();
+  };
+  if(setSystemThemeQuery.addEventListener)setSystemThemeQuery.addEventListener('change',handleSetSystemThemeChange);
+  else if(setSystemThemeQuery.addListener)setSystemThemeQuery.addListener(handleSetSystemThemeChange);
 }
 
 let SET=null,currentMode='home';
@@ -71,6 +101,72 @@ function openIndexCreate(){
 }
 function openIndexMenu(){
   window.location.href='index.html?menu=account';
+}
+
+function setHeaderFallbackMarkup(){
+  return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+}
+
+async function updateSetNotificationDot(){
+  const dot=document.getElementById('setMenuTriggerDot');
+  if(!dot)return;
+  try{
+    const [notifResponse,setResponse]=await Promise.all([
+      fetch('./notifications/index.json',{cache:'no-store'}),
+      fetch('./sets/index.json',{cache:'no-store'})
+    ]);
+    const notificationIds=notifResponse.ok?await notifResponse.json():[];
+    const currentSetFiles=setResponse.ok?await setResponse.json():[];
+    let knownSetFiles=[],readIds=[],deletedIds=[];
+    try{knownSetFiles=JSON.parse(localStorage.getItem('sd_known_set_files')||'[]');}catch(e){}
+    try{readIds=JSON.parse(localStorage.getItem('sd_notif_read')||'[]');}catch(e){}
+    try{deletedIds=JSON.parse(localStorage.getItem('sd_notif_deleted')||'[]');}catch(e){}
+    const automaticIds=currentSetFiles.filter(file=>!knownSetFiles.includes(file)).map(file=>'autoset_'+file);
+    const unread=[...automaticIds,...notificationIds].some(id=>!readIds.includes(id)&&!deletedIds.includes(id));
+    dot.classList.toggle('show',unread);
+  }catch(e){
+    dot.classList.remove('show');
+  }
+}
+
+async function initSetHeaderAccount(){
+  const btn=document.getElementById('setMenuTriggerBtn');
+  if(!btn)return;
+  btn.innerHTML=setHeaderFallbackMarkup()+'<span class="set-menu-trigger-dot" id="setMenuTriggerDot"></span>';
+  if(window.VeliosAuth){
+    try{
+      const session=await VeliosAuth.getSession();
+      const profile=session?await VeliosAuth.getProfile():null;
+      if(profile){
+        const avatarUrl=VeliosAuth.resolveAvatarUrl(profile.avatar_url);
+        const fallback=(profile.display_name?.[0]||profile.username?.[0]||'?').toUpperCase();
+        btn.innerHTML='';
+        if(avatarUrl){
+          const img=document.createElement('img');
+          img.src=avatarUrl;
+          img.alt='Profielfoto';
+          img.addEventListener('error',()=>{
+            img.remove();
+            const initial=document.createElement('span');
+            initial.className='set-menu-trigger-initial';
+            initial.textContent=fallback;
+            btn.prepend(initial);
+          },{once:true});
+          btn.appendChild(img);
+        }else{
+          const initial=document.createElement('span');
+          initial.className='set-menu-trigger-initial';
+          initial.textContent=fallback;
+          btn.appendChild(initial);
+        }
+        const dot=document.createElement('span');
+        dot.className='set-menu-trigger-dot';
+        dot.id='setMenuTriggerDot';
+        btn.appendChild(dot);
+      }
+    }catch(e){console.warn('Accountstatus kon niet worden geladen:',e.message);}
+  }
+  updateSetNotificationDot();
 }
 function openRecentSet(slug){
   window.location.href=`set.html?set=${encodeURIComponent(slug)}`;
@@ -310,6 +406,7 @@ function showCurrentHelp() {
 
 async function boot(){
   loadThemeSettings();
+  initSetHeaderAccount();
   const params=new URLSearchParams(window.location.search);
   const slug=params.get('set');
   if(!slug){showError('Geen set opgegeven. Ga terug naar de <a href="index.html">startpagina</a>.');return;}
@@ -318,7 +415,10 @@ async function boot(){
   const stored=JSON.parse(localStorage.getItem('sd_sets')||'[]');
   for(let s of stored){
     if((s.slug&&s.slug.toLowerCase()===slugLower)||(s.id&&s.id===slug)||(s.title&&toSlug(s.title)===slugLower)){
-      SET=s;renderSetView();return;
+      SET=s;
+      if(SET._cloud||SET._synced||SET._cloudSetId)await refreshOpenSyncedSet();
+      if(SET)renderSetView();
+      return;
     }
   }
 
@@ -346,6 +446,62 @@ function toSlug(str){return str.toLowerCase().replace(/[àáâäãåā]/g,'a').r
 
 function isLocalSet(s){
   return s && !s.fromServer && !s._serverFile;
+}
+
+function normalizeOpenCloudTerms(raw){
+  let data=raw;
+  if(typeof data==='string'){try{data=JSON.parse(data)}catch(e){data=[]}}
+  if(data&&!Array.isArray(data)&&Array.isArray(data.terms))data=data.terms;
+  if(!Array.isArray(data))return[];
+  return data.map((item,index)=>{
+    if(Array.isArray(item))return{id:`cloud-term-${index}`,term:String(item[0]||''),def:String(item[1]||'')};
+    return{
+      ...item,
+      id:item?.id||`cloud-term-${index}`,
+      term:String(item?.term??item?.begrip??item?.question??''),
+      def:String(item?.def??item?.definition??item?.definitie??item?.answer??'')
+    };
+  });
+}
+
+async function refreshOpenSyncedSet(){
+  const cloudSetId=String(SET?._cloudSetId||(SET?._cloud?String(SET.id||'').replace(/^cloud_/,''):'')||'');
+  if(!cloudSetId||!window.VeliosAuth)return false;
+  try{
+    const rows=await VeliosAuth.getSyncedSets();
+    const item=rows.find(row=>String(row.set_id)===cloudSetId);
+    if(!item?.sets){
+      const stored=JSON.parse(localStorage.getItem('sd_sets')||'[]');
+      localStorage.setItem('sd_sets',JSON.stringify(stored.filter(set=>set.id!==SET.id&&String(set._cloudSetId||'')!==cloudSetId)));
+      SET=null;
+      window.location.href='index.html#home';
+      return false;
+    }
+    const cloud=item.sets;
+    let cloudData=cloud.data;
+    if(typeof cloudData==='string'){try{cloudData=JSON.parse(cloudData)}catch(e){cloudData=[]}}
+    const next={
+      ...SET,
+      title:cloud.naam||cloud.title||SET.title||'Naamloze set',
+      description:cloud.beschrijving||cloud.description||'',
+      vak:cloud.vak||'',
+      datum:formatSetDate(cloudData?.datum||cloud.datum||cloud.updated_at||cloud.created_at||item.synced_at),
+      terms:normalizeOpenCloudTerms(cloud.data),
+      _cloudSetId:cloudSetId,
+      _syncedAt:item.synced_at
+    };
+    const before=JSON.stringify([SET.title,SET.description,SET.vak,SET.datum,SET.terms]);
+    const after=JSON.stringify([next.title,next.description,next.vak,next.datum,next.terms]);
+    SET=next;
+    const stored=JSON.parse(localStorage.getItem('sd_sets')||'[]');
+    const index=stored.findIndex(set=>set.id===SET.id||String(set._cloudSetId||'')===cloudSetId);
+    if(index>=0)stored[index]=SET;else stored.push(SET);
+    localStorage.setItem('sd_sets',JSON.stringify(stored));
+    return before!==after;
+  }catch(error){
+    console.warn('Geopende cloudset kon niet worden vernieuwd:',error.message);
+    return false;
+  }
 }
 
 function renderSetView(){
@@ -402,7 +558,7 @@ showOnboarding('set');
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span class="badge badge-purple">${SET.terms.length} begrippen</span>
             ${SET.vak?`<span class="badge badge-orange">${esc(SET.vak)}</span>`:''}
-            ${SET.datum?`<span class="badge badge-gray">${SET.datum}</span>`:''}
+            ${formatSetDate(SET.datum)?`<span class="badge badge-gray">${formatSetDate(SET.datum)}</span>`:''}
           </div>
         </div>
     <div class="set-detail-layout">
@@ -724,6 +880,7 @@ function backToSet(){
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function escA(s){return esc(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
+function formatSetDate(value){const match=String(value||'').match(/^\d{4}-\d{2}-\d{2}/);return match?match[0]:'';}
 function renderTerm(t,type='term'){
   const html=type==='term'?t.termHtml:t.defHtml;if(html)return html;
   const segments=type==='term'?t.termSegments:t.defSegments;
@@ -1548,6 +1705,10 @@ function editCurrentSet(){
 function deleteCurrentSet(){
   if(!SET||!isLocalSet(SET)){showToast('Alleen je eigen sets kunnen verwijderd worden');return;}
   closeDD('set-menu');
+  if(SET._cloud||SET._synced||SET._cloudSetId){
+    window.location.href=`index.html?delete=${encodeURIComponent(SET.id)}`;
+    return;
+  }
   showModal(`
     <h3 style="margin-bottom:12px">Set verwijderen?</h3>
     <p style="color:var(--text2);margin-bottom:20px">Weet je zeker dat je <strong>${esc(SET.title)}</strong> wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</p>
@@ -1918,3 +2079,18 @@ function handleSearchKeydown(e){
 }
 
 boot();
+
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState==='visible'){
+    loadThemeSettings();
+    initSetHeaderAccount();
+    if(currentMode==='home'&&await refreshOpenSyncedSet())renderSetView();
+  }
+});
+setInterval(async()=>{
+  if(document.visibilityState==='visible'&&currentMode==='home'&&await refreshOpenSyncedSet())renderSetView();
+},12000);
+window.addEventListener('storage',event=>{
+  if(event.key==='sd_theme')loadThemeSettings();
+  if(['sd_notif_read','sd_notif_deleted'].includes(event.key))updateSetNotificationDot();
+});

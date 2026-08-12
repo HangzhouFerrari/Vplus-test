@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="nl" class="index-page">
 <head>
+<script src="sw-register.js?v=20260812-6"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js"></script>
+<script src="supabase-client.js?v=20260812-6"></script>
 <script>
 if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
   window.location.href = 'unsupported.html';
@@ -23,7 +24,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <link rel="icon" href="favicon_light.png" media="(prefers-color-scheme: light)">
 <link rel="icon" href="favicon_dark.png" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20260812-6">
 </head>
 <body>
 <div id="loading-screen" style="position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;pointer-events:none">
@@ -83,21 +84,25 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
   </div>
 
 <div id="app-content" style="opacity:0;pointer-events:none;transition:opacity 0.7s cubic-bezier(0.34,1.56,0.64,1);display:flex;flex:1">
-  <div style="flex:1;overflow-y:auto">
+  <div id="page-scroll-container" style="flex:1;overflow-y:auto">
     <!-- HOME PAGE -->
     <div id="home" class="page active">
-      <div class="screen page-enter">
+      <div class="dashboard-ambient" aria-hidden="true">
+        <span class="dashboard-glow dashboard-glow-blue"></span>
+        <span class="dashboard-glow dashboard-glow-cyan"></span>
+        <span class="dashboard-glow dashboard-glow-purple"></span>
+        <span class="dashboard-glow dashboard-glow-pink"></span>
+      </div>
+      <div class="screen page-enter dashboard-screen">
         <div class="home-hero">
-          <h1>Dashboard</h1>
-          <div class="meta-info">
-            <div class="meta-item">
-              <div class="label">Vandaag</div>
-              <div class="value" id="today-date"></div>
-            </div>
-            <div class="meta-item">
-              <div class="label">Week</div>
-              <div class="value" id="week-number"></div>
-            </div>
+          <h1>
+            <span id="dashboard-greeting-copy">Welkom terug</span><span id="dashboard-comma"></span><span id="dashboard-name"></span><span>.</span>
+          </h1>
+          <p id="dashboard-message">Klaar om verder te gaan?</p>
+          <div class="home-date-line">
+            <span id="today-date"></span>
+            <span class="home-date-separator" aria-hidden="true"></span>
+            <span id="week-number"></span>
           </div>
         </div>
 
@@ -152,32 +157,33 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
       <div class="screen page-enter library-screen">
         <div class="page-heading">
           <div>
-            <p class="page-eyebrow">Bestanden</p>
-            <h1>Alle sets</h1>
+            <h1>Bestanden</h1>
             <p id="library-summary">Vind snel de set die je nodig hebt.</p>
           </div>
         </div>
 
         <div class="library-toolbar">
-          <div class="toolbar-dropdown">
-            <button class="toolbar-btn" id="library-filter-btn" onclick="toggleLibraryMenu('library-filter-menu',event)">
-              Filters <span class="toolbar-count" id="library-filter-count">0</span>
-              <svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg>
+          <div class="library-toolbar-main">
+            <div class="toolbar-dropdown">
+              <button class="toolbar-btn" id="library-filter-btn" onclick="toggleLibraryMenu('library-filter-menu',event)" aria-expanded="false">
+                Filters <span class="toolbar-count" id="library-filter-count">0</span>
+                <svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg>
+              </button>
+              <div class="toolbar-menu filter-menu" id="library-filter-menu"></div>
+            </div>
+            <div class="toolbar-dropdown">
+              <button class="toolbar-btn" id="library-sort-btn" onclick="toggleLibraryMenu('library-sort-menu',event)" aria-expanded="false">
+                Sorteren op: datum
+                <svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg>
+              </button>
+              <div class="toolbar-menu" id="library-sort-menu"></div>
+            </div>
+            <button class="toolbar-btn library-mine-btn" id="library-mine-btn" onclick="toggleMySets()">
+              Mijn sets
             </button>
-            <div class="toolbar-menu filter-menu" id="library-filter-menu"></div>
           </div>
-          <div class="toolbar-dropdown">
-            <button class="toolbar-btn" id="library-sort-btn" onclick="toggleLibraryMenu('library-sort-menu',event)">
-              Sorteren op: datum
-              <svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg>
-            </button>
-            <div class="toolbar-menu" id="library-sort-menu"></div>
-          </div>
-          <button class="toolbar-btn library-mine-btn" id="library-mine-btn" onclick="toggleMySets()">
-            Mijn sets
-          </button>
+          <div class="library-selection-controls" id="library-selection-controls"></div>
         </div>
-        <div class="library-selection-bar" id="library-selection-bar"></div>
         <div class="sets-grid library-grid" id="library-list"></div>
       </div>
     </div>
@@ -187,7 +193,6 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
       <div class="screen page-enter subjects-screen">
         <div class="page-heading">
           <div>
-            <p class="page-eyebrow">Bibliotheek</p>
             <h1>Vakken</h1>
             <p>Kies een vak en bekijk alle beschikbare sets.</p>
           </div>
@@ -253,7 +258,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 </div>
 <div id="toast"></div>
 
-<script src="app.js"></script>
+<script src="app.js?v=20260812-6"></script>
 </div>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE = `velios-${new Date().toISOString().split('T')[0]}`;
+const CACHE = 'velios-20260812-6';
 const ASSETS = [
   './',
   './index.html',
@@ -31,10 +31,18 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
-  // .vset en index.json network-first
-  if (e.request.url.includes('.vset') || e.request.url.includes('index.json')) {
+  // Code, styles, .vset en index.json network-first zodat updates direct zichtbaar zijn.
+  if (e.request.url.includes('.vset') || e.request.url.includes('index.json') ||
+      e.request.url.endsWith('.js') || e.request.url.includes('.js?') ||
+      e.request.url.endsWith('.css') || e.request.url.includes('.css?')) {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
+      fetch(e.request).then(resp => {
+        if (resp && resp.status === 200) {
+          const clone = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return resp;
+      }).catch(() => caches.match(e.request))
     );
     return;
   }

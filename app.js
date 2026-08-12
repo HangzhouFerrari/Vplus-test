@@ -7,55 +7,94 @@ function xorStr(str,key){return str.split('').map((c,i)=>String.fromCharCode(c.c
 function encodeVset(obj){const json=JSON.stringify(obj);return btoa(unescape(encodeURIComponent(xorStr(json,VSET_KEY))));}
 function decodeVset(b64){return JSON.parse(xorStr(decodeURIComponent(escape(atob(b64))),VSET_KEY));}
 
+let _currentSession = null;
+let _currentProfile = null;
+
 /* ══════════════════════════════════════════════════════
    THEME MANAGEMENT
 ══════════════════════════════════════════════════════ */
 const THEME_COLORS=[
-  {hex:'#0062ff',idx:0},
-  {hex:'#ff6b6b',idx:1},
-  {hex:'#10b981',idx:2},
-  {hex:'#f59e0b',idx:3},
-  {hex:'#8b5cf6',idx:4}
+  {hex:'#0062ff',light:'#d8e7ff',dark:'#003b91',idx:0,label:'Blauw'},
+  {hex:'#ff6b6b',light:'#ffe0e0',dark:'#5b3030',idx:1,label:'Rood'},
+  {hex:'#10b981',light:'#d7f4eb',dark:'#0b4937',idx:2,label:'Groen'},
+  {hex:'#f59e0b',light:'#fff0d6',dark:'#65420b',idx:3,label:'Amber'},
+  {hex:'#8b5cf6',light:'#e7ddff',dark:'#392765',idx:4,label:'Paars'}
 ];
 
-function loadThemeSettings(){
+function getThemeSettings(){
   try{
-    const saved=JSON.parse(localStorage.getItem('sd_theme')||'null');
-    if(saved){
-      applyThemeSettings(saved.darkMode,saved.accentColor);
-    }
-  }catch(e){}
+    const saved=JSON.parse(localStorage.getItem('sd_theme')||'null')||{};
+    return {
+      darkMode:!!saved.darkMode,
+      followSystem:!!saved.followSystem,
+      accentColor:saved.accentColor||'#0062ff'
+    };
+  }catch(e){
+    return {darkMode:false,followSystem:false,accentColor:'#0062ff'};
+  }
+}
+
+function systemPrefersDark(){
+  return !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+
+function effectiveDarkMode(settings){
+  return settings.followSystem?systemPrefersDark():settings.darkMode;
+}
+
+function loadThemeSettings(){
+  const settings=getThemeSettings();
+  applyThemeSettings(effectiveDarkMode(settings),settings.accentColor);
 }
 
 /* Wordt aangeroepen telkens als het Instellingen-tabblad van het menu wordt getekend,
    want de toggle/kleurknoppen bestaan alleen in de DOM zolang dat tabblad open is. */
 function syncThemeUIControls(){
-  try{
-    const saved=JSON.parse(localStorage.getItem('sd_theme')||'null');
-    const darkToggle=document.getElementById('theme-dark-toggle');
-    if(darkToggle) darkToggle.checked = !!(saved&&saved.darkMode);
-    updateAccentColorUI(saved&&saved.accentColor?saved.accentColor:'#0062ff');
-  }catch(e){}
+  const settings=getThemeSettings();
+  const systemToggle=document.getElementById('theme-system-toggle');
+  const darkToggle=document.getElementById('theme-dark-toggle');
+  const darkRow=document.getElementById('theme-dark-row');
+  if(systemToggle) systemToggle.checked=settings.followSystem;
+  if(darkToggle){
+    darkToggle.checked=effectiveDarkMode(settings);
+    darkToggle.disabled=settings.followSystem;
+  }
+  if(darkRow) darkRow.classList.toggle('is-disabled',settings.followSystem);
+  updateAccentColorUI(settings.accentColor);
 }
 
 function toggleDarkMode(){
-  const isDark=document.getElementById('theme-dark-toggle').checked;
-  const currentAccent=localStorage.getItem('sd_theme')?JSON.parse(localStorage.getItem('sd_theme')).accentColor:'#0062ff';
-  saveThemeSettings(isDark,currentAccent);
-  applyThemeSettings(isDark,currentAccent);
+  const settings=getThemeSettings();
+  const darkToggle=document.getElementById('theme-dark-toggle');
+  if(!darkToggle||settings.followSystem)return;
+  settings.darkMode=darkToggle.checked;
+  saveThemeSettings(settings);
+  applyThemeSettings(settings.darkMode,settings.accentColor);
+}
+
+function toggleSystemTheme(){
+  const settings=getThemeSettings();
+  const systemToggle=document.getElementById('theme-system-toggle');
+  const wasFollowing=settings.followSystem;
+  settings.followSystem=!!systemToggle?.checked;
+  if(wasFollowing&&!settings.followSystem)settings.darkMode=systemPrefersDark();
+  saveThemeSettings(settings);
+  applyThemeSettings(effectiveDarkMode(settings),settings.accentColor);
+  syncThemeUIControls();
 }
 
 function setAccentColor(hex,idx){
-  const isDark=document.getElementById('theme-dark-toggle').checked;
-  saveThemeSettings(isDark,hex);
-  applyThemeSettings(isDark,hex);
+  const settings=getThemeSettings();
+  settings.accentColor=hex;
+  saveThemeSettings(settings);
+  applyThemeSettings(effectiveDarkMode(settings),hex);
   updateAccentColorUI(hex);
 }
 
 function updateAccentColorUI(hex){
-  document.querySelectorAll('[id^="accent-"]').forEach(btn=>{btn.style.borderColor='transparent';btn.style.boxShadow='none';});
+  document.querySelectorAll('[id^="accent-"]').forEach(btn=>btn.classList.remove('selected'));
   const idx=THEME_COLORS.findIndex(c=>c.hex===hex);
-  if(idx>=0){const btn=document.getElementById('accent-'+idx); if(btn){btn.style.borderColor='rgba(0,0,0,0.5)';btn.style.boxShadow='0 0 8px rgba(0,0,0,0.3)';}}
+  if(idx>=0)document.getElementById('accent-'+idx)?.classList.add('selected');
 }
 
 function applyThemeSettings(darkMode,accentColor){
@@ -98,8 +137,20 @@ function applyThemeSettings(darkMode,accentColor){
   }
 }
 
-function saveThemeSettings(darkMode,accentColor){
-  localStorage.setItem('sd_theme',JSON.stringify({darkMode,accentColor}));
+function saveThemeSettings(settings){
+  localStorage.setItem('sd_theme',JSON.stringify(settings));
+}
+
+if(window.matchMedia){
+  const systemThemeQuery=window.matchMedia('(prefers-color-scheme: dark)');
+  const handleSystemThemeChange=()=>{
+    const settings=getThemeSettings();
+    if(!settings.followSystem)return;
+    applyThemeSettings(systemThemeQuery.matches,settings.accentColor);
+    syncThemeUIControls();
+  };
+  if(systemThemeQuery.addEventListener)systemThemeQuery.addEventListener('change',handleSystemThemeChange);
+  else if(systemThemeQuery.addListener)systemThemeQuery.addListener(handleSystemThemeChange);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -188,6 +239,158 @@ async function loadSetsFromDirectory(){
   }catch(e){console.warn('Could not load sets from /sets/ directory:',e.message)}
 }
 
+function normalizeCloudTerms(raw) {
+  let data = raw;
+  if (typeof data === 'string') {
+    try { data = JSON.parse(data); } catch (e) { data = []; }
+  }
+  if (data && !Array.isArray(data) && Array.isArray(data.terms)) data = data.terms;
+  if (!Array.isArray(data)) return [];
+  return data.map((item, index) => {
+    if (Array.isArray(item)) {
+      const definition=String(item[1]||'');
+      return { id:`cloud-term-${index}`, term:String(item[0]||''), def:definition, definition };
+    }
+    const definition = String(item?.def ?? item?.definition ?? item?.definitie ?? item?.answer ?? '');
+    return {
+      ...item,
+      id: item?.id || `cloud-term-${index}`,
+      term: String(item?.term ?? item?.begrip ?? item?.question ?? ''),
+      def: definition,
+      definition,
+    };
+  });
+}
+
+const HIDDEN_CLOUD_SETS_KEY = 'sd_hidden_cloud_sets';
+
+function formatSetDate(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^\d{4}-\d{2}-\d{2}/);
+  return match ? match[0] : '';
+}
+
+function getCloudSetDate(cloud, fallback = '') {
+  let data = cloud?.data;
+  if (typeof data === 'string') {
+    try { data = JSON.parse(data); } catch (e) { data = null; }
+  }
+  return formatSetDate(data?.datum || cloud?.datum || cloud?.updated_at || cloud?.created_at || fallback);
+}
+
+function getHiddenCloudSetIds() {
+  try {
+    const ids = JSON.parse(localStorage.getItem(HIDDEN_CLOUD_SETS_KEY) || '[]');
+    return new Set(Array.isArray(ids) ? ids.map(String) : []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function saveHiddenCloudSetIds(ids) {
+  localStorage.setItem(HIDDEN_CLOUD_SETS_KEY, JSON.stringify([...ids]));
+}
+
+function getCloudSetId(set) {
+  if (!set) return '';
+  if (set._cloudSetId) return String(set._cloudSetId);
+  return set._cloud ? String(set.id || '').replace(/^cloud_/, '') : '';
+}
+
+/** Laad privé gesynchroniseerde sets naast de openbare bibliotheeksets. */
+async function loadSyncedSetsIntoLibrary() {
+  if (!window.VeliosAuth) return;
+  let session = null;
+  try { session = await VeliosAuth.getSession(); } catch (e) { return; }
+  if (!session) {
+    DB.sets = DB.sets.filter(set => !set._cloud);
+    DB.sets.forEach(set => {
+      if (!set.fromServer && !set._serverFile) {
+        delete set._synced;
+        delete set._cloudSetId;
+        delete set._syncedAt;
+      }
+    });
+    saveDB();
+    return;
+  }
+  try {
+    const rows = await VeliosAuth.getSyncedSets();
+    const availableCloudIds = new Set(rows.map(item => String(item.set_id)));
+    DB.sets = DB.sets.filter(set => {
+      if (set._cloud) return false;
+      if (set._synced && set._cloudSetId && !availableCloudIds.has(String(set._cloudSetId))) return false;
+      return true;
+    });
+    const hiddenCloudSetIds = getHiddenCloudSetIds();
+    let syncMap = {};
+    try { syncMap = JSON.parse(localStorage.getItem('sd_cloud_sync_map') || '{}'); } catch (e) {}
+    rows.forEach(item => {
+      const cloud = item.sets;
+      if (!cloud) return;
+      if (hiddenCloudSetIds.has(String(cloud.id))) return;
+      const cloudTerms = normalizeCloudTerms(cloud.data);
+      const cloudDate = getCloudSetDate(cloud, item.synced_at);
+      const mappedLocalId = Object.keys(syncMap).find(localId => String(syncMap[localId]) === String(cloud.id));
+      const cloudTitle = String(cloud.naam || cloud.title || '').trim().toLowerCase();
+      const cloudSubject = String(cloud.vak || '').trim().toLowerCase();
+      const localSet = DB.sets.find(set => {
+        if (set.fromServer || set._serverFile || set._cloud) return false;
+        if (mappedLocalId && String(set.id) === String(mappedLocalId)) return true;
+        return String(set.title || set.naam || '').trim().toLowerCase() === cloudTitle &&
+          String(set.vak || '').trim().toLowerCase() === cloudSubject;
+      });
+      if (localSet) {
+        localSet.title = cloud.naam || cloud.title || localSet.title || 'Naamloze set';
+        localSet.description = cloud.beschrijving || cloud.description || '';
+        localSet.vak = cloud.vak || '';
+        localSet.terms = cloudTerms;
+        localSet.datum = cloudDate;
+        localSet._synced = true;
+        localSet._cloudSetId = cloud.id;
+        localSet._syncedAt = item.synced_at;
+        return;
+      }
+      DB.sets.push({
+        id: `cloud_${cloud.id}`,
+        slug: `cloud-${cloud.id}`,
+        title: cloud.naam || cloud.title || 'Naamloze set',
+        description: cloud.beschrijving || cloud.description || '',
+        vak: cloud.vak || '',
+        terms: cloudTerms,
+        datum: cloudDate,
+        _cloud: true,
+        _cloudSetId: cloud.id,
+        _syncedAt: item.synced_at,
+      });
+    });
+    saveDB();
+  } catch (e) {
+    console.warn('Gesynchroniseerde sets konden niet worden geladen:', e.message);
+  }
+}
+
+let syncedLibraryReady = false;
+let syncedLibraryRefresh = null;
+
+function renderCurrentDataPage() {
+  if (currentPage === 'library') renderLibrary();
+  else if (currentPage === 'subject') renderSubjectDetail();
+  else if (currentPage === 'vakken') renderVakken();
+  else if (currentPage === 'home') renderHome();
+}
+
+/** Haal wijzigingen van een ander apparaat op zodra dit scherm weer actief is. */
+function refreshSyncedSetsFromCloud() {
+  if (!syncedLibraryReady || document.visibilityState === 'hidden' || !navigator.onLine) return Promise.resolve();
+  if (syncedLibraryRefresh) return syncedLibraryRefresh;
+  syncedLibraryRefresh = loadSyncedSetsIntoLibrary()
+    .then(renderCurrentDataPage)
+    .catch(error => console.warn('Cloudsets vernieuwen is mislukt:', error.message))
+    .finally(() => { syncedLibraryRefresh = null; });
+  return syncedLibraryRefresh;
+}
+
 /* ══════════════════════════════════════════════════════
    HOMEPAGE & NAVIGATION
 ══════════════════════════════════════════════════════ */
@@ -197,8 +400,9 @@ let searchQuery = '';
 let librarySort = 'date';
 let subjectSort = 'date';
 let libraryMineOnly = false;
-let libraryFilters = { size:'all', opened:'all', images:'all' };
+let libraryFilters = { size:'all', opened:'all', images:'all', sync:'all' };
 let librarySelected = new Set();
+let librarySelectionMode = false;
 let currentSubject = '';
 
 const SUBJECT_FALLBACK = [
@@ -257,6 +461,7 @@ function showPage(page) {
   else if (page === 'subject') renderSubjectDetail();
   else if (page === 'home') renderHome();
   else if (page === 'zoeken') { renderRecentSearchesList(); setTimeout(()=>{ document.getElementById('mobile-search-box')?.focus(); }, 100); }
+  if (page === 'subject') resetPageScroll();
   updateRecentSidebar();
   const nextHash=page==='subject'
     ? `#subject/${encodeURIComponent(getSubjectConfig(currentSubject).slug)}`
@@ -264,6 +469,18 @@ function showPage(page) {
   if (window.location.hash !== nextHash) {
     window.history.replaceState(window.history.state, '', nextHash);
   }
+}
+
+function resetPageScroll(){
+  const scrollContainer=document.getElementById('page-scroll-container');
+  const scrollToTop=()=>{
+    if(scrollContainer)scrollContainer.scrollTop=0;
+    document.documentElement.scrollTop=0;
+    document.body.scrollTop=0;
+    window.scrollTo(0,0);
+  };
+  scrollToTop();
+  requestAnimationFrame(scrollToTop);
 }
 
 window.addEventListener('hashchange', () => showPage(getPageFromLocation()));
@@ -295,9 +512,10 @@ function getWeekNumber(d = new Date()) {
 
 function renderHome(){
   const today = new Date();
-  const opts = {weekday:'long', year:'numeric', month:'long', day:'numeric'};
-  document.getElementById('today-date').textContent = today.toLocaleDateString('nl-NL', opts).split(',')[0];
+  const opts = {weekday:'long', month:'long', day:'numeric'};
+  document.getElementById('today-date').textContent = today.toLocaleDateString('nl-NL', opts);
   document.getElementById('week-number').textContent = `Week ${getWeekNumber(today)}`;
+  updateDashboardWelcome(today);
 
   renderRecentSidebar();
 
@@ -329,7 +547,7 @@ function renderHome(){
     if (recentSets.length) {
       document.getElementById('section-recent').style.display = 'block';
       renderSetGrid('recent-grid', recentSets);
-    }
+    } else document.getElementById('section-recent').style.display = 'none';
     const recommended = DB.sets.filter(s => s.vak).sort(() => Math.random() - 0.5).slice(0, 3);
     if (recommended.length) renderSetGrid('recommended-grid', recommended);
     const newest = DB.sets.filter(s => s.fromServer).sort((a, b) => (b.id || '').localeCompare(a.id || '')).slice(0, 3);
@@ -339,7 +557,7 @@ function renderHome(){
   }
 
   // Mijn sets (altijd zichtbaar)
-  const mySets = DB.sets.filter(s => !s.fromServer);
+  const mySets = DB.sets.filter(isMySet);
   const mySect = document.getElementById('section-my-sets');
   if (mySets.length) { mySect.style.display = 'block'; renderSetGrid('my-sets-grid', mySets); }
   else { mySect.style.display = 'none'; }
@@ -347,7 +565,7 @@ function renderHome(){
   // Gedownloade sets (altijd zichtbaar, ook offline)
   const offlineIds = getOfflineSets().map(o => o.id || o.slug);
   const offlineSets = DB.sets.filter(s =>
-    s._offlineSaved || offlineIds.includes(s.id) || offlineIds.includes(s.slug) || (!s.fromServer && !s._serverFile)
+    !s._cloud && (s._offlineSaved || offlineIds.includes(s.id) || offlineIds.includes(s.slug) || (!s.fromServer && !s._serverFile))
   );
   const offlineSect = document.getElementById('section-offline');
   if (offlineSect) {
@@ -356,42 +574,82 @@ function renderHome(){
   }
 }
 
+function updateDashboardWelcome(now=new Date()){
+  const greeting=document.getElementById('dashboard-greeting-copy');
+  const comma=document.getElementById('dashboard-comma');
+  const nameEl=document.getElementById('dashboard-name');
+  const message=document.getElementById('dashboard-message');
+  if(!greeting||!nameEl||!message)return;
+
+  const displayName=String(_currentProfile?.display_name||_currentProfile?.username||'').trim().split(/\s+/)[0];
+  const hour=now.getHours();
+  const welcome=hour<12
+    ? ['Goedemorgen','Klaar voor een frisse start?']
+    : hour<18
+      ? ['Welkom terug','Klaar om verder te gaan?']
+      : ['Goedenavond','Nog even blokken voor de toets van binnenkort?'];
+
+  greeting.textContent=welcome[0];
+  if(comma)comma.textContent=displayName?', ':'';
+  nameEl.textContent=displayName?displayName:'';
+  message.textContent=welcome[1];
+}
+
 function isUserSet(set){
-  return !set.fromServer&&!set._serverFile;
+  return !set.fromServer&&!set._serverFile&&!set._cloud;
+}
+
+function isSyncedSet(set){
+  return !!(set._cloud||set._synced||set._cloudSetId);
+}
+
+function findSetByCloudId(cloudSetId){
+  const wanted=String(cloudSetId||'');
+  if(!wanted)return null;
+  return DB.sets.find(set=>getCloudSetId(set)===wanted)||null;
+}
+
+function isMySet(set){
+  return isUserSet(set)||isSyncedSet(set);
 }
 
 function renderSetGrid(elementId, sets, options={}) {
   const el = document.getElementById(elementId);
   if (!el) return;
-  if(!sets.length){
-    el.innerHTML='<div class="empty-state">Geen sets gevonden met deze instellingen.</div>';
+  if (!sets.length) {
+    el.innerHTML = '<div class="empty-state">Geen sets gevonden met deze instellingen.</div>';
     return;
   }
-  el.innerHTML = sets.map(s => `
-    <div class="set-card${librarySelected.has(s.id)?' selected':''}" onclick="openSet('${s.id}')">
-      ${options.selectable?`<button class="set-select-btn" onclick="event.stopPropagation();toggleLibrarySelection('${s.id}')" aria-label="Selecteer ${esc(s.title)}">
-        ${librarySelected.has(s.id)?'<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>':''}
-      </button>`:''}
+  const playIcon='<img src="assets/icons/icon_play.svg" alt="">';
+  const editIcon='<img src="assets/icons/icon_edit.svg" alt="">';
+  const deleteIcon='<img src="assets/icons/icon_delete.svg" alt="">';
+  el.innerHTML = sets.map(s => {
+    const selected=librarySelected.has(s.id);
+    const local=isUserSet(s);
+    const synced=isSyncedSet(s);
+    const selectable=!!options.selectable&&local;
+    return `<div class="set-card${selected?' selected':''}${selectable?' selection-mode':''}" onclick="${selectable?`toggleLibrarySelection('${s.id}')`:`openSet('${s.id}')`}">
+      ${selectable?`<button class="set-select-btn" onclick="event.stopPropagation();toggleLibrarySelection('${s.id}')" aria-label="Selecteer ${esc(s.title)}" aria-pressed="${selected}">${selected?'<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>':''}</button>`:''}
       <div class="set-card-title">${esc(s.title)}</div>
       <div class="set-card-desc">${esc(s.description||'')}</div>
       <div class="set-card-meta">
         <span class="badge badge-purple">${s.terms.length} begrippen</span>
         ${s.vak?`<span class="badge badge-orange">${esc(s.vak)}</span>`:''}
-        ${s.datum?`<span style="font-size:11px;color:var(--text3)">${s.datum}</span>`:''}
+        ${synced?'<span class="badge badge-cloud" title="Gesynchroniseerd" aria-label="Gesynchroniseerd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 18.5h10a4.5 4.5 0 0 0 .58-8.96A6 6 0 0 0 5.56 8.1 4.25 4.25 0 0 0 6.5 18.5Z"/></svg></span>':''}
+        ${formatSetDate(s.datum)?`<span class="set-card-date">${formatSetDate(s.datum)}</span>`:''}
       </div>
       <div class="set-card-actions" onclick="event.stopPropagation()">
-        <button style="aspect-ratio:1/1 !important;padding:6px 10px;align-items:center;display:flex;justify-content:center;" class="btn btn-glass btn-sm" onclick="openSet('${s.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M0 0h256v256H0z"/><path data-name="Path 1" d="M211.196 93.815c25.431 15.689 25.431 52.681 0 68.371l-124.243 76.65c-26.746 16.5-61.217-2.748-61.217-34.185v-153.3c0-31.437 34.47-50.686 61.217-34.185Z" fill="var(--text)"/></svg></button>
-        ${options.manage&&isUserSet(s)?`<button class="btn btn-glass btn-sm card-action-btn" onclick="duplicateSet('${s.id}')" title="Dupliceren"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>`:''}
-        ${!s.fromServer?`<button style="aspect-ratio:1/1 !important;padding:6px 10px;align-items:center;display:flex;justify-content:center;" class="btn btn-glass btn-sm" onclick="showCreateModal('${s.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path data-name="Rectangle 17" fill="rgba(152,37,37,0)" d="M0 0h256v256H0z"/><g data-name="Group 13" transform="rotate(45 2187.158 -2777.125)" fill="var(--text)"><path data-name="Path 170" d="M2785 888.133a7.9 7.9 0 0 1-3.778-.941 7 7 0 0 1-2.831-2.824l-17.6-32.459a6.4 6.4 0 0 1-.779-2.688h49.978a6.4 6.4 0 0 1-.779 2.688l-17.6 32.459a7.03 7.03 0 0 1-2.831 2.824 7.9 7.9 0 0 1-3.78.941m25-54.655h-50V600.523a21.35 21.35 0 0 1 1.965-8.969 23 23 0 0 1 5.358-7.324 25.1 25.1 0 0 1 7.947-4.938 26.7 26.7 0 0 1 9.731-1.811 26.7 26.7 0 0 1 9.731 1.811 25.1 25.1 0 0 1 7.947 4.938 23 23 0 0 1 5.358 7.324 21.4 21.4 0 0 1 1.965 8.969v232.954Zm-24.5-237.083c-4.687 0-8.5 3.515-8.5 7.834v216.6c0 4.32 3.813 7.835 8.5 7.835s8.5-3.515 8.5-7.835v-216.6c0-4.32-3.81-7.835-8.499-7.835Z"/><rect data-name="Rectangle 19" width="17" height="232.271" rx="8.5" transform="translate(2777 596.393)" opacity=".6"/></g></svg></button>`:''}
-        ${!s.fromServer?`<button class="btn btn-sm" style="background:rgba(232,58,74,0.1);color:var(--red);border:none;border-radius:100%;aspect-ratio:1/1;align-items:center;display:flex;justify-content:center;padding:6px 10px;font-family:var(--font);font-weight:700;cursor:pointer" onclick="confirmDelete('${s.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 15" fill="var(--red)"><path data-name="Path 181" d="M190.628 256H66.231a22.12 22.12 0 0 1-15.521-6.256 20.93 20.93 0 0 1-6.429-15.1L27.774 72.076a20.93 20.93 0 0 1 6.429-15.1 22.12 22.12 0 0 1 15.521-6.259h155.345a22.12 22.12 0 0 1 15.521 6.256 20.93 20.93 0 0 1 6.429 15.1l-14.445 162.568a20.93 20.93 0 0 1-6.429 15.1A22.12 22.12 0 0 1 190.628 256M162.914 74.908a12.03 12.03 0 0 0-12.061 11.654l-4.635 132.749a12.09 12.09 0 0 0 11.646 12.489q.201.008.429.008a12.025 12.025 0 0 0 12.06-11.654l4.636-132.749a12.075 12.075 0 0 0-11.646-12.488 10 10 0 0 0-.429-.009m-69.829 0q-.215-.002-.429.007a12.09 12.09 0 0 0-11.646 12.49l4.635 132.749a12.025 12.025 0 0 0 12.059 11.654q.23.002.43-.008a12.09 12.09 0 0 0 11.647-12.489l-4.635-132.749a12.026 12.026 0 0 0-12.061-11.654"/><path data-name="Path 179" d="M30.793 41.057A8.453 8.453 0 0 1 22.34 32.6a16.906 16.906 0 0 1 16.906-16.9h27.773A15.7 15.7 0 0 1 82.718 0h90.566a15.7 15.7 0 0 1 15.7 15.7h27.774a16.906 16.906 0 0 1 16.902 16.9 8.45 8.45 0 0 1-8.452 8.453Z"/><path data-name="Path 180" d="M157.86 231.8a12.075 12.075 0 0 1-11.646-12.489l4.639-132.746a12.076 12.076 0 0 1 24.137.843l-4.637 132.746a12.076 12.076 0 0 1-12.061 11.654q-.212 0-.432-.008m-72.214-11.646L81.01 87.405a12.075 12.075 0 0 1 24.136-.84l4.636 132.749a12.075 12.075 0 0 1-11.647 12.489c-.143 0-.287.007-.429.007a12.076 12.076 0 0 1-12.06-11.656" opacity=".4"/></g></svg></button>`:''}
+        <button class="btn btn-sm set-icon-btn" onclick="openSet('${s.id}')" aria-label="Openen">${playIcon}</button>
+        ${local||synced?`<button class="btn btn-sm set-icon-btn" onclick="showCreateModal('${s.id}')" aria-label="Bewerken">${editIcon}</button>`:''}
+        ${local||synced?`<button class="btn btn-sm set-icon-btn set-delete-btn" onclick="confirmDelete('${s.id}')" aria-label="Verwijderen">${deleteIcon}</button>`:''}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderLibrary() {
   renderLibraryMenus();
-  let sets = DB.sets.filter(set=>libraryMineOnly?isUserSet(set):!isUserSet(set));
+  let sets = DB.sets.filter(set=>libraryMineOnly?isMySet(set):!isUserSet(set));
   const recentIds=new Set(getOpenedSetIds());
   if(libraryFilters.size==='small')sets=sets.filter(set=>(set.terms?.length||0)<=20);
   if(libraryFilters.size==='medium')sets=sets.filter(set=>(set.terms?.length||0)>20&&(set.terms?.length||0)<=50);
@@ -400,6 +658,8 @@ function renderLibrary() {
   if(libraryFilters.opened==='unopened')sets=sets.filter(set=>!recentIds.has(set.id));
   if(libraryFilters.images==='with')sets=sets.filter(set=>setHasImages(set));
   if(libraryFilters.images==='without')sets=sets.filter(set=>!setHasImages(set));
+  if(libraryFilters.sync==='synced')sets=sets.filter(isSyncedSet);
+  if(libraryFilters.sync==='not-synced')sets=sets.filter(set=>!isSyncedSet(set));
   if (searchQuery) {
     sets = sets.filter(s => 
       s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -409,18 +669,18 @@ function renderLibrary() {
   sortSets(sets,librarySort);
   const summary=document.getElementById('library-summary');
   if(summary)summary.textContent=libraryMineOnly
-    ? `${sets.length} zelfgemaakte ${sets.length===1?'set':'sets'}`
+    ? `${sets.length} eigen ${sets.length===1?'set':'sets'}`
     : `${sets.length} beschikbare ${sets.length===1?'set':'sets'}`;
   document.getElementById('library-mine-btn')?.classList.toggle('active',libraryMineOnly);
-  renderSetGrid('library-list',sets,{selectable:libraryMineOnly,manage:libraryMineOnly});
-  renderLibrarySelectionBar();
+  renderSetGrid('library-list',sets,{selectable:libraryMineOnly&&librarySelectionMode});
+  renderLibrarySelectionControls();
 }
 
 function renderVakken() {
   const el = document.getElementById('vakken-grid');
   if(!el)return;
   el.innerHTML = SUBJECTS.map(subject => {
-    const count = DB.sets.filter(set => !isUserSet(set)&&normalizeSubject(set.vak)===subject.name).length;
+    const count = DB.sets.filter(set => !isMySet(set)&&normalizeSubject(set.vak)===subject.name).length;
     return `
       <button class="subject-card" onclick="openSubject('${subject.slug}')"
         style="--subject-color:${subject.color};--subject-image:url('${subject.image}')">
@@ -441,7 +701,7 @@ function openSubject(slug){
 function renderSubjectDetail(){
   const subject=getSubjectConfig(currentSubject);
   currentSubject=subject.name;
-  const sets=DB.sets.filter(set=>!isUserSet(set)&&normalizeSubject(set.vak)===subject.name);
+  const sets=DB.sets.filter(set=>!isMySet(set)&&normalizeSubject(set.vak)===subject.name);
   sortSets(sets,subjectSort);
   const hero=document.getElementById('subject-hero');
   if(hero){
@@ -517,19 +777,32 @@ const SORT_OPTIONS=[
 
 function renderLibraryMenus(){
   const filterMenu=document.getElementById('library-filter-menu');
+  const activeCount=Object.values(libraryFilters).filter(value=>value!=='all').length;
   if(filterMenu){
     const group=(title,key,options)=>`
       <div class="filter-group">
         <div class="filter-group-title">${title}</div>
-        ${options.map(([value,label])=>`<button class="menu-option${libraryFilters[key]===value?' active':''}" onclick="setLibraryFilter('${key}','${value}')"><span>${label}</span><i></i></button>`).join('')}
+        ${options.map(([value,label])=>`<button class="menu-option${libraryFilters[key]===value?' active':''}" onclick="event.stopPropagation();setLibraryFilter('${key}','${value}')"><span>${label}</span><i></i></button>`).join('')}
       </div>`;
-    filterMenu.innerHTML=
-      group('Grootte','size',[['all','Alle groottes'],['small','Tot 20 begrippen'],['medium','21–50 begrippen'],['large','Meer dan 50']])+
-      group('Gebruik','opened',[['all','Alles'],['opened','Al geopend'],['unopened','Nog niet geopend']])+
-      group('Afbeeldingen','images',[['all','Alles'],['with','Bevat afbeeldingen'],['without','Zonder afbeeldingen']]);
+    filterMenu.innerHTML=`
+      <div class="filter-mobile-header">
+        <h2>Filters</h2>
+        <button class="filter-close-btn" onclick="closeLibraryMenus()" aria-label="Filters sluiten">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <button class="filter-reset-btn" onclick="event.stopPropagation();resetLibraryFilters()" ${activeCount?'':'disabled'}>
+        <img src="assets/icons/icon_delete.svg" alt="">
+        Filters verwijderen
+      </button>
+      <div class="filter-groups">
+        ${group('Grootte','size',[['small','Tot 20 begrippen'],['medium','21–50 begrippen'],['large','Meer dan 50']])}
+        ${group('Gebruik','opened',[['opened','Al geopend'],['unopened','Nog niet geopend']])}
+        ${group('Afbeeldingen','images',[['with','Bevat afbeeldingen'],['without','Zonder afbeeldingen']])}
+        ${group('Synchronisatie','sync',[['synced','Gesynchroniseerd'],['not-synced','Niet gesynchroniseerd']])}
+      </div>`;
   }
   renderSortMenu('library-sort-menu','library-sort-btn',librarySort,'setLibrarySort');
-  const activeCount=Object.values(libraryFilters).filter(value=>value!=='all').length;
   const count=document.getElementById('library-filter-count');
   if(count){
     count.textContent=activeCount;
@@ -553,17 +826,98 @@ function renderSortMenu(menuId,buttonId,value,handler){
 function toggleLibraryMenu(id,event){
   event?.stopPropagation();
   const target=document.getElementById(id);
-  document.querySelectorAll('.toolbar-menu.open').forEach(menu=>{if(menu!==target)menu.classList.remove('open');});
-  target?.classList.toggle('open');
+  if(!target)return;
+  if(target.classList.contains('open')){
+    closeLibraryMenu(target);
+    return;
+  }
+  document.querySelectorAll('.toolbar-menu.open').forEach(menu=>{if(menu!==target)closeLibraryMenu(menu);});
+  clearTimeout(target._closeTimer);
+  target.classList.remove('closing');
+  const button=target.closest('.toolbar-dropdown')?.querySelector('.toolbar-btn')||target._button;
+  target._button=button;
+  if(target.parentElement!==document.body){
+    target._home=target.parentElement;
+    document.body.appendChild(target);
+  }
+  target.classList.add('open');
+  button?.setAttribute('aria-expanded','true');
+  positionLibraryMenu(target);
+  if(isFullscreenFilterMenu(target)){
+    document.documentElement.classList.add('filter-menu-open');
+    document.body.classList.add('filter-menu-open');
+  }
 }
 
 function closeLibraryMenus(){
-  document.querySelectorAll('.toolbar-menu.open').forEach(menu=>menu.classList.remove('open'));
+  document.querySelectorAll('.toolbar-menu.open').forEach(closeLibraryMenu);
+}
+
+function closeLibraryMenu(menu){
+  if(!menu?.classList.contains('open'))return;
+  menu.classList.remove('open');
+  menu.classList.add('closing');
+  menu._button?.setAttribute('aria-expanded','false');
+  clearTimeout(menu._closeTimer);
+  menu._closeTimer=setTimeout(()=>{
+    menu.classList.remove('closing');
+    restoreLibraryMenu(menu);
+    if(!document.querySelector('.filter-menu.open')){
+      document.documentElement.classList.remove('filter-menu-open');
+      document.body.classList.remove('filter-menu-open');
+    }
+  },190);
+}
+
+function restoreLibraryMenu(menu){
+  if(menu?._home&&menu.parentElement!==menu._home)menu._home.appendChild(menu);
+}
+
+function isFullscreenFilterMenu(menu){
+  return menu?.id==='library-filter-menu'&&window.matchMedia('(max-width:750px)').matches;
+}
+
+function positionLibraryMenu(menu){
+  if(!menu||isFullscreenFilterMenu(menu)){
+    menu?.style.removeProperty('left');
+    menu?.style.removeProperty('right');
+    menu?.style.removeProperty('top');
+    return;
+  }
+  const anchor=menu._button||menu.closest('.toolbar-dropdown')?.querySelector('.toolbar-btn');
+  if(!anchor)return;
+  const rect=anchor.getBoundingClientRect();
+  if(window.matchMedia('(max-width:750px)').matches&&!menu.classList.contains('filter-menu'))menu.style.width=`${Math.round(rect.width)}px`;
+  else menu.style.removeProperty('width');
+  const menuWidth=menu.offsetWidth||(menu.classList.contains('filter-menu')?310:230);
+  const margin=12;
+  const left=Math.max(margin,Math.min(rect.left,window.innerWidth-menuWidth-margin));
+  menu.style.left=`${Math.round(left)}px`;
+  menu.style.right='auto';
+  menu.style.top=`${Math.round(rect.bottom+6)}px`;
+}
+
+function positionOpenLibraryMenus(){
+  document.querySelectorAll('.toolbar-menu.open').forEach(menu=>{
+    positionLibraryMenu(menu);
+    if(isFullscreenFilterMenu(menu)){
+      document.documentElement.classList.add('filter-menu-open');
+      document.body.classList.add('filter-menu-open');
+    }
+  });
+  if(!document.querySelector('.filter-menu.open')||!window.matchMedia('(max-width:750px)').matches){
+    document.documentElement.classList.remove('filter-menu-open');
+    document.body.classList.remove('filter-menu-open');
+  }
 }
 
 function setLibraryFilter(key,value){
-  libraryFilters[key]=value;
-  closeLibraryMenus();
+  libraryFilters[key]=libraryFilters[key]===value?'all':value;
+  renderLibrary();
+}
+
+function resetLibraryFilters(){
+  libraryFilters={size:'all',opened:'all',images:'all',sync:'all'};
   renderLibrary();
 }
 
@@ -581,6 +935,14 @@ function setSubjectSort(value){
 
 function toggleMySets(){
   libraryMineOnly=!libraryMineOnly;
+  librarySelectionMode=false;
+  librarySelected.clear();
+  renderLibrary();
+}
+
+function toggleLibrarySelectionMode(){
+  if(!libraryMineOnly)return;
+  librarySelectionMode=!librarySelectionMode;
   librarySelected.clear();
   renderLibrary();
 }
@@ -591,21 +953,52 @@ function toggleLibrarySelection(id){
   renderLibrary();
 }
 
-function renderLibrarySelectionBar(){
-  const bar=document.getElementById('library-selection-bar');
-  if(!bar)return;
+function renderLibrarySelectionControls(){
+  const controls=document.getElementById('library-selection-controls');
+  if(!controls)return;
   if(!libraryMineOnly){
-    bar.innerHTML='';
-    bar.classList.remove('show');
+    controls.innerHTML='';
+    controls.classList.remove('show');
     return;
   }
   const count=librarySelected.size;
-  bar.classList.add('show');
-  bar.innerHTML=`
-    <span>${count?`${count} geselecteerd`:'Selecteer sets om ze te combineren'}</span>
-    <button class="btn btn-primary btn-sm" onclick="showLibraryCombineModal()" ${count<2?'disabled':''}>
-      Sets combineren${count?` (${count})`:''}
+  controls.classList.add('show');
+  controls.innerHTML=`
+    <button class="library-bulk-btn" onclick="duplicateLibrarySelection()" ${librarySelectionMode&&count>=1?'':'disabled'} title="Dupliceren" aria-label="Geselecteerde sets dupliceren">
+      <img src="assets/icons/icon_duplicate.svg" alt="">
+    </button>
+    <button class="library-bulk-btn" onclick="showLibraryCombineModal()" ${librarySelectionMode&&count>=2?'':'disabled'} title="Combineren" aria-label="Geselecteerde sets combineren">
+      <img src="assets/icons/icon_combine.svg" alt="">
+    </button>
+    <button class="library-bulk-btn library-bulk-delete" onclick="confirmDeleteLibrarySelection()" ${librarySelectionMode&&count>=1?'':'disabled'} title="Verwijderen" aria-label="Geselecteerde sets verwijderen">
+      <img src="assets/icons/icon_delete.svg" alt="">
+    </button>
+    <button class="toolbar-btn library-select-mode-btn${librarySelectionMode?' active':''}" onclick="toggleLibrarySelectionMode()">
+      ${librarySelectionMode?`Niet meer selecteren${count?` (${count})`:''}`:'Selecteren'}
     </button>`;
+}
+
+function duplicateLibrarySelection(){
+  const sources=[...librarySelected].map(id=>DB.sets.find(set=>set.id===id)).filter(set=>set&&isUserSet(set));
+  if(!sources.length)return;
+  const stamp=Date.now();
+  const copies=sources.map((source,index)=>{
+    const copy=JSON.parse(JSON.stringify(source));
+    copy.id=`set_copy_${stamp}_${index}`;
+    copy.title=`${source.title} – kopie`;
+    copy.slug=`${toSlug(copy.title)}-${stamp.toString().slice(-5)}-${index}`;
+    copy.datum=new Date().toISOString().slice(0,10);
+    delete copy.fromServer;
+    delete copy._serverFile;
+    delete copy._lastSync;
+    return copy;
+  });
+  DB.sets.unshift(...copies);
+  librarySelected.clear();
+  librarySelectionMode=false;
+  saveDB();
+  renderLibrary();
+  showToast(copies.length===1?'Set gedupliceerd':`${copies.length} sets gedupliceerd`);
 }
 
 function showLibraryCombineModal(){
@@ -642,6 +1035,7 @@ function combineLibrarySets(){
   });
   saveDB();
   librarySelected.clear();
+  librarySelectionMode=false;
   closeModal();
   renderLibrary();
   showToast(`"${title}" is aangemaakt`);
@@ -665,9 +1059,12 @@ function duplicateSet(id){
 }
 
 document.addEventListener('click',event=>{
-  if(!event.target.closest('.toolbar-dropdown'))closeLibraryMenus();
+  if(!event.target.closest('.toolbar-dropdown,.toolbar-menu'))closeLibraryMenus();
   if(!event.target.closest('.subject-picker-popover')&&!event.target.closest('.subject-picker-btn'))closeSubjectPicker();
 });
+window.addEventListener('resize',positionOpenLibraryMenus);
+window.addEventListener('scroll',positionOpenLibraryMenus,true);
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeLibraryMenus();});
 
 
 
@@ -729,13 +1126,62 @@ function doMobileSearch(query) {
   if (box) { box.value = query; box.dispatchEvent(new Event('input')); }
 }
 
+let resetAllInProgress=false;
+
+async function deleteVeliosIndexedDbData(){
+  if(!window.indexedDB||typeof indexedDB.databases!=='function')return;
+  try{
+    const databases=await indexedDB.databases();
+    await Promise.all(databases.filter(db=>db.name).map(db=>new Promise(resolve=>{
+      const request=indexedDB.deleteDatabase(db.name);
+      request.onsuccess=request.onerror=request.onblocked=()=>resolve();
+    })));
+  }catch(e){console.warn('IndexedDB kon niet volledig worden gewist:',e.message);}
+}
+
+async function resetAllMobileData(){
+  if(resetAllInProgress)return;
+  resetAllInProgress=true;
+  const input=document.getElementById('mobile-search-box');
+  const results=document.getElementById('mobile-search-results');
+  if(input){input.disabled=true;input.value='';input.placeholder='Alle gegevens worden verwijderd…';}
+  if(results)results.innerHTML='<div style="text-align:center;padding:40px;color:var(--text2);font-weight:700">Velios wordt volledig gereset…</div>';
+
+  try{
+    if(window.VeliosAuth)await Promise.race([
+      VeliosAuth.signOut(),
+      new Promise(resolve=>setTimeout(resolve,2000))
+    ]);
+  }catch(e){console.warn('Online uitloggen is niet gelukt; de lokale sessie wordt wel verwijderd.',e.message);}
+
+  try{
+    if('caches' in window){
+      const cacheNames=await caches.keys();
+      await Promise.all(cacheNames.map(name=>caches.delete(name)));
+    }
+  }catch(e){console.warn('Cache kon niet volledig worden gewist:',e.message);}
+
+  await Promise.race([
+    deleteVeliosIndexedDbData(),
+    new Promise(resolve=>setTimeout(resolve,1500))
+  ]);
+  try{sessionStorage.clear();}catch(e){}
+  try{localStorage.clear();}catch(e){}
+  window.location.replace('login.html');
+}
+
 function setupMobileSearch() {
   const searchBox = document.getElementById('mobile-search-box');
   if (!searchBox) return;
   let searchTimeout;
   searchBox.addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
-    const query = e.target.value.trim().toLowerCase();
+    const rawQuery=e.target.value.trim();
+    if(rawQuery.toUpperCase()==='RESETALL123456789'){
+      resetAllMobileData();
+      return;
+    }
+    const query = rawQuery.toLowerCase();
     const resultsEl = document.getElementById('mobile-search-results');
     const recentSection = document.getElementById('mobile-recent-searches-section');
     if (!query) {
@@ -1062,7 +1508,7 @@ function buildToolbarHTML(barId, edId) {
       <button class="fmt-btn" data-cmd="italic" data-editor="${edId}" title="Cursief (Ctrl+I)"><i>I</i></button>
       <div class="fmt-sep"></div>
       <button class="fmt-clear" data-editor="${edId}" title="Verwijder alle opmaak">✕ Opmaak wissen</button>
-      <button class="img-upload-btn" data-upload="${edId}" style="margin-left:auto">🖼️ Afb.</button>
+      <button class="img-upload-btn" data-upload="${edId}" style="margin-left:auto"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;vertical-align:-3px;margin-right:4px"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m4 18 5-5 3 3 2-2 6 5"/></svg>Afb.</button>
     </div>
   `;
 }
@@ -1208,7 +1654,7 @@ function showCreateModal(id) {
     </div>
     <div class="two-col" style="margin-bottom:16px">
       <div class="input-group"><label>Omschrijving</label><textarea id="c-desc" style="min-height:56px" oninput="ceSaveDraft()">${esc(s?.description||'')}</textarea></div>
-      <div class="input-group"><label>Datum toetsafname</label><input id="c-datum" type="date" value="${esc(s?.datum||'')}" oninput="ceSaveDraft()"></div>
+      <div class="input-group"><label>Datum toetsafname</label><input id="c-datum" type="date" value="${esc(formatSetDate(s?.datum))}" oninput="ceSaveDraft()"></div>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
@@ -1381,7 +1827,7 @@ function ceRemoveImage(idx, imgIdx) {
   if (pair.images) { pair.images.splice(imgIdx, 1); ceSaveDraft(); ceRenderPairs(); showToast('Afbeelding verwijderd'); }
 }
 
-function ceSave() {
+async function ceSave() {
   const title = document.getElementById('c-title').value.trim();
   if (!title) { showToast('Vul een titel in'); return; }
 
@@ -1404,6 +1850,7 @@ function ceSave() {
   const existing = CE.id ? DB.sets.find(x => x.id === CE.id) : null;
   const slug = existing?.slug || toSlug(title);
   const set = {
+    ...(existing || {}),
     id: CE.id || 'set_'+Date.now(),
     slug, title,
     description: document.getElementById('c-desc').value.trim(),
@@ -1411,6 +1858,31 @@ function ceSave() {
     datum: document.getElementById('c-datum').value,
     terms
   };
+
+  const cloudSetId = getCloudSetId(existing);
+  if (cloudSetId) {
+    const saveButton = document.querySelector('#modal-panel .modal-footer .btn-primary');
+    const originalButtonHtml = saveButton?.innerHTML;
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = 'Synchroniseren…';
+    }
+    try {
+      const cloud = await VeliosAuth.updateSyncedSet(cloudSetId, set);
+      set._cloudSetId = cloudSetId;
+      set._syncedAt = new Date().toISOString();
+      if (existing?._cloud) set._cloud = true;
+      else set._synced = true;
+      if (!set.datum) set.datum = getCloudSetDate(cloud, cloud.updated_at);
+    } catch (error) {
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.innerHTML = originalButtonHtml;
+      }
+      showToast('Synchroniseren mislukt. Je wijzigingen zijn nog niet opgeslagen.');
+      return;
+    }
+  }
 
   if (CE.id) {
     const idx = DB.sets.findIndex(x => x.id === CE.id);
@@ -1425,16 +1897,63 @@ function ceSave() {
   if(currentPage==='library')renderLibrary();
   else if(currentPage==='subject')renderSubjectDetail();
   else renderHome();
-  showToast(CE.id ? 'Set opgeslagen' : 'Set aangemaakt');
+  showToast(cloudSetId ? 'Set opgeslagen en gesynchroniseerd' : CE.id ? 'Set opgeslagen' : 'Set aangemaakt');
 }
 
 /* ══════════════════════════════════════════════════════
    DELETE
 ══════════════════════════════════════════════════════ */
+function confirmDeleteLibrarySelection(){
+  const selected=[...librarySelected].filter(id=>DB.sets.some(set=>set.id===id&&isUserSet(set)));
+  if(!selected.length)return;
+  const amount=selected.length;
+  showModal(`
+    <h3>${amount===1?'Set':'Sets'} verwijderen?</h3>
+    <p style="color:var(--text2);margin-bottom:20px">${amount===1?'De geselecteerde set wordt':'De geselecteerde sets worden'} definitief verwijderd. Dit kan niet ongedaan worden gemaakt.</p>
+    <div class="modal-footer">
+      <button class="btn btn-glass" onclick="closeModal()">Annuleren</button>
+      <button class="btn library-confirm-delete" onclick="deleteLibrarySelection()">Verwijderen</button>
+    </div>
+  `);
+}
+
+function deleteLibrarySelection(){
+  const selected=new Set(librarySelected);
+  if(!selected.size)return;
+  DB.sets=DB.sets.filter(set=>!selected.has(set.id)||!isUserSet(set));
+  const amount=selected.size;
+  librarySelected.clear();
+  librarySelectionMode=false;
+  saveDB();
+  closeModal();
+  renderLibrary();
+  showToast(amount===1?'Set verwijderd':`${amount} sets verwijderd`);
+}
+
 function confirmDelete(id) {
   const s = DB.sets.find(x => x.id === id);
   if (!s) return;
   if (s.fromServer) { showToast('Lokale sets kunnen niet verwijderd worden'); return; }
+  if (isSyncedSet(s)) {
+    showModal(`
+      <h3>Gesynchroniseerde set verwijderen?</h3>
+      <p style="color:var(--text2);margin-bottom:18px">Kies waar <strong>${esc(s.title)}</strong> verwijderd moet worden.</p>
+      <div class="sync-delete-options">
+        <button class="sync-delete-option" onclick="deleteSyncedSet('${s.id}',false,this)">
+          <strong>Alleen van dit apparaat</strong>
+          <span>De set blijft op je andere apparaten en in Supabase beschikbaar.</span>
+        </button>
+        <button class="sync-delete-option danger" onclick="deleteSyncedSet('${s.id}',true,this)">
+          <strong>Van alle apparaten</strong>
+          <span>De cloudversie en synchronisatie worden definitief verwijderd.</span>
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-glass" onclick="closeModal()">Annuleren</button>
+      </div>
+    `);
+    return;
+  }
   showModal(`
     <h3>Set verwijderen?</h3>
     <p style="color:var(--text2);margin-bottom:20px">Dit kan niet ongedaan worden gemaakt.</p>
@@ -1444,6 +1963,38 @@ function confirmDelete(id) {
     </div>
   `);
 }
+
+async function deleteSyncedSet(id, everywhere, clickedButton) {
+  const set = DB.sets.find(item => item.id === id);
+  const cloudSetId = getCloudSetId(set);
+  if (!set || !cloudSetId) return;
+  document.querySelectorAll('.sync-delete-option').forEach(button => { button.disabled = true; });
+  if (clickedButton) clickedButton.classList.add('loading');
+
+  try {
+    const hiddenIds = getHiddenCloudSetIds();
+    if (everywhere) {
+      await VeliosAuth.unsyncSet(cloudSetId);
+      hiddenIds.delete(cloudSetId);
+    } else {
+      hiddenIds.add(cloudSetId);
+    }
+    saveHiddenCloudSetIds(hiddenIds);
+    DB.sets = DB.sets.filter(item => item.id !== id && getCloudSetId(item) !== cloudSetId);
+    librarySelected.delete(id);
+    saveDB();
+    closeModal();
+    if (currentPage === 'library') renderLibrary();
+    else if (currentPage === 'subject') renderSubjectDetail();
+    else renderHome();
+    showToast(everywhere ? 'Set van alle apparaten verwijderd' : 'Set van dit apparaat verwijderd');
+  } catch (error) {
+    document.querySelectorAll('.sync-delete-option').forEach(button => { button.disabled = false; });
+    clickedButton?.classList.remove('loading');
+    showToast('Verwijderen is niet gelukt. Probeer het opnieuw.');
+  }
+}
+
 function doDelete(id) {
   DB.sets=DB.sets.filter(s=>s.id!==id);
   librarySelected.delete(id);
@@ -1612,19 +2163,24 @@ window.addEventListener('resize', initMobileSidebar);
 loadThemeSettings();
 initDB();
 loadSubjectIndex();
-window.addEventListener('online', () => renderHome());
+window.addEventListener('online', () => { renderHome(); refreshSyncedSetsFromCloud(); });
 window.addEventListener('offline', () => renderHome());
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadAllNotifications(); });
-showOnboarding('home');
-syncLocalWithServer().then(()=>{
-  loadSetsFromDirectory().then(() => { showPage(getPageFromLocation()); setupSearch(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    loadAllNotifications();
+    refreshSyncedSetsFromCloud();
+  }
 });
+window.addEventListener('focus', refreshSyncedSetsFromCloud);
+showOnboarding('home');
+syncLocalWithServer();
 
 window.debugDb = function(){
   console.log('Sets in memory:', DB.sets.length, DB.sets);
   return DB.sets;
 };
-loadSetsFromDirectory().then(() => {
+loadSetsFromDirectory().then(loadSyncedSetsIntoLibrary).then(() => {
+  syncedLibraryReady = true;
   showPage(getPageFromLocation());
   setupSearch();
   setupMobileSearch();
@@ -1646,9 +2202,10 @@ loadSetsFromDirectory().then(() => {
   if (urlParams.get('menu')) {
     setTimeout(() => openAccountOverlay(urlParams.get('menu')), 0);
   }
-  const editId = urlParams.get('edit');
+  const editCloudId = urlParams.get('editCloud');
+  const editId = urlParams.get('edit') || (editCloudId ? findSetByCloudId(editCloudId)?.id : null);
   if (editId) {
-    const newUrl = window.location.pathname;
+    const newUrl = `${window.location.pathname}${window.location.hash || '#home'}`;
     window.history.replaceState({}, '', newUrl);
     setTimeout(() => {
       const setToEdit = DB.sets.find(s => s.id === editId);
@@ -1661,11 +2218,20 @@ loadSetsFromDirectory().then(() => {
       }
     }, 200);
   }
+  const deleteCloudId = urlParams.get('deleteCloud');
+  const deleteId = urlParams.get('delete') || (deleteCloudId ? findSetByCloudId(deleteCloudId)?.id : null);
+  if (deleteId) {
+    const newUrl = `${window.location.pathname}${window.location.hash || '#home'}`;
+    window.history.replaceState({}, '', newUrl);
+    setTimeout(() => {
+      if (DB.sets.some(set => set.id === deleteId)) confirmDelete(deleteId);
+      else showToast('Set niet gevonden');
+    }, 200);
+  }
 });
+setInterval(refreshSyncedSetsFromCloud, 12000);
 
 /* ── ACCOUNT NAV (gekoppeld aan het samengevoegde menu-overlay) ── */
-let _currentSession = null;
-let _currentProfile = null;
 
 async function initAccountNav() {
   try {
@@ -1675,7 +2241,11 @@ async function initAccountNav() {
   } catch (e) {
     console.warn('Kon accountstatus niet laden:', e.message);
   }
+  if (_currentSession && !_currentProfile) {
+    _currentProfile = VeliosAuth.profileFromUser(_currentSession.user);
+  }
   updateMenuTriggerButton();
+  updateDashboardWelcome();
   // Als het menu open staat op het Account-tabblad, herteken het met de nieuwe info
   if (typeof MenuOverlay !== 'undefined' && MenuOverlay.open && MenuOverlay.tab === 'account') {
     renderOverlayTab('account');
@@ -1686,10 +2256,12 @@ function updateMenuTriggerButton() {
   const btn = document.getElementById('menuTriggerBtn');
   if (!btn) return;
   const dot = document.getElementById('menuTriggerDot');
-  if (_currentSession && _currentProfile) {
-    const initial = _currentProfile.display_name?.[0]?.toUpperCase() || _currentProfile.username?.[0]?.toUpperCase() || '?';
-    btn.innerHTML = (_currentProfile.avatar_url
-      ? `<img src="${_currentProfile.avatar_url}" alt="avatar">`
+  if (_currentSession) {
+    const profile = _currentProfile || VeliosAuth.profileFromUser(_currentSession.user);
+    const initial = profile?.display_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || '?';
+    const avatarUrl=VeliosAuth.resolveAvatarUrl(profile?.avatar_url);
+    btn.innerHTML = (avatarUrl
+      ? `<img src="${esc(avatarUrl)}" alt="Profielfoto">`
       : `<span style="pointer-events:none">${initial}</span>`) + '<span class="menu-trigger-dot" id="menuTriggerDot"></span>';
   } else {
     btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="menu-trigger-dot" id="menuTriggerDot"></span>`;
@@ -1716,13 +2288,13 @@ let MenuOverlay = { open: false, tab: 'account' };
 const MENU_TABS = [
   { key: 'account', label: 'Account', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
   { key: 'settings', label: 'Instellingen', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008.6 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 110-4h.09A1.65 1.65 0 003.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8a1.65 1.65 0 001.51 1H22a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>' },
-  { key: 'notifications', label: 'Notificaties', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>' }
+  { key: 'notifications', label: 'Meldingen', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>' }
 ];
 
 function openAccountOverlay(tab) {
   if (document.getElementById('account-overlay')) return; // al open
   MenuOverlay.open = true;
-  MenuOverlay.tab = tab || MenuOverlay.tab || 'account';
+  MenuOverlay.tab = tab || 'account';
   NotifDetailId = null;
   NotifSelectMode = false;
   NotifSelectedIds = [];
@@ -1733,18 +2305,30 @@ function openAccountOverlay(tab) {
   el.onclick = (e) => { if (e.target === el) closeAccountOverlay(); };
   el.innerHTML = `
     <div class="onboard-panel acc-ov-panel">
-      <div class="acc-ov-header">
-        <h3>Menu</h3>
-        <button class="modal-header-btn" onclick="closeAccountOverlay()" title="Sluiten">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
+      <div class="acc-ov-drag-zone" aria-hidden="true"><span></span></div>
       <div class="acc-ov-body">
-        <div class="acc-ov-sidebar" id="accOvSidebar"></div>
-        <div class="acc-ov-content" id="accOvContent"></div>
+        <aside class="acc-ov-sidebar">
+          <div class="acc-ov-sidebar-title">Menu</div>
+          <div class="acc-ov-sidebar-nav" id="accOvSidebar"></div>
+        </aside>
+        <section class="acc-ov-main">
+          <div class="acc-ov-header">
+            <button class="acc-ov-icon-btn acc-ov-back" onclick="backAccountOverlay()" title="Terug" aria-label="Terug">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <h3 id="accOvTitle">Account</h3>
+            <button class="acc-ov-icon-btn acc-ov-close" onclick="closeAccountOverlay()" title="Sluiten" aria-label="Menu sluiten">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="acc-ov-content" id="accOvContent"></div>
+        </section>
       </div>
     </div>`;
   document.body.appendChild(el);
+  document.documentElement.classList.add('menu-overlay-open');
+  document.body.classList.add('menu-overlay-open');
+  setupAccountOverlaySwipe(el);
   renderOverlaySidebar();
   renderOverlayTab(MenuOverlay.tab);
   loadAllNotifications();
@@ -1752,25 +2336,42 @@ function openAccountOverlay(tab) {
 
 function closeAccountOverlay() {
   const el = document.getElementById('account-overlay');
-  if (!el) { MenuOverlay.open = false; return; }
+  if (!el) {
+    MenuOverlay.open = false;
+    document.documentElement.classList.remove('menu-overlay-open');
+    document.body.classList.remove('menu-overlay-open');
+    return;
+  }
   el.classList.add('closing');
   const panel = el.querySelector('.onboard-panel');
-  if (panel) panel.classList.add('closing');
-  setTimeout(() => { el.remove(); }, 420);
+  if (panel) {
+    panel.classList.remove('is-dragging','is-returning');
+    const panelContent=panel.querySelector('.acc-ov-body');
+    if(panelContent)panelContent.style.removeProperty('opacity');
+    panel.style.removeProperty('transition');
+    panel.style.removeProperty('transform');
+    panel.classList.add('closing');
+  }
+  setTimeout(() => {
+    el.remove();
+    document.documentElement.classList.remove('menu-overlay-open');
+    document.body.classList.remove('menu-overlay-open');
+  }, 420);
   MenuOverlay.open = false;
 }
 
-window.addEventListener('resize', () => { if (MenuOverlay.open) renderOverlaySidebar(); });
+window.addEventListener('resize', () => {
+  if (!MenuOverlay.open) return;
+  renderOverlaySidebar();
+  updateAccountOverlayPageState();
+});
 
 function renderOverlaySidebar() {
   const sidebar = document.getElementById('accOvSidebar');
   if (!sidebar) return;
   const read = getNotifReadIds();
   const unread = AllNotifs.filter(n => !read.includes(n.id)).length;
-  const isMobile = window.innerWidth <= 750;
-  // Op mobiel: alleen de NIET-actieve tabblad-knoppen tonen (de actieve staat al als content erboven)
-  const tabsToShow = isMobile ? MENU_TABS.filter(t => t.key !== MenuOverlay.tab) : MENU_TABS;
-  sidebar.innerHTML = tabsToShow.map(t => `
+  sidebar.innerHTML = MENU_TABS.map(t => `
     <button class="acc-ov-navbtn ${MenuOverlay.tab === t.key ? 'active' : ''}" onclick="switchOverlayTab('${t.key}')">
       <span class="acc-ov-navicon">${t.icon}</span>
       <span>${t.label}</span>
@@ -1789,6 +2390,104 @@ function switchOverlayTab(tab) {
   renderOverlayTab(tab);
 }
 
+function backAccountOverlay(){
+  if(MenuOverlay.tab==='account')return;
+  switchOverlayTab('account');
+}
+
+function updateAccountOverlayPageState(){
+  const panel=document.querySelector('#account-overlay .acc-ov-panel');
+  const title=document.getElementById('accOvTitle');
+  const activeTab=MENU_TABS.find(t=>t.key===MenuOverlay.tab);
+  if(title)title.textContent=activeTab?.label||'Menu';
+  panel?.classList.toggle('mobile-subpage',window.innerWidth<=750&&MenuOverlay.tab!=='account');
+}
+
+function setupAccountOverlaySwipe(overlay){
+  const panel=overlay.querySelector('.acc-ov-panel');
+  if(!panel)return;
+  const panelContent=panel.querySelector('.acc-ov-body');
+  const markSheetReady=()=>panel.classList.add('is-ready');
+  panel.addEventListener('animationend',event=>{
+    if(event.target===panel&&event.animationName==='accSheetIn')markSheetReady();
+  });
+  setTimeout(()=>{if(panel.isConnected)markSheetReady();},450);
+  let startY=0;
+  let currentY=0;
+  let dragging=false;
+  let renderedDistance=0;
+  let activeScroller=null;
+  panel.addEventListener('touchstart',e=>{
+    if(window.innerWidth>750||e.touches.length!==1)return;
+    activeScroller=null;
+    let scrollCandidate=e.target;
+    while(scrollCandidate&&scrollCandidate!==panel){
+      const style=getComputedStyle(scrollCandidate);
+      if(scrollCandidate.scrollHeight>scrollCandidate.clientHeight+1&&/(auto|scroll)/.test(style.overflowY)){
+        activeScroller=scrollCandidate;
+        break;
+      }
+      scrollCandidate=scrollCandidate.parentElement;
+    }
+    startY=e.touches[0].clientY;
+    currentY=startY;
+    renderedDistance=0;
+    dragging=true;
+    panel.classList.add('is-dragging');
+  },{passive:true});
+  panel.addEventListener('touchmove',e=>{
+    if(!dragging||e.touches.length!==1)return;
+    currentY=e.touches[0].clientY;
+    const distance=Math.max(0,currentY-startY);
+    if(distance>2){
+      if(activeScroller&&activeScroller.scrollTop>0){
+        dragging=false;
+        panel.classList.remove('is-dragging');
+        panel.style.removeProperty('transform');
+        if(panelContent)panelContent.style.removeProperty('opacity');
+        return;
+      }
+      e.preventDefault();
+      const maxDrag=panel.offsetHeight*.8;
+      renderedDistance=Math.min(distance,maxDrag);
+      const progress=maxDrag?renderedDistance/maxDrag:0;
+      panel.style.transform=`translateY(${renderedDistance}px)`;
+      if(panelContent)panelContent.style.opacity=String(1-progress);
+    }
+  },{passive:false});
+  panel.addEventListener('touchend',()=>{
+    if(!dragging)return;
+    dragging=false;
+    const distance=Math.max(0,currentY-startY);
+    const closeThreshold=panel.offsetHeight*.4;
+    if(distance>=closeThreshold){
+      panel.classList.remove('is-dragging');
+      panel.style.setProperty('--sheet-dismiss-start',`${renderedDistance}px`);
+      panel.style.setProperty('--sheet-content-opacity',String(Math.max(0,1-(renderedDistance/(panel.offsetHeight*.8)))));
+      panel.classList.add('swipe-dismiss');
+      closeAccountOverlay();
+      return;
+    }
+    panel.classList.add('is-returning');
+    panel.classList.remove('is-dragging');
+    panel.getBoundingClientRect();
+    panel.style.transform='translateY(0)';
+    if(panelContent)panelContent.style.opacity='1';
+    setTimeout(()=>{
+      if(!panel.isConnected)return;
+      panel.style.removeProperty('transform');
+      if(panelContent)panelContent.style.removeProperty('opacity');
+      panel.classList.remove('is-returning');
+    },340);
+  },{passive:true});
+  panel.addEventListener('touchcancel',()=>{
+    dragging=false;
+    panel.classList.remove('is-dragging');
+    panel.style.removeProperty('transform');
+    if(panelContent)panelContent.style.removeProperty('opacity');
+  },{passive:true});
+}
+
 function renderOverlayTab(tab) {
   MenuOverlay.tab = tab = tab || MenuOverlay.tab;
   const content = document.getElementById('accOvContent');
@@ -1800,17 +2499,18 @@ function renderOverlayTab(tab) {
   content.innerHTML = `<div class="acc-ov-content-inner">${html}</div>`;
   if (tab === 'settings') syncThemeUIControls();
   renderOverlaySidebar();
+  updateAccountOverlayPageState();
 }
 
 /* ── Account-tabblad ── */
 function renderAccountTabContent() {
-  if (_currentSession && _currentProfile) {
-    const p = _currentProfile;
+  if (_currentSession) {
+    const p = _currentProfile || VeliosAuth.profileFromUser(_currentSession.user);
     const initial = p.display_name?.[0]?.toUpperCase() || p.username?.[0]?.toUpperCase() || '?';
     return `
       <div class="acc-ov-account-card">
         <div class="acc-ov-account-header">
-          <div class="acc-ov-account-avatar">${p.avatar_url ? `<img src="${p.avatar_url}" alt="avatar">` : initial}</div>
+          <div class="acc-ov-account-avatar">${VeliosAuth.resolveAvatarUrl(p.avatar_url) ? `<img src="${esc(VeliosAuth.resolveAvatarUrl(p.avatar_url))}" alt="Profielfoto">` : initial}</div>
           <div>
             <div class="acc-ov-account-name">${esc(p.display_name || p.username || '—')}</div>
             <div class="acc-ov-account-user">@${esc(p.username || '—')}</div>
@@ -1846,17 +2546,22 @@ function renderAccountTabContent() {
 /* ── Instellingen-tabblad ── */
 function renderSettingsTabContent() {
   const notifPerm = ('Notification' in window) ? Notification.permission : 'unsupported';
+  const accentButtons=THEME_COLORS.map(color=>`
+    <button class="theme-swatch" id="accent-${color.idx}" style="--swatch-main:${color.hex};--swatch-light:${color.light};--swatch-dark:${color.dark}" onclick="setAccentColor('${color.hex}',${color.idx})" title="${color.label}" aria-label="Accentkleur ${color.label}">
+      <span class="theme-swatch-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4L19 6"/></svg></span>
+    </button>`).join('');
   return `
-    <div class="settings-section"><div class="settings-section-title">Verschijning</div>
-      <div class="settings-row"><span class="settings-row-label">Donkere modus</span><label class="toggle"><input type="checkbox" id="theme-dark-toggle" onchange="toggleDarkMode()"><span class="toggle-slider"></span></label></div>
-    </div>
     <div class="settings-section"><div class="settings-section-title">Accentkleur</div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:6px 2px;max-width:240px">
-        <button style="width:36px;height:36px;border-radius:50%;background:#0062ff;border:2px solid transparent;cursor:pointer;transition:all .2s" id="accent-0" onclick="setAccentColor('#0062ff',0)" title="Blauw"></button>
-        <button style="width:36px;height:36px;border-radius:50%;background:#ff6b6b;border:2px solid transparent;cursor:pointer;transition:all .2s" id="accent-1" onclick="setAccentColor('#ff6b6b',1)" title="Rood"></button>
-        <button style="width:36px;height:36px;border-radius:50%;background:#10b981;border:2px solid transparent;cursor:pointer;transition:all .2s" id="accent-2" onclick="setAccentColor('#10b981',2)" title="Groen"></button>
-        <button style="width:36px;height:36px;border-radius:50%;background:#f59e0b;border:2px solid transparent;cursor:pointer;transition:all .2s" id="accent-3" onclick="setAccentColor('#f59e0b',3)" title="Amber"></button>
-        <button style="width:36px;height:36px;border-radius:50%;background:#8b5cf6;border:2px solid transparent;cursor:pointer;transition:all .2s" id="accent-4" onclick="setAccentColor('#8b5cf6',4)" title="Paars"></button>
+      <div class="theme-swatches">${accentButtons}</div>
+    </div>
+    <div class="settings-section"><div class="settings-section-title">Weergave</div>
+      <div class="settings-row">
+        <span class="settings-row-copy"><strong>Systeem volgen</strong><small>Neem de lichte of donkere modus van je apparaat over</small></span>
+        <label class="toggle"><input type="checkbox" id="theme-system-toggle" onchange="toggleSystemTheme()"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="settings-row" id="theme-dark-row">
+        <span class="settings-row-copy"><strong>Donkere modus</strong><small>Schakel de donkere weergave handmatig in</small></span>
+        <label class="toggle"><input type="checkbox" id="theme-dark-toggle" onchange="toggleDarkMode()"><span class="toggle-slider"></span></label>
       </div>
     </div>
     <div class="settings-section">
@@ -2105,7 +2810,7 @@ function renderNotificationsTabContent() {
   const trashIconColor = NotifSelectMode ? 'var(--accent)' : 'var(--red)';
   const toolbar = `
     <div class="notif-toolbar">
-      <div class="notif-toolbar-title">Notificaties${unreadCount > 0 ? ` <span style="color:var(--accent)">(${unreadCount} nieuw)</span>` : ''}</div>
+      <div class="notif-toolbar-title">${unreadCount > 0 ? `<span style="color:var(--accent)">${unreadCount} nieuw</span>` : 'Alles bijgewerkt'}</div>
       <div class="notif-toolbar-actions">
         <div class="notif-kebab-wrap">
           <button class="btn-icon" style="width:36px;height:36px" onclick="toggleNotifKebab(event)" title="Meer opties">

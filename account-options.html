@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+<script src="sw-register.js?v=20260812-6"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -169,6 +170,28 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 #toast.ok{background:#f0fdf8;border-color:rgba(24,182,114,.3);color:var(--green);}
 #toast.err{background:#fff0f1;border-color:rgba(232,58,74,.3);color:var(--red);}
 @media(max-width:750px){#toast{bottom:calc(env(safe-area-inset-bottom,0px)+16px);left:16px;right:16px;text-align:center;}}
+
+/* Vernieuwde, vlakke accountstijl */
+:root{--bg-grad:#f2f2f7;--input-bg:#f7f7f8;--glass:#fff;--glass2:#fff;--glass-border:#dedee5;--glass-shadow:none;--glass-shadow-lg:none;--text:#0b1029;--text2:#45465a;--text3:#77798b;--r:30px;--r2:36px;--r3:34px;--r4:30px}
+body.dark-mode{--bg-grad:#000;--input-bg:#2c2c2e;--glass:#1c1c1e;--glass2:#1c1c1e;--glass-border:#343438;--text:#fff;--text2:#d0d0d6;--text3:#8e8e93;--glass-shadow:none;--glass-shadow-lg:none}
+nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--glass-border)!important;backdrop-filter:none;-webkit-backdrop-filter:none}
+.nav-back{background:var(--glass);box-shadow:none;border-radius:50%}.nav-back:hover{background:var(--glass);box-shadow:none;transform:none}
+.section-card{box-shadow:none;border-radius:var(--r2);animation:none}.section-card-header{padding:18px 22px;border-color:var(--glass-border)}
+.section-card-icon{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:var(--accent-light);color:var(--accent)}
+.section-card-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.avatar-big,.avatar-preset{border-radius:50%;box-shadow:none}.avatar-big-emoji{font-size:24px;color:#fff;font-weight:800}.avatar-preset:hover,.avatar-preset.selected{transform:none}
+.avatar-preset-grid{grid-template-columns:repeat(6,1fr);gap:12px}.avatar-preset{border-width:3px;background:#e9e9ee;box-shadow:none}.avatar-preset.selected{box-shadow:0 0 0 3px var(--accent-light)}
+.btn-save-avatar,.btn-save{background:var(--accent);box-shadow:none;border-radius:999px}
+.btn-save-avatar:hover:not(:disabled),.btn-save:hover:not(:disabled){filter:none;transform:none}
+.field input,.modal-confirm-field input{background:var(--input-bg);border:1px solid var(--glass-border);border-radius:999px;padding-inline:18px}
+.field input:focus,.modal-confirm-field input:focus{background:var(--input-bg);box-shadow:0 0 0 3px var(--accent-light)}
+body.dark-mode .field input,body.dark-mode .modal-confirm-field input{background:var(--input-bg)!important;border-color:var(--glass-border)!important}
+body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focus{background:var(--input-bg)!important;border-color:var(--accent)!important}
+.session-item{border-radius:var(--r4);background:var(--input-bg);border-color:var(--glass-border)}
+.modal-bg{background:rgba(0,0,0,.45);backdrop-filter:blur(8px)}.modal-panel{box-shadow:none;background:var(--glass);border-radius:var(--r2)}
+.btn-glass{box-shadow:none;background:var(--bg-grad)}
+.btn,.btn-danger,.btn-danger-solid{border-radius:999px!important}
+@media(max-width:520px){.avatar-preset-grid{grid-template-columns:repeat(3,1fr)}.avatar-current-row{align-items:flex-start}.danger-row{align-items:flex-start;flex-direction:column}.danger-row .btn-danger,.danger-row .btn-danger-solid{width:100%;height:42px}}
 </style>
 </head>
 <body>
@@ -186,7 +209,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
   <!-- 1. PROFIELFOTO -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-icon">🖼️</div>
+      <div class="section-card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m4 18 5-5 3 3 2-2 6 5"/></svg></div>
       <div class="section-card-title">Profielfoto</div>
     </div>
     <div class="section-card-body">
@@ -214,7 +237,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
   <!-- 2. PROFIEL -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-icon">✏️</div>
+      <div class="section-card-icon"><svg viewBox="0 0 24 24"><path d="m4 16-.8 4.8L8 20l11-11-4-4L4 16Z"/><path d="m13.5 6.5 4 4"/></svg></div>
       <div class="section-card-title">Profielgegevens</div>
     </div>
     <div class="section-card-body">
@@ -238,7 +261,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
   <!-- 3. E-MAIL -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-icon">📧</div>
+      <div class="section-card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></div>
       <div class="section-card-title">E-mailadres</div>
     </div>
     <div class="section-card-body">
@@ -255,7 +278,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
   <!-- 4. WACHTWOORD -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-icon">🔑</div>
+      <div class="section-card-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 8-8m-3 3 3 3m-6 0 3 3"/></svg></div>
       <div class="section-card-title">Wachtwoord wijzigen</div>
     </div>
     <div class="section-card-body">
@@ -282,6 +305,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
           <div class="pw-bar" id="nb3"></div><div class="pw-bar" id="nb4"></div>
         </div>
         <div class="pw-label" id="pwStrLabel"></div>
+        <div class="field-hint">Speciale tekens, zoals - _ = + / ( ) * &amp;, zijn toegestaan.</div>
         <div class="field-error" id="err-pw-new"></div>
       </div>
       <div class="field">
@@ -301,7 +325,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
   <!-- 5. APPARATEN -->
   <div class="section-card">
     <div class="section-card-header">
-      <div class="section-card-icon">📱</div>
+      <div class="section-card-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg></div>
       <div class="section-card-title">Ingelogde apparaten</div>
     </div>
     <div class="section-card-body">
@@ -315,7 +339,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
   <!-- 6. GEVAARZONE -->
   <div class="section-card danger-section">
     <div class="section-card-header">
-      <div class="section-card-icon">⚠️</div>
+      <div class="section-card-icon"><svg viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5m0 3v.01"/></svg></div>
       <div class="section-card-title" style="color:var(--red)">Gevarenzone</div>
     </div>
     <div class="section-card-body">
@@ -368,26 +392,11 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js"></script>
+<script src="supabase-client.js?v=20260812-6"></script>
 <script>
-/* ── PRESET AVATARS ──
-   10 emoji-gebaseerde avatars met achtergrondkleur.
-   Geen externe afbeeldingen nodig — werkt altijd, ook offline.
-*/
-const AVATARS = [
-  { emoji: '🦊', bg: 'linear-gradient(135deg,#ff9a4d,#ff6b35)' },
-  { emoji: '🐺', bg: 'linear-gradient(135deg,#8b9dc3,#5c6bc0)' },
-  { emoji: '🐸', bg: 'linear-gradient(135deg,#5dd45d,#2e9e2e)' },
-  { emoji: '🐼', bg: 'linear-gradient(135deg,#e8e8e8,#a0a0a0)' },
-  { emoji: '🦁', bg: 'linear-gradient(135deg,#ffd166,#f4a329)' },
-  { emoji: '🐙', bg: 'linear-gradient(135deg,#c77dff,#9b5de5)' },
-  { emoji: '🦋', bg: 'linear-gradient(135deg,#74c0fc,#339af0)' },
-  { emoji: '🐉', bg: 'linear-gradient(135deg,#ff6b6b,#e63946)' },
-  { emoji: '🌙', bg: 'linear-gradient(135deg,#2d2d5e,#4a4080)' },
-  { emoji: '⚡', bg: 'linear-gradient(135deg,#ffe066,#f4c430)' },
-];
+const AVATARS = VeliosAuth.AVATAR_OPTIONS;
 
-const PW_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,20}$/;
+const PW_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
 
 let profile = null;
 let currentUser = null;
@@ -418,7 +427,8 @@ let toastTimer;
 
 function applyTheme() {
   const s = JSON.parse(localStorage.getItem('sd_theme') || '{}');
-  if (s.darkMode) { document.body.classList.add('dark-mode'); document.getElementById('theme-meta').content = '#0a0812'; }
+  const dark = s.followSystem ? window.matchMedia('(prefers-color-scheme: dark)').matches : !!s.darkMode;
+  if (dark) { document.body.classList.add('dark-mode'); document.getElementById('theme-meta').content = '#000000'; }
   if (s.accentColor) setAccentCss(s.accentColor);
 }
 function setAccentCss(color) {
@@ -441,48 +451,31 @@ function populateFields() {
 function renderCurrentAvatar() {
   const el = document.getElementById('avatarBigContent');
   const bigWrap = document.getElementById('avatarBig');
-
-  // Check if current avatar_url is one of our presets
-  const stored = profile.avatar_url || '';
-  const presetMatch = AVATARS.findIndex((_, i) => stored === avatarDataUrl(i));
-
-  if (presetMatch >= 0) {
-    const av = AVATARS[presetMatch];
-    bigWrap.style.background = av.bg;
-    el.textContent = av.emoji;
-    el.style.background = '';
-  } else if (stored) {
-    // Legacy or external URL
-    el.innerHTML = `<img src="${stored}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">`;
-    bigWrap.style.background = '';
-  } else {
-    // Fallback: initial
-    const initial = (profile.display_name?.[0] || profile.username?.[0] || '?').toUpperCase();
-    bigWrap.style.background = 'linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%)';
-    el.textContent = initial;
-    el.style.fontSize = '26px';
-    el.style.color = '#fff';
-    el.style.fontWeight = '800';
-  }
+  const stored = VeliosAuth.resolveAvatarUrl(profile.avatar_url);
+  const initial = (profile.display_name?.[0] || profile.username?.[0] || '?').toUpperCase();
+  el.innerHTML = '';
+  bigWrap.style.background = 'var(--accent)';
+  if (!stored) { el.textContent = initial; return; }
+  const img = document.createElement('img');
+  img.src = stored; img.alt = 'Profielfoto';
+  img.addEventListener('error', () => { el.innerHTML=''; el.textContent=initial; });
+  el.appendChild(img);
 }
 
-/* We encode the avatar as a small JSON string stored as avatar_url.
-   Format: "preset:N" where N is the index. Simple, no storage bucket needed. */
 function avatarDataUrl(idx) {
-  return `preset:${idx}`;
+  return AVATARS[idx]?.url || '';
 }
 
 /* ── AVATAR GRID ── */
 function renderAvatarGrid() {
-  const currentUrl = profile.avatar_url || '';
+  const currentUrl = VeliosAuth.resolveAvatarUrl(profile.avatar_url);
   const grid = document.getElementById('avatarGrid');
   grid.innerHTML = AVATARS.map((av, i) => {
     const isSelected = currentUrl === avatarDataUrl(i);
     return `<div class="avatar-preset${isSelected ? ' selected' : ''}"
-      style="background:${av.bg}"
       onclick="selectAvatar(${i})"
-      title="Avatar ${i+1}">
-      ${av.emoji}
+      title="${av.label}">
+      <img src="${av.url}" alt="${av.label}">
     </div>`;
   }).join('');
 }
@@ -495,14 +488,8 @@ function selectAvatar(idx) {
   });
   // Preview in big display
   const av = AVATARS[idx];
-  const bigWrap = document.getElementById('avatarBig');
   const el = document.getElementById('avatarBigContent');
-  bigWrap.style.background = av.bg;
-  el.innerHTML = '';
-  el.textContent = av.emoji;
-  el.style.fontSize = '36px';
-  el.style.color = '';
-  el.style.fontWeight = '';
+  el.innerHTML = `<img src="${av.url}" alt="${av.label}">`;
   // Enable save
   document.getElementById('btnSaveAvatar').disabled = false;
 }
@@ -520,7 +507,7 @@ async function saveAvatar() {
       .eq('id', currentUser.id);
     if (error) throw error;
     profile.avatar_url = newUrl;
-    showToast('✅ Profielfoto bijgewerkt', 'ok');
+    showToast('Profielfoto bijgewerkt', 'ok');
     btn.disabled = true; // keep disabled until a different one is chosen
   } catch (e) {
     showToast('Opslaan mislukt: ' + e.message, 'err');
@@ -579,7 +566,7 @@ async function saveProfile() {
       .eq('id', currentUser.id);
     if (error) throw error;
     profile.display_name = displayName; profile.username = username;
-    showToast('✅ Profiel opgeslagen', 'ok');
+    showToast('Profiel opgeslagen', 'ok');
     dirtyFields.profile = false; btn.disabled = false;
   } catch (e) { showToast('Opslaan mislukt: ' + e.message, 'err'); btn.disabled = false; }
   btn.textContent = 'Opslaan';
@@ -595,7 +582,7 @@ async function saveEmail() {
   try {
     const { error } = await VeliosAuth.client.auth.updateUser({ email });
     if (error) throw error;
-    showToast('📧 Bevestigingsmail verstuurd naar ' + email, 'ok');
+    showToast('Bevestigingsmail verstuurd naar ' + email, 'ok');
     dirtyFields.email = false;
   } catch (e) { showToast('Mislukt: ' + e.message, 'err'); }
   btn.disabled = false; btn.textContent = 'E-mail bijwerken';
@@ -640,7 +627,7 @@ async function savePassword() {
   const cur = document.getElementById('pwCurrent').value;
   const nw = document.getElementById('pwNew').value;
   setErr('err-pw-current',''); setErr('err-pw-new','');
-  if (!PW_REGEX.test(nw)) { setErr('err-pw-new','8-20 tekens, hoofd-, kleine letter, cijfer'); return; }
+  if (!PW_REGEX.test(nw)) { setErr('err-pw-new','8-64 tekens, hoofdletter, kleine letter en cijfer'); return; }
   const btn = document.getElementById('btnSavePw');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Wijzigen…';
   try {
@@ -648,7 +635,7 @@ async function savePassword() {
     if (signErr) { setErr('err-pw-current','Huidig wachtwoord is onjuist'); btn.disabled = false; btn.textContent = 'Wachtwoord wijzigen'; return; }
     const { error } = await VeliosAuth.client.auth.updateUser({ password: nw });
     if (error) throw error;
-    showToast('✅ Wachtwoord gewijzigd', 'ok');
+    showToast('Wachtwoord gewijzigd', 'ok');
     document.getElementById('pwCurrent').value = '';
     document.getElementById('pwNew').value = '';
     document.getElementById('pwConfirm').value = '';
@@ -687,7 +674,7 @@ async function revokeOtherSessions() {
   try {
     await VeliosAuth.client.auth.signOut({ scope: 'others' });
     closeModal('revokeModal');
-    showToast('✅ Andere sessies beëindigd', 'ok');
+    showToast('Andere sessies beëindigd', 'ok');
   } catch (e) { showToast('Mislukt: ' + e.message, 'err'); }
   btn.disabled = false; btn.textContent = 'Beëindigen';
 }
@@ -711,8 +698,8 @@ async function deleteAccount() {
   const btn = document.getElementById('deleteBtn');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
   try {
-    await VeliosAuth.client.from('profiles').delete().eq('id', currentUser.id);
-    await VeliosAuth.client.auth.signOut();
+    const { error } = await VeliosAuth.client.rpc('delete_own_account');
+    if (error) throw error;
     showToast('Account verwijderd. Tot ziens!', 'ok');
     setTimeout(() => { window.location.href = 'login.html'; }, 1200);
   } catch (e) {
@@ -746,32 +733,6 @@ window.addEventListener('beforeunload', e => {
   if (Object.values(dirtyFields).some(Boolean)) { e.preventDefault(); e.returnValue=''; }
 });
 
-/* ── EXPOSE voor gebruik in andere pagina's ──
-   Voeg dit toe aan je nav/login/my-account code zodat avatars overal goed weergegeven worden:
-
-   function renderAvatar(avatarUrl, fallbackInitial) {
-     if (!avatarUrl) return fallbackInitial;
-     if (avatarUrl.startsWith('preset:')) {
-       const idx = parseInt(avatarUrl.split(':')[1]);
-       const AVLIST = [
-         { emoji:'🦊', bg:'linear-gradient(135deg,#ff9a4d,#ff6b35)' },
-         { emoji:'🐺', bg:'linear-gradient(135deg,#8b9dc3,#5c6bc0)' },
-         { emoji:'🐸', bg:'linear-gradient(135deg,#5dd45d,#2e9e2e)' },
-         { emoji:'🐼', bg:'linear-gradient(135deg,#e8e8e8,#a0a0a0)' },
-         { emoji:'🦁', bg:'linear-gradient(135deg,#ffd166,#f4a329)' },
-         { emoji:'🐙', bg:'linear-gradient(135deg,#c77dff,#9b5de5)' },
-         { emoji:'🦋', bg:'linear-gradient(135deg,#74c0fc,#339af0)' },
-         { emoji:'🐉', bg:'linear-gradient(135deg,#ff6b6b,#e63946)' },
-         { emoji:'🌙', bg:'linear-gradient(135deg,#2d2d5e,#4a4080)' },
-         { emoji:'⚡', bg:'linear-gradient(135deg,#ffe066,#f4c430)' },
-       ];
-       const av = AVLIST[idx];
-       if (!av) return fallbackInitial;
-       return { type:'preset', emoji: av.emoji, bg: av.bg };
-     }
-     return { type:'img', url: avatarUrl };
-   }
-*/
 </script>
 </body>
 </html>
