@@ -16,8 +16,9 @@ function decodeVset(b64){const xored=decodeURIComponent(escape(atob(b64.trim()))
 function getSetThemeSettings(){
   try{
     const saved=JSON.parse(localStorage.getItem('sd_theme')||'null')||{};
-    return {darkMode:!!saved.darkMode,followSystem:!!saved.followSystem,accentColor:saved.accentColor||'#0062ff'};
-  }catch(e){return {darkMode:false,followSystem:false,accentColor:'#0062ff'};}
+    const accentColor=saved.accentColor&&!(saved.accentColor==='#0062ff'&&!saved.accentWasChosen)?saved.accentColor:'#ff9f0a';
+    return {darkMode:!!saved.darkMode,followSystem:saved.followSystem!==false,accentColor};
+  }catch(e){return {darkMode:false,followSystem:true,accentColor:'#ff9f0a'};}
 }
 
 function setSystemPrefersDark(){
@@ -63,7 +64,7 @@ function loadThemeSettings(){
       root.setProperty('--select-color','#0b0f2a');
       root.setProperty('--select-border','rgba(200,195,225,0.6)');
     }
-    if(saved.accentColor&&saved.accentColor!=='#0062ff'){
+    if(saved.accentColor){
         root.setProperty('--accent',saved.accentColor);
         const hex=saved.accentColor.replace('#','');
         const r=parseInt(hex.substr(0,2),16);
@@ -71,10 +72,7 @@ function loadThemeSettings(){
         const b=parseInt(hex.substr(4,2),16);
         root.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
         root.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
-    }else{
-        root.setProperty('--accent','#0062ff');
-        root.setProperty('--accent2','#0075ff');
-        root.setProperty('--accent-light','rgba(0,98,255,0.12)');
+        root.setProperty('--accent-contrast','#fff');
     }
   }catch(e){console.error('Theme load error:',e);}
 }
@@ -93,6 +91,12 @@ let SET=null,currentMode='home';
 function setNavigationChromeVisible(visible){
   document.getElementById('app')?.classList.toggle('navigation-visible', visible);
 }
+function updateSetConnectionState(){
+  const offline=!navigator.onLine;
+  const notice=document.getElementById('set-offline-page-notice');
+  if(notice)notice.hidden=!offline;
+  document.body.classList.toggle('is-offline',offline);
+}
 function openIndexPage(page){
   window.location.href=`index.html#${page}`;
 }
@@ -104,7 +108,7 @@ function openIndexMenu(){
 }
 
 function setHeaderFallbackMarkup(){
-  return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 217 256"><g data-name="Group 39" fill="var(--text)"><path data-name="Path 248" d="M0 207.99a85.24 85.24 0 0 1 21.968-34.917 108.7 108.7 0 0 1 35.72-23.837 107.1 107.1 0 0 1 40.918-8.393h20.124a109.58 109.58 0 0 1 76.47 32.231 88.5 88.5 0 0 1 21.8 34.917 146.4 146.4 0 0 1-49.135 35.756 145.3 145.3 0 0 1-59.2 12.254 145.6 145.6 0 0 1-60.036-12.422A148.4 148.4 0 0 1 0 207.99"/><path data-name="Path 249" d="M69.297 16.285Q85.716-.166 108.5.002q22.617.168 39.2 16.619 16.418 16.619 16.586 39.281.335 22.83-16.251 39.281-16.418 16.619-39.2 16.451-22.617-.336-39.2-16.787-16.421-16.451-16.589-39.281-.335-22.83 16.251-39.281" opacity=".6"/></g></svg>';
 }
 
 async function updateSetNotificationDot(){
@@ -197,22 +201,126 @@ function renderSetRecentSidebar(){
 let _audioMuted = false;
 try { _audioMuted = localStorage.getItem('sd_audio_muted') === 'true'; } catch(e){}
 
-const _sfx = {
-  correct:     null,
-  incorrect:   null,
-  checkpoint:  null,
-  finish:      null,
-};
+const _sfxNames=['correct','incorrect','checkpoint','finish'];
+const _sfxEncoded=Object.create(null);
+const _sfxBuffers=Object.create(null);
+const _sfxDecodePromises=Object.create(null);
+const _sfxSources=Object.create(null);
+let _sfxContext=null;
+let _sfxLoadPromise=null;
 
-function _loadSFX() {
-  ['correct','incorrect','checkpoint','finish'].forEach(name => {
-    const a = new Audio(`./SFX/${name}.wav`);
-    a.preload = 'none';
-    a.crossOrigin = 'anonymous';
-    _sfx[name] = a;
-  });
+function _configureSFXAudioSession(){
+  // Web Audio-buffers zijn zelf al korte effecten. Laat de browser de sessie
+  // automatisch kiezen: het expliciete type 'transient' kan op iOS stil zijn.
+  try{
+    if(navigator.audioSession&&'type' in navigator.audioSession){
+      navigator.audioSession.type='auto';
+    }
+  }catch(e){}
+}
+
+function _loadSFX(){
+  _sfxLoadPromise=Promise.all(_sfxNames.map(async name=>{
+    try{
+      const response=await fetch(`./SFX/${name}.wav`,{cache:'force-cache'});
+      if(!response.ok)throw new Error(`HTTP ${response.status}`);
+      _sfxEncoded[name]=await response.arrayBuffer();
+    }catch(error){
+      console.warn(`Geluidseffect ${name} kon niet worden geladen:`,error);
+    }
+  }));
 }
 _loadSFX();
+
+function _getSFXContext(){
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass)return null;
+  if(!_sfxContext||_sfxContext.state==='closed'){
+    _configureSFXAudioSession();
+    try{_sfxContext=new AudioContextClass({latencyHint:'interactive'});}
+    catch(e){_sfxContext=new AudioContextClass();}
+  }
+  return _sfxContext;
+}
+
+function _readWavChunkId(view,offset){
+  return String.fromCharCode(view.getUint8(offset),view.getUint8(offset+1),view.getUint8(offset+2),view.getUint8(offset+3));
+}
+
+function _decodeSFXWav(context,encoded){
+  const view=new DataView(encoded);
+  if(view.byteLength<44||_readWavChunkId(view,0)!=='RIFF'||_readWavChunkId(view,8)!=='WAVE'){
+    return context.decodeAudioData(encoded.slice(0));
+  }
+  let format=null,dataOffset=0,dataSize=0,offset=12;
+  while(offset+8<=view.byteLength){
+    const id=_readWavChunkId(view,offset);
+    const size=view.getUint32(offset+4,true);
+    const body=offset+8;
+    if(body+size>view.byteLength)break;
+    if(id==='fmt '&&size>=16){
+      format={
+        type:view.getUint16(body,true),
+        channels:view.getUint16(body+2,true),
+        sampleRate:view.getUint32(body+4,true),
+        bits:view.getUint16(body+14,true)
+      };
+    }else if(id==='data'){
+      dataOffset=body;dataSize=size;
+    }
+    offset=body+size+(size%2);
+  }
+  if(!format||format.type!==1||format.bits!==16||!format.channels||!dataOffset){
+    return context.decodeAudioData(encoded.slice(0));
+  }
+  const frameSize=format.channels*2;
+  const frameCount=Math.floor(dataSize/frameSize);
+  const buffer=context.createBuffer(format.channels,frameCount,format.sampleRate);
+  const outputs=Array.from({length:format.channels},(_,channel)=>buffer.getChannelData(channel));
+  for(let frame=0;frame<frameCount;frame++){
+    const frameOffset=dataOffset+frame*frameSize;
+    for(let channel=0;channel<format.channels;channel++){
+      outputs[channel][frame]=view.getInt16(frameOffset+channel*2,true)/32768;
+    }
+  }
+  return Promise.resolve(buffer);
+}
+
+async function _getSFXBuffer(name,context){
+  if(_sfxBuffers[name])return _sfxBuffers[name];
+  if(!_sfxDecodePromises[name]){
+    _sfxDecodePromises[name]=(async()=>{
+      await _sfxLoadPromise;
+      const encoded=_sfxEncoded[name];
+      if(!encoded)throw new Error(`Geen audiogegevens voor ${name}`);
+      const buffer=await _decodeSFXWav(context,encoded);
+      _sfxBuffers[name]=buffer;
+      return buffer;
+    })().catch(error=>{
+      delete _sfxDecodePromises[name];
+      throw error;
+    });
+  }
+  return _sfxDecodePromises[name];
+}
+
+function _stopSFX(name){
+  const source=_sfxSources[name];
+  if(!source)return;
+  try{source.stop();}catch(e){}
+  delete _sfxSources[name];
+}
+
+function unlockSFX(){
+  if(_audioMuted)return;
+  const context=_getSFXContext();
+  if(!context)return;
+  _configureSFXAudioSession();
+  const resumePromise=context.state==='running'?Promise.resolve():context.resume();
+  resumePromise.then(()=>Promise.all(_sfxNames.map(name=>_getSFXBuffer(name,context)))).catch(error=>{
+    console.warn('Geluidseffecten konden niet worden voorbereid:',error);
+  });
+}
 
 function isSFXEnabled() {
   if (_audioMuted) return false;
@@ -223,16 +331,30 @@ function isSFXEnabled() {
 }
 
 function playSFX(name) {
-  if (!isSFXEnabled()) return;
-  const snd = _sfx[name];
-  if (!snd) return;
-  snd.currentTime = 0;
-  snd.play().catch(() => {});
+  if(!isSFXEnabled()||!_sfxNames.includes(name))return;
+  const context=_getSFXContext();
+  if(!context)return;
+  _configureSFXAudioSession();
+
+  // resume() wordt meteen binnen de klik gestart; dat is op iOS nodig om
+  // Web Audio te ontgrendelen. Laden/decoderen mag daarna asynchroon doorgaan.
+  const resumePromise=context.state==='running'?Promise.resolve():context.resume();
+  resumePromise.then(()=>_getSFXBuffer(name,context)).then(buffer=>{
+    if(!isSFXEnabled())return;
+    _stopSFX(name);
+    const source=context.createBufferSource();
+    source.buffer=buffer;
+    source.connect(context.destination);
+    _sfxSources[name]=source;
+    source.onended=()=>{if(_sfxSources[name]===source)delete _sfxSources[name]};
+    source.start(0);
+  }).catch(error=>console.warn(`Geluidseffect ${name} kon niet worden afgespeeld:`,error));
 }
 
 function toggleAudioMute() {
   _audioMuted = !_audioMuted;
   try { localStorage.setItem('sd_audio_muted', _audioMuted); } catch(e) {}
+  if(_audioMuted)_sfxNames.forEach(_stopSFX);
   document.querySelectorAll('.audio-toggle-btn').forEach(btn => {
     btn.innerHTML = _audioMuted ? _iconAudioOff() : _iconAudioOn();
     btn.title = _audioMuted ? 'Audio aan' : 'Audio uit';
@@ -259,6 +381,38 @@ function _audioToggleBtnHTML() {
   return `<button class="btn-icon audio-toggle-btn" onclick="toggleAudioMute()" title="${_audioMuted ? 'Audio aan' : 'Audio uit'}">
     ${_audioMuted ? _iconAudioOff() : _iconAudioOn()}
   </button>`;
+}
+
+let _modeHelpButtonsVisible=true;
+try{_modeHelpButtonsVisible=localStorage.getItem('sd_mode_help_buttons')!=='false';}catch(e){}
+
+function _iconHelp(){
+  const existing=document.querySelector('.set-info-card-nav-left button[title="Help"] svg,.mode-help-btn svg');
+  if(existing){
+    const icon=existing.cloneNode(true);
+    icon.setAttribute('width','18');
+    icon.setAttribute('height','18');
+    return icon.outerHTML;
+  }
+  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" opacity=".45"/><path d="M9.7 9a2.5 2.5 0 0 1 4.85.85c0 1.8-2.55 2.05-2.55 3.65"/><path d="M12 17h.01"/></svg>`;
+}
+
+function _iconAnswerHelp(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.6 8.2a4.7 4.7 0 0 1 9.1 1.6c0 3.3-4.7 3.6-4.7 6.2"/><path d="M12 20h.01"/></svg>`;
+}
+
+function modeHelpButtonHTML(){
+  return `<button class="btn-icon mode-help-btn" style="${_modeHelpButtonsVisible?'':'display:none'}" onclick="showCurrentHelp()" title="Help">${_iconHelp()}</button>`;
+}
+
+function modeHelpSettingHTML(){
+  return `<div class="settings-row"><span class="settings-row-label">Helpknop tonen</span><label class="toggle"><input type="checkbox" ${_modeHelpButtonsVisible?'checked':''} onchange="setModeHelpButtonsVisible(this.checked)"><span class="toggle-slider"></span></label></div>`;
+}
+
+function setModeHelpButtonsVisible(visible){
+  _modeHelpButtonsVisible=!!visible;
+  try{localStorage.setItem('sd_mode_help_buttons',String(_modeHelpButtonsVisible));}catch(e){}
+  document.querySelectorAll('.mode-help-btn').forEach(btn=>{btn.style.display=_modeHelpButtonsVisible?'inline-flex':'none';});
 }
 
 /* ── LOAD SETS FROM /sets/ ── */
@@ -339,13 +493,16 @@ const ONBOARD_DEFS = {
   }
 };
 
-function showOnboarding(key, force = false) {
+let _onboardingNextStep=null;
+
+function showOnboarding(key, force=false, nextStep=null) {
   const seen = JSON.parse(localStorage.getItem('sd_onboard') || '{}');
-  if (!force && seen[key]) return;
+  if (!force && seen[key]) return false;
   seen[key] = true;
   localStorage.setItem('sd_onboard', JSON.stringify(seen));
   const d = ONBOARD_DEFS[key];
-  if (!d) return;
+  if (!d) return false;
+  _onboardingNextStep=typeof nextStep==='function'?nextStep:null;
   const el = document.createElement('div');
   el.className = 'onboard-overlay';
   el.id = 'onboard-overlay';
@@ -379,28 +536,34 @@ function showOnboarding(key, force = false) {
   }
   body.addEventListener('scroll', updateOnboardButtonState);
   setTimeout(updateOnboardButtonState, 0);
+  return true;
+}
+
+function dismissOnboardingOverlay(el,onDone){
+  if(!el){if(onDone)onDone();return;}
+  el.style.pointerEvents='none';
+  const panel=el.querySelector('.onboard-panel');
+  if(panel)panel.classList.add('closing');
+  el.classList.add('closing');
+  setTimeout(()=>{el.remove();if(onDone)onDone();},420);
 }
 
 function closeOnboarding() {
-  const el = document.getElementById('onboard-overlay');
-  if (!el) return;
-  el.style.pointerEvents = 'none';
-  el.style.animation = 'none';
-  const panel = el.querySelector('.onboard-panel');
-  if (panel) {
-    panel.style.animation = 'none';
-    panel.style.transition = 'transform .4s cubic-bezier(0.4,0,1,1), opacity .35s ease';
-    panel.style.transform = 'translateY(110%)';
-    panel.style.opacity = '0';
+  const el=document.getElementById('onboard-overlay');
+  if(!el)return;
+  if(_onboardingNextStep){
+    const nextStep=_onboardingNextStep;
+    _onboardingNextStep=null;
+    const keepOpen=nextStep(el);
+    if(keepOpen!==false)return;
   }
-  el.style.transition = 'opacity .4s ease';
-  el.style.opacity = '0';
-  setTimeout(() => el.remove(), 420);
+  dismissOnboardingOverlay(el);
 }
 
 function showCurrentHelp() {
   const modeMap = { flashcards:'flashcards', stampen:'stampen', overhoren:'overhoren' };
   const key = modeMap[currentMode] || 'set';
+  _onboardingNextStep=null;
   showOnboarding(key, true);
 }
 
@@ -541,18 +704,20 @@ showOnboarding('set');
   loadStarMode();
 
   const el=document.getElementById('main-screen');
-  el.style.animation='none';el.offsetHeight;el.style.animation='set-pageIn .4s var(--ease2) both';
+  // De begrippenlijst krijgt hieronder een eigen, vertraagde fade-in.
+  // Animeer daarom niet het hele scherm: dan zou de lijst alsnog meebewegen.
+  el.style.animation='none';
 
   // ── Bereken hoogte van de 3 mode-cards voor de kaart
   // Kaart breedte = 0.5x breedte van de 3 mode-cards samen (incl gap)
   // We zetten dit via CSS: de mode-grid heeft een vaste breedte, de kaart is 0.5x daarvan
 
   el.innerHTML=`
-    <button class="back-btn" onclick="window.location.href='index.html'">
+    <button class="back-btn set-view-enter" onclick="window.location.href='index.html'">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       Alle sets
     </button>
-    <div style="margin-bottom:28px">
+    <div class="set-view-heading set-view-enter" style="margin-bottom:28px">
           <div class="set-detail-title">${esc(SET.title)}</div>
           ${SET.description?`<p style="color:var(--text2);margin-bottom:10px">${esc(SET.description)}</p>`:''}
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -563,31 +728,33 @@ showOnboarding('set');
         </div>
     <div class="set-detail-layout">
       <div class="set-detail-left">
-        <div class="mode-grid" id="mode-grid">
+        <div class="mode-grid set-view-enter" id="mode-grid">
           <div class="mode-card" id="mc-flash" onclick="startModeFiltered('flashcards')"><div class="mode-card-icon"><svg width="30px" height="30px" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-3598 1414)"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M3598-1414h256v256h-256z"/><rect data-name="Rectangle 40" width="256" height="164" rx="33" transform="translate(3598 -1368)" fill="var(--accent)" opacity=".6"/><path data-name="Path 182" d="m3713.357-1165.764-.292-97.8h-42.029c-5.654 0-9.656-7.638-7.889-15.059l60.1-125.777c6.014-12.673 15.425-12.283 15.4-1.832l.292 97.8h42.029c5.655 0 9.656 7.639 7.889 15.059l-60.1 125.783c-3.1 6.534-7.105 9.6-10.253 9.6-2.96-.01-5.16-2.71-5.147-7.774" fill="var(--accent)"/></g></svg></div><div class="mode-card-title">Flitskaarten</div><div class="mode-card-desc">Handig voor lange definities</div></div>
-          <div class="mode-card" id="mc-stamp" onclick="startModeFiltered('stampen')"><div class="mode-card-icon"><svg width="30px" height="30px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 22" fill="var(--accent)"><path data-name="Path 183" d="M104.824 240.655a114 114 0 0 1-21.587-6.727A115 115 0 0 1 63.7 223.283a116 116 0 0 1-17.02-14.1A116 116 0 0 1 32.64 192.1a115.5 115.5 0 0 1-10.6-19.612 115 115 0 0 1-6.7-21.671 116.8 116.8 0 0 1-2.34-23.27 115.6 115.6 0 0 1 6.693-38.905 115.1 115.1 0 0 1 18.53-33.252 115.5 115.5 0 0 1 28.042-25.266A113.9 113.9 0 0 1 101.5 15.176v24.293c-38.352 11.654-65.137 47.873-65.137 88.079 0 50.73 41.111 92 91.641 92s91.641-41.272 91.641-92v-.451h22.911v-9.828c.3 3.4.449 6.861.449 10.279a116.8 116.8 0 0 1-2.336 23.268 115.3 115.3 0 0 1-6.7 21.671 115.5 115.5 0 0 1-10.6 19.612 116 116 0 0 1-14.042 17.086 116 116 0 0 1-17.02 14.1 115 115 0 0 1-19.534 10.645 114 114 0 0 1-21.587 6.727A115.4 115.4 0 0 1 128 243a115.4 115.4 0 0 1-23.176-2.345M219.642 127.1a11.66 11.66 0 0 1 11.771-11.3 11.68 11.68 0 0 1 11.137 8.438v2.855Z" opacity=".6"/><path data-name="Path 184" d="M206 138a25 25 0 0 1 25-25 25 25 0 0 1 25 25 25 25 0 0 1-25 25 25 25 0 0 1-25-25M79 25a25 25 0 0 1 25-25 25 25 0 0 1 25 25 25 25 0 0 1-25 25 25 25 0 0 1-25-25"/></g></svg></div><div class="mode-card-title">Stampen</div><div class="mode-card-desc">Meest effectief</div></div>
+          <div class="mode-card" id="mc-stamp" onclick="startModeFiltered('stampen')"><div class="mode-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 256 256"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 22" fill="var(--accent)"><path data-name="Path 183" d="M104.824 240.655a114 114 0 0 1-21.587-6.727A115 115 0 0 1 63.7 223.283a116 116 0 0 1-17.02-14.1A116 116 0 0 1 32.64 192.1a115.5 115.5 0 0 1-10.6-19.612 115 115 0 0 1-6.7-21.671 116.8 116.8 0 0 1-2.34-23.27 115.6 115.6 0 0 1 6.693-38.905 115.1 115.1 0 0 1 18.53-33.252 115.5 115.5 0 0 1 28.042-25.266A113.9 113.9 0 0 1 101.5 15.176v24.293c-38.352 11.654-65.137 47.873-65.137 88.079 0 50.73 41.111 92 91.641 92s91.641-41.272 91.641-92v-.451h22.911v-9.828c.3 3.4.449 6.861.449 10.279a116.8 116.8 0 0 1-2.336 23.268 115.3 115.3 0 0 1-6.7 21.671 115.5 115.5 0 0 1-10.6 19.612 116 116 0 0 1-14.042 17.086 116 116 0 0 1-17.02 14.1 115 115 0 0 1-19.534 10.645 114 114 0 0 1-21.587 6.727A115.4 115.4 0 0 1 128 243a115.4 115.4 0 0 1-23.176-2.345M219.642 127.1a11.66 11.66 0 0 1 11.771-11.3 11.68 11.68 0 0 1 11.137 8.438v2.855Zm-4.176-27.873a90.6 90.6 0 0 0-5.329-13.2 11.613 11.613 0 0 1 5.266-15.594 11.7 11.7 0 0 1 15.656 5.245q1.908 3.825 3.533 7.808l.051.126.024.059v.009l.024.058.023.058v.012l.023.058.023.054v.011l.023.056v.011l.021.053c.011.027 0 0 0 .007s.015.037.023.055 0 .007.006.015l.022.055v.011l.02.05v.012l.022.054s.006.014.006.018.013.031.019.046v.01l.021.053q-.002.01.008.02c.01.01.013.034.02.052l.006.015.017.042.007.02.02.05.008.019.015.039.01.025c0 .014.01.028.016.041l.01.024.015.038c0 .01.01.024.013.033l.012.031.01.026.018.045.01.028c0 .009.007.02.011.028s.01.027.015.041l.011.028.012.03.011.029.016.042q.002.013.01.027c.008.014.01.028.018.045l.01.025.013.033.006.019.022.056.007.018c0 .014.007.019.013.033l.007.019.021.054.008.021.042.109v.012l.027.068v.007l.015.039.027.071v.013l.044.115.029.077.044.118v.008l.044.119.075.2v.007l.12.324.12.326c.242.658.475 1.313.706 1.976v.007l.042.121.07.2v.01q.022.059.04.118v.007l.023.068v.014l.012.037v.011l.021.063.007.02.02.06v.015c0 .011.008.024.012.035l.006.018.019.057.006.019.011.034v.014l.021.061.006.021.017.05c0 .008.006.016.009.025l.01.031.008.027.015.045c0 .009.006.019.009.028l.011.03c.005.011.01.03.015.045l.008.025.011.033.008.024c0 .016.01.032.015.048l.009.025.012.037c0 .007.008.024.01.031l.013.038.007.023.017.052.006.016.015.046v.014l.018.055.006.017.019.057.019.059v.013l.019.058v.008l.019.057v.007l.02.061v.008l.041.127.021.066.043.134.214.671a11.625 11.625 0 0 1-7.652 14.58 11.7 11.7 0 0 1-3.5.535 11.68 11.68 0 0 1-11.024-8.116ZM193.619 62.85a92.5 92.5 0 0 0-10.766-9.413 11.6 11.6 0 0 1-2.35-16.284 11.71 11.71 0 0 1 16.343-2.345l.023.017.017.012.044.033.019.014.028.021.015.011.047.036.017.012.044.033.019.014.027.02.022.017.04.029.021.015.038.029.023.017.027.02.022.016.036.028.024.019.024.018.038.029.023.017.024.018.036.028.026.019.023.017.035.027.026.02.024.019.023.017.038.028.024.019.027.02.032.024.027.021.021.016.04.031.019.015.029.022.026.019.033.025.02.016.039.029.021.016.029.023.019.015.04.031.02.016.035.026.021.016.033.026.018.013.042.032.018.014.032.025.02.016.039.03.016.012.043.033.016.012.034.026.015.011.043.033.018.014.042.033.011.009.039.03.015.011.044.034.015.011.04.032.007.006.047.037.012.01.048.037.007.006.046.036h.006l.049.037.01.009.049.039.05.038.007.007.049.039.007.006.049.038.049.039.009.007.049.04.05.04.05.04.008.007.051.041.051.041h.006l.051.041.107.085.053.042.107.085.434.349a115 115 0 0 1 8.81 7.9l.147.147.093.093.007.007.044.044.008.008.038.038.008.008.041.041.012.011.04.041.012.012.032.033.013.013.038.038.017.017.032.032.017.017.028.029.019.018.035.036.019.019.021.022.034.034.019.019.023.023.018.019.038.038.014.014.083.084.008.008.051.052.089.09.034.034a11.6 11.6 0 0 1-.215 16.445 11.67 11.67 0 0 1-8.153 3.3 11.67 11.67 0 0 1-8.327-3.476Zm-35.962-22.683a91.4 91.4 0 0 0-13.834-3.528 11.64 11.64 0 0 1-9.508-13.453 11.676 11.676 0 0 1 13.489-9.474q5.064.876 9.968 2.184l.128.034.127.034.075.021h.012l.12.032h.01l.118.032h.016l.061.017h.018l.036.01h.015l.064.018h.016l.036.01h.013l.063.017.022.006.053.015.024.007.033.01.023.006.048.014.028.008.03.008.037.011.036.01.032.008.027.008.049.014.023.006.037.011.021.007.052.015.021.006.045.013.023.006.044.012h.018l.057.016h.013l.049.013h.015l.055.016h.017l.052.015h.007l.059.017h.014l.06.017.058.017h.014l.059.017h.007l.058.017h.006l.062.018h.006l.128.037q2.514.729 4.981 1.57a11.62 11.62 0 0 1 7.275 14.77 11.68 11.68 0 0 1-11.051 7.874 11.7 11.7 0 0 1-3.77-.574ZM101.5 15.073l.065-.015h.007l.129-.031h.006l.133-.031.068-.015.135-.031.133-.031.133-.03.2-.046.133-.03.134-.03.068-.015.135-.03.133-.029.134-.029.341-.074.136-.029.205-.044.137-.029.136-.028q.412-.086.826-.17l.827-.163.136-.026.133-.026.2-.039.134-.025h.006l.134-.025.137-.026.068-.012.133-.024h.006l.132-.024h.006l.134-.024.066-.012.133-.024h.007l.131-.024h.006l.066-.012.065-.011h.006l.065-.011h.009l.061-.011.063-.011h.011l.125-.022h.015l.061-.011h.007l.057-.01h.012l.061-.011h.011l.056-.01h.009l.061-.01h.015l.059-.011h.006l.056-.01h.019l.057-.009h.016l.048-.008h.016l.057-.01h.018l.048-.008h.015l.057-.01h.019l.053-.009h.013l.053-.009h.019l.057-.009h.018l.042-.007h.023l.053-.009h.023l.039-.006h.022l.052-.008h.026l.036-.006.04-.007.035-.006h.028l.04-.007.036-.006h.06l.049-.007h.058l.051-.008h.086l.055-.009h.023l.035-.006h.027l.053-.008h.023l.036-.006h.013l.066-.011h.021l.068-.011h.011l.038-.006h.019l.061-.009h.019l.038-.006h.011l.074-.011h.012l.126-.019h.006q.62-.093 1.243-.179a11.673 11.673 0 0 1 13.161 9.924 11.64 11.64 0 0 1-9.962 13.123 92 92 0 0 0-13.748 3Z" opacity=".6"/><path data-name="Path 184" d="M206 138a25 25 0 0 1 25-25 25 25 0 0 1 25 25 25 25 0 0 1-25 25 25 25 0 0 1-25-25M79 25a25 25 0 0 1 25-25 25 25 0 0 1 25 25 25 25 0 0 1-25 25 25 25 0 0 1-25-25"/></g></svg></div><div class="mode-card-title">Stampen</div><div class="mode-card-desc">Meest effectief</div></div>
           <div class="mode-card" id="mc-over" onclick="startModeFiltered('overhoren')"><div class="mode-card-icon"><svg height="30px" width="30px" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-3598 1414)"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M3598-1414h256v256h-256z"/><path data-name="Path 187" d="M3802-1158h-151a15.9 15.9 0 0 1-11.313-4.686A15.9 15.9 0 0 1 3635-1174v-224a15.9 15.9 0 0 1 4.686-11.314A15.9 15.9 0 0 1 3651-1414h117l50 50v190a15.9 15.9 0 0 1-4.686 11.314A15.9 15.9 0 0 1 3802-1158" fill="var(--accent)" opacity=".4"/><rect data-name="Rectangle 41" width="112" height="7" rx="3.5" transform="translate(3661 -1331)" fill="var(--accent)" opacity=".6"/><rect data-name="Rectangle 42" width="130" height="7" rx="3.5" transform="translate(3661 -1314)" fill="var(--accent)" opacity=".6"/><rect data-name="Rectangle 43" width="109" height="7" rx="3.5" transform="translate(3661 -1298)" fill="var(--accent)" opacity=".6"/><rect data-name="Rectangle 44" width="80" height="7" rx="3.5" transform="translate(3661 -1281)" fill="var(--accent)" opacity=".6"/><rect data-name="Rectangle 45" width="91" height="7" rx="3.5" transform="translate(3661 -1264)" fill="var(--accent)" opacity=".6"/><rect data-name="Rectangle 46" width="40" height="7" rx="3.5" transform="translate(3661 -1248)" fill="var(--accent)" opacity=".6"/><path data-name="Path 186" d="M3768-1414v34a15.9 15.9 0 0 0 4.686 11.314A15.9 15.9 0 0 0 3784-1364h34z" fill="var(--accent)"/></g></svg></div><div class="mode-card-title">Overhoren</div><div class="mode-card-desc">Oefentoets</div></div>
         </div>
-        <div class="section-hdr"><h3>Alle begrippen</h3><span style="font-size:13px;color:var(--text2)">${SET.terms.length}</span></div>
-        <div class="terms-list" id="terms-list-el">
-          ${SET.terms.map((t,i)=>{
-            const sid=getSetStorageId();
-            const starred=isTermStarred(sid,i);
-            return `<div class="term-item" data-term-idx="${i}" style="animation:set-cardLeft ${.12+i*.04}s var(--ease2) both;display:flex;align-items:center;gap:12px;">
-              <div class="term-item-inner" style="flex:1;display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;">
-                <div><div class="term-label">Begrip</div><div style="font-weight:800;font-size:15px">${renderTerm(t,'term')}</div>${renderImages(t)}</div>
-                <div class="term-divider"></div>
-                <div><div class="term-label">Definitie</div><div style="color:var(--text2);font-size:14px">${renderTerm(t,'def')}</div></div>
-              </div>
-              <button class="star-btn${starred?' starred':''}" onclick="toggleStarTerm(event,${i})" title="${starred?'Ster verwijderen':'Markeer als moeilijk'}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </button>
-            </div>`;
-          }).join('')}
+        <div class="set-terms-section">
+          <div class="section-hdr"><h3>Alle begrippen</h3><span style="font-size:13px;color:var(--text2)">${SET.terms.length}</span></div>
+          <div class="terms-list" id="terms-list-el">
+            ${SET.terms.map((t,i)=>{
+              const sid=getSetStorageId();
+              const starred=isTermStarred(sid,i);
+              return `<div class="term-item" data-term-idx="${i}" style="--term-index:${Math.min(i,6)}">
+                <div class="term-item-inner">
+                  <div><div class="term-label">Begrip</div><div style="font-weight:800;font-size:15px">${renderTerm(t,'term')}</div>${renderImages(t)}</div>
+                  <div class="term-divider"></div>
+                  <div><div class="term-label">Definitie</div><div style="color:var(--text2);font-size:14px">${renderTerm(t,'def')}</div></div>
+                </div>
+                <button class="star-btn${starred?' starred':''}" onclick="toggleStarTerm(event,${i})" title="${starred?'Ster verwijderen':'Markeer als moeilijk'}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </button>
+              </div>`;
+            }).join('')}
+          </div>
         </div>
       </div>
       <!-- Zijkaart -->
-      <div class="set-info-card" id="set-info-card">
+      <div class="set-info-card set-view-enter" id="set-info-card">
         <div class="set-info-card-nav">
           <div class="set-info-card-nav-left">
             <button class="btn-icon" id="searchContainer2" onclick="openTermsSearch()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><rect data-name="Rectangle 28" width="170" height="170" rx="85" transform="translate(2460 953)" fill="var(--text)" opacity=".2"/><path data-name="Rectangle 26" d="M2545 978a60 60 0 1 0 60 60 60.07 60.07 0 0 0-60-60m0-25a85 85 0 1 1-85 85 85 85 0 0 1 85-85" fill="var(--text)"/><rect data-name="Rectangle 27" width="30" height="94" rx="15" transform="rotate(-45 2612.226 -2568.255)" fill="var(--text)" opacity=".4"/></g></svg></button>
@@ -863,16 +1030,21 @@ function clearSTProgress(){
 
 function startMode(mode){
   currentMode=mode;
+  unlockSFX();
   setNavigationChromeVisible(false);
   const el=document.getElementById('main-screen');
-  el.style.animation='none';el.offsetHeight;el.style.animation='set-iosOpen .45s cubic-bezier(0.34,1.3,0.64,1) both';
+  el.style.animation='none';el.offsetHeight;el.style.animation='set-iosOpen .44s cubic-bezier(.2,.7,.2,1) both';
   if(mode==='flashcards'){renderFlashcards();showOnboarding('flashcards');}
-  else if(mode==='stampen'){renderStampen();showOnboarding('stampen');}
-  else if(mode==='overhoren'){renderOverhoren();showOnboarding('overhoren');}
+  else if(mode==='stampen'){
+    const helpShown=showOnboarding('stampen',false,overlay=>maybeShowAnswerModePopup(()=>stRenderQ(),overlay));
+    renderStampen(helpShown);
+  }
+  else if(mode==='overhoren'){
+    const helpShown=showOnboarding('overhoren',false,overlay=>maybeShowAnswerModeForOH(()=>ohBuild(),overlay));
+    renderOverhoren(helpShown);
+  }
 }
 function backToSet(){
-  const el=document.getElementById('main-screen');
-  el.style.animation='none';el.offsetHeight;el.style.animation='set-pageIn .4s var(--ease2) both';
   renderSetView();
 }
 
@@ -938,9 +1110,12 @@ function checkAns(inp,correct,level=2,allowSingle=false){
 
 function streakCircleHTML(id,streak){
   const f=streak>=3;
-  return`<div class="streak-circle${f?' on-fire':''}" id="${id}"><span class="streak-num">${streak||0}</span><svg class="flame-icon" viewBox="0 0 24 24" fill="none"><path class="f1" d="M12 2C12 2 18 8 18 13C18 16.31 15.31 19 12 19C8.69 19 6 16.31 6 13C6 8 12 2 12 2Z"/><path class="f2" d="M12 7C12 7 15 11 15 14C15 15.66 13.66 17 12 17C10.34 17 9 15.66 9 14C9 11 12 7 12 7Z"/></svg></div>`;
+  const fillId=`${id}-flame-fill`;
+  const borderId=`${id}-flame-border`;
+  const shadowId=`${id}-flame-shadow`;
+  return`<div class="streak-circle${f?' on-fire':''}" id="${id}" aria-label="${f?`${streak} goed op rij`:'Nog geen streak'}"><svg class="flame-icon" viewBox="0 0 64 70" aria-hidden="true"><defs><radialGradient id="${fillId}" gradientUnits="userSpaceOnUse" cx="32" cy="76" r="70"><stop offset="0" stop-color="#fff5bd"/><stop offset=".4" stop-color="#ffe36d"/><stop offset="1" stop-color="#ffad1f"/></radialGradient><linearGradient id="${borderId}" gradientUnits="userSpaceOnUse" x1="32" y1="5" x2="32" y2="66"><stop offset="0" stop-color="#ff7700"/><stop offset=".55" stop-color="#ff982f"/><stop offset="1" stop-color="#ffbb68"/></linearGradient><filter id="${shadowId}" x="-25%" y="-25%" width="150%" height="165%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#d34b00" flood-opacity=".2"/></filter></defs><g class="flame-shape flame-border" fill="url(#${borderId})" filter="url(#${shadowId})"><path class="flame-base" d="M8 28C4 39 6 52 14 60c9 9 26 10 36 1 9-8 11-21 6-33-6 8-14 13-24 16-11-2-19-7-24-16Z"/><path class="flame-tongue flame-tongue-left" d="M8 37c4-7 6-14 7-20 8 6 13 15 11 25l-2 12H8Z"/><path class="flame-tongue flame-tongue-center" d="M17 39c9-9 13-20 15-30 9 10 14 22 10 34l-2 11H17Z"/><path class="flame-tongue flame-tongue-right" d="M36 41c9-7 13-15 16-22 7 9 8 19 4 27l-2 8H36Z"/></g><g class="flame-shape flame-fill" fill="url(#${fillId})"><path class="flame-base" d="M8 28C4 39 6 52 14 60c9 9 26 10 36 1 9-8 11-21 6-33-6 8-14 13-24 16-11-2-19-7-24-16Z"/><path class="flame-tongue flame-tongue-left" d="M8 37c4-7 6-14 7-20 8 6 13 15 11 25l-2 12H8Z"/><path class="flame-tongue flame-tongue-center" d="M17 39c9-9 13-20 15-30 9 10 14 22 10 34l-2 11H17Z"/><path class="flame-tongue flame-tongue-right" d="M36 41c9-7 13-15 16-22 7 9 8 19 4 27l-2 8H36Z"/></g></svg><span class="streak-num">${streak||0}</span></div>`;
 }
-function updateStreakCircle(id,streak){const el=document.getElementById(id);if(!el)return;el.className='streak-circle'+(streak>=3?' on-fire':'');const n=el.querySelector('.streak-num');if(n)n.textContent=streak||0;}
+function updateStreakCircle(id,streak){const el=document.getElementById(id);if(!el)return;el.className='streak-circle'+(streak>=3?' on-fire':'');el.setAttribute('aria-label',streak>=3?`${streak} goed op rij`:'Nog geen reeks');const n=el.querySelector('.streak-num');if(n)n.textContent=streak||0;}
 
 /* ── FLASHCARDS ── */
 let FC={};
@@ -968,6 +1143,7 @@ function renderFlashcards(){
       FC={terms:shuffle([...activeTerms]),idx:0,flipped:false,front:'term',shuffleOn:true,loop:false,known:new Set(),history:[],streak:0,sound:true,_active:true,_setId:SET.id,_origOrder:[...activeTerms],_finished:false};
     }
   }
+  FC._transitioning=false;
   const currentTermIndex = getTermIndex(FC.terms[FC.idx]);
   const isCurrentStarred = currentTermIndex >= 0 && isTermStarred(getSetStorageId(), currentTermIndex);
   const el=document.getElementById('main-screen');
@@ -976,13 +1152,14 @@ function renderFlashcards(){
     <div class="fc-wrap">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px">
         <div><div style="font-size:20px;font-weight:800"><svg width="16px" height="16px" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-3598 1414)"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M3598-1414h256v256h-256z"/><rect data-name="Rectangle 40" width="256" height="164" rx="33" transform="translate(3598 -1368)" fill="var(--text)" opacity=".6"/><path data-name="Path 182" d="m3713.357-1165.764-.292-97.8h-42.029c-5.654 0-9.656-7.638-7.889-15.059l60.1-125.777c6.014-12.673 15.425-12.283 15.4-1.832l.292 97.8h42.029c5.655 0 9.656 7.639 7.889 15.059l-60.1 125.783c-3.1 6.534-7.105 9.6-10.253 9.6-2.96-.01-5.16-2.71-5.147-7.774" fill="var(--text)"/></g></svg> Flitskaarten</div><div style="font-size:13px;color:var(--text2)">${esc(SET.title)}</div></div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div class="mode-actions">
+          ${modeHelpButtonHTML()}
           <button class="btn-icon" onclick="fcUndoLastAction()" title="Laatste actie ongedaan"><svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" width="256.001" height="256" viewBox="0 0 256.001 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 16" fill="var(--text)"><path data-name="Path 187" d="M25.153 210.575H21.61a14.69 14.69 0 0 1-14.757-14.623 14.693 14.693 0 0 1 14.759-14.625h163.541a41.187 41.187 0 0 0 41.327-40.952 41.187 41.187 0 0 0-41.327-40.95H23.974v-29.25h161.179a71 71 0 0 1 27.577 5.517 70.7 70.7 0 0 1 22.52 15.045 69.9 69.9 0 0 1 15.183 22.315 69.2 69.2 0 0 1 5.568 27.325 69.2 69.2 0 0 1-5.568 27.326 70 70 0 0 1-15.18 22.313 70.7 70.7 0 0 1-22.52 15.045 71 71 0 0 1-27.58 5.514Z" opacity=".6"/><path data-name="Path 188" d="M5.915 93.479a9.329 9.329 0 0 1 0-17.362L81.022 46.11a9.438 9.438 0 0 1 12.979 8.681v60.018a9.438 9.438 0 0 1-12.979 8.682Z"/></g></svg></button>
           <div class="settings-dropdown-wrap">
             <button class="btn-icon" onclick="toggleDD('fc-dd')"><svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><path data-name="Subtraction 1" d="M2674 1114h-169.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1099a14.9 14.9 0 0 1-4.393 10.606A14.9 14.9 0 0 1 2674 1114m-220.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1099a14.9 14.9 0 0 1 4.393-10.606A14.9 14.9 0 0 1 2448 1084h5.015a30 30 0 0 0-4.014 15 30 30 0 0 0 4.012 15M2674 1024h-25.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1009a14.9 14.9 0 0 1-4.393 10.605A14.9 14.9 0 0 1 2674 1024m-76.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1009a14.9 14.9 0 0 1 4.393-10.607A14.9 14.9 0 0 1 2448 994h149.014a30 30 0 0 0-4.013 15 30 30 0 0 0 4.012 15" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 56" width="60" height="60" rx="30" transform="translate(2593 979)" fill="var(--text)" opacity=".4"/><rect data-name="Rectangle 55" width="60" height="60" rx="30" transform="translate(2449 1069)" fill="var(--text)" opacity=".4"/><path data-name="Rectangle 53" d="M2623 995a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/><path data-name="Rectangle 54" d="M2479 1085a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/></g></svg></button>
             <div id="fc-dd" class="settings-dropdown" style="display:none">
               <div class="settings-section"><div class="settings-section-title">Voorzijde</div><div class="settings-row"><span class="settings-row-label">Toon eerst</span><select class="settings-select" onchange="FC.front=this.value;fcUpdate()"><option value="term" ${FC.front==='term'?'selected':''}>Begrip</option><option value="def" ${FC.front==='def'?'selected':''}>Definitie</option></select></div></div>
-              <div class="settings-section"><div class="settings-section-title">Opties</div><div class="settings-row"><span class="settings-row-label">Schudden</span><label class="toggle"><input type="checkbox" ${FC.shuffleOn?'checked':''} onchange="FC.shuffleOn=this.checked;fcApplyShuffle()"><span class="toggle-slider"></span></label></div><div class="settings-row"><span class="settings-row-label">Herhalen</span><label class="toggle"><input type="checkbox" ${FC.loop?'checked':''} onchange="FC.loop=this.checked"><span class="toggle-slider"></span></label></div><div class="settings-row"><span class="settings-row-label">Geluid afspelen</span><label class="toggle"><input type="checkbox" ${FC.sound?'checked':''} onchange="FC.sound=this.checked"><span class="toggle-slider"></span></label></div></div>
+              <div class="settings-section"><div class="settings-section-title">Opties</div><div class="settings-row"><span class="settings-row-label">Schudden</span><label class="toggle"><input type="checkbox" ${FC.shuffleOn?'checked':''} onchange="FC.shuffleOn=this.checked;fcApplyShuffle()"><span class="toggle-slider"></span></label></div><div class="settings-row"><span class="settings-row-label">Herhalen</span><label class="toggle"><input type="checkbox" ${FC.loop?'checked':''} onchange="FC.loop=this.checked"><span class="toggle-slider"></span></label></div><div class="settings-row"><span class="settings-row-label">Geluid afspelen</span><label class="toggle"><input type="checkbox" ${FC.sound?'checked':''} onchange="FC.sound=this.checked"><span class="toggle-slider"></span></label></div>${modeHelpSettingHTML()}</div>
               <div style="margin-top:10px"><button class="btn btn-glass btn-sm" style="width:100%" onclick="fcHardReset();closeDD('fc-dd')">↺ Opnieuw beginnen</button></div>
             </div>
           </div>
@@ -990,13 +1167,15 @@ function renderFlashcards(){
       </div>
       <div class="progress-row"><div class="progress-track"><div class="progress-fill" id="fc-prog" style="width:0%"></div></div>${streakCircleHTML('fc-streak',FC.streak||0)}</div>
       <div style="text-align:center;font-size:13px;color:var(--text3);margin-bottom:14px" id="fc-ctr"></div>
-      <div class="fc-card-scene" id="fc-scene" onclick="fcFlip()" style="position:relative;">
-        <div class="fc-card-inner" id="fc-inner">
-          <button class="card-star-btn fc-star-btn${isCurrentStarred?' starred':''}" title="${isCurrentStarred?'Ster verwijderen':'Markeer als moeilijk'}" onclick="event.stopPropagation();toggleStarCurrentTerm(event, ${currentTermIndex})">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          </button>
-          <div class="fc-face"><div class="fc-face-label" id="fc-fl"></div><div class="fc-face-text" id="fc-ft"></div></div>
-          <div class="fc-face fc-face-back"><div class="fc-face-label" id="fc-bl"></div><div class="fc-face-text" id="fc-bt"></div></div>
+      <div class="fc-card-stage" id="fc-stage">
+        <div class="fc-card-scene" id="fc-scene" onclick="fcFlip()">
+          <div class="fc-card-inner" id="fc-inner">
+            <button class="card-star-btn fc-star-btn${isCurrentStarred?' starred':''}" title="${isCurrentStarred?'Ster verwijderen':'Markeer als moeilijk'}" onclick="event.stopPropagation();toggleStarCurrentTerm(event, ${currentTermIndex})">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </button>
+            <div class="fc-face"><div class="fc-face-label" id="fc-fl"></div><div class="fc-face-text" id="fc-ft"></div></div>
+            <div class="fc-face fc-face-back"><div class="fc-face-label" id="fc-bl"></div><div class="fc-face-text" id="fc-bt"></div></div>
+          </div>
         </div>
       </div>
       <div style="font-size:13px;color:var(--text3);text-align:center;margin-bottom:16px">Klik om te draaien · ← Wist ik niet &nbsp;·&nbsp; Wist ik → · spatie om te draaien</div>
@@ -1009,18 +1188,81 @@ function renderFlashcards(){
     </div>`;
   fcUpdate();if(FC._finished)showFCResults();
 }
-function fcUpdate(){const t=FC.terms[FC.idx];if(!t)return;const fi=FC.front==='term';document.getElementById('fc-fl').textContent=fi?'Begrip':'Definitie';document.getElementById('fc-ft').innerHTML=fi?renderTerm(t,'term')+renderImages(t):renderTerm(t,'def');document.getElementById('fc-bl').textContent=fi?'Definitie':'Begrip';document.getElementById('fc-bt').innerHTML=fi?renderTerm(t,'def'):renderTerm(t,'term')+renderImages(t);document.getElementById('fc-inner').classList.remove('flipped');FC.flipped=false;document.getElementById('fc-prog').style.width=Math.round((FC.idx/FC.terms.length)*100)+'%';document.getElementById('fc-ctr').textContent=`${FC.idx+1} / ${FC.terms.length}`;updateStreakCircle('fc-streak',FC.streak||0);const ks=document.getElementById('fc-known-stat');if(ks)ks.textContent=`✓ ${FC.known.size} van ${FC.terms.length} gekend`;const starBtn=document.querySelector('.fc-card-inner .card-star-btn');if(starBtn){const starIdx=getTermIndex(t);const starred=starIdx>=0&&isTermStarred(getSetStorageId(),starIdx);starBtn.classList.toggle('starred',starred);starBtn.title=starred?'Ster verwijderen':'Markeer als moeilijk';starBtn.onclick=(e)=>{e.stopPropagation();toggleStarCurrentTerm(e,starIdx);};}}
-function fcFlip(){FC.flipped=!FC.flipped;document.getElementById('fc-inner').classList.toggle('flipped',FC.flipped);}
+function fcUpdate(){
+  const t=FC.terms[FC.idx];
+  if(!t)return;
+  const fi=FC.front==='term';
+  document.getElementById('fc-fl').textContent=fi?'Begrip':'Definitie';
+  document.getElementById('fc-ft').innerHTML=fi?renderTerm(t,'term')+renderImages(t):renderTerm(t,'def');
+  document.getElementById('fc-bl').textContent=fi?'Definitie':'Begrip';
+  document.getElementById('fc-bt').innerHTML=fi?renderTerm(t,'def'):renderTerm(t,'term')+renderImages(t);
+  const inner=document.getElementById('fc-inner');
+  inner.classList.add('fc-resetting');
+  inner.classList.remove('flipped');
+  inner.offsetHeight;
+  inner.classList.remove('fc-resetting');
+  FC.flipped=false;
+  document.getElementById('fc-prog').style.width=Math.round((FC.idx/FC.terms.length)*100)+'%';
+  document.getElementById('fc-ctr').textContent=`${FC.idx+1} / ${FC.terms.length}`;
+  updateStreakCircle('fc-streak',FC.streak||0);
+  const ks=document.getElementById('fc-known-stat');
+  if(ks)ks.textContent=`✓ ${FC.known.size} van ${FC.terms.length} gekend`;
+  const starBtn=document.querySelector('.fc-card-inner .card-star-btn');
+  if(starBtn){
+    const starIdx=getTermIndex(t);
+    const starred=starIdx>=0&&isTermStarred(getSetStorageId(),starIdx);
+    starBtn.classList.toggle('starred',starred);
+    starBtn.title=starred?'Ster verwijderen':'Markeer als moeilijk';
+    starBtn.onclick=(e)=>{e.stopPropagation();toggleStarCurrentTerm(e,starIdx);};
+  }
+}
+function fcFlip(){
+  if(FC._transitioning)return;
+  FC.flipped=!FC.flipped;
+  document.getElementById('fc-inner').classList.toggle('flipped',FC.flipped);
+}
 function fcMark(known){
-  if(FC._finished)return;
+  if(FC._finished||FC._transitioning)return;
+  FC._transitioning=true;
   const term=FC.terms[FC.idx];
   FC.history.push({idx:FC.idx,known,streak:FC.streak});
-  const inner=document.getElementById('fc-inner');
-  inner.style.transition='none';inner.classList.add(known?'fc-mark-right':'fc-mark-wrong');
+  const scene=document.getElementById('fc-scene');
   if(known){FC.known.add(term);FC.streak++;playSFX('correct');}else{FC.known.delete(term);FC.streak=0;playSFX('incorrect');}
   checkStreak(FC.streak);
-  saveFCProgress();
-  setTimeout(()=>{inner.classList.remove('fc-mark-right','fc-mark-wrong');inner.style.transition='';if(FC.idx<FC.terms.length-1){FC.idx++;fcUpdate();saveFCProgress();}else{FC._finished=true;saveFCProgress();showFCResults();}},350);
+  if(FC.idx<FC.terms.length-1){
+    const stage=document.getElementById('fc-stage');
+    const outgoing=scene.cloneNode(true);
+    outgoing.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
+    outgoing.removeAttribute('id');
+    outgoing.removeAttribute('onclick');
+    outgoing.classList.remove('fc-card-enter');
+    outgoing.classList.add('fc-card-ghost','fc-card-exit');
+    stage.appendChild(outgoing);
+
+    scene.classList.remove('fc-card-exit','fc-card-enter');
+    scene.offsetHeight;
+    scene.classList.add('fc-card-enter');
+    FC.idx++;
+    fcUpdate();
+    saveFCProgress();
+    setTimeout(()=>{
+      outgoing.remove();
+      scene.classList.remove('fc-card-enter');
+      FC._transitioning=false;
+    },520);
+  }else{
+    scene.classList.remove('fc-card-enter');
+    scene.offsetHeight;
+    scene.classList.add('fc-card-exit');
+    saveFCProgress();
+    setTimeout(()=>{
+      scene.classList.remove('fc-card-exit');
+      FC._finished=true;
+      FC._transitioning=false;
+      saveFCProgress();
+      showFCResults();
+    },340);
+  }
 }
 function showFCResults(){playSFX('finish');const pct=Math.round((FC.known.size/FC.terms.length)*100);const o=document.getElementById('fc-results');if(!o)return;o.style.display='flex';o.innerHTML=`<div style="font-size:40px;margin-bottom:8px">🎉</div><div class="results-pct">${pct}%</div><div style="color:var(--text2);margin-bottom:20px;font-weight:600">${FC.known.size} van ${FC.terms.length} gekend</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn btn-primary" onclick="fcHardReset()">↺ Opnieuw</button>${FC.known.size<FC.terms.length?`<button class="btn btn-red" onclick="fcReviewMistakes()">Fouten opnieuw</button>`:''}<button class="btn btn-glass" onclick="backToSet()">Terug naar set</button></div>`;}
 function fcHardReset(){clearFCProgress();const activeTerms=getActiveTerms();FC={terms:FC.shuffleOn?shuffle([...activeTerms]):[...activeTerms],idx:0,flipped:false,front:FC.front||'term',shuffleOn:FC.shuffleOn!==undefined?FC.shuffleOn:true,loop:FC.loop||false,known:new Set(),history:[],streak:0,_active:true,_setId:SET.id,_origOrder:[...activeTerms],_finished:false};renderFlashcards();}
@@ -1032,47 +1274,80 @@ function fcApplyShuffle(){const activeTerms=getActiveTerms();FC.terms=FC.shuffle
    ANSWER MODE POPUP
    Shown once per session when first encountering multi-answer terms
 ══════════════════════════════════════════ */
-let _answerModeAsked = false; // session flag
+let _answerModeAsked=false;
+let _answerModeCallback=null;
 
-function maybeShowAnswerModePopup(onDone) {
-  if(_answerModeAsked) { onDone(); return; }
-  // Check if any term in current set has comma/semicolon in def (or term, depending on qmode)
-  const hasMulti = SET.terms.some(t => hasMultipleAlternatives(t.def) || hasMultipleAlternatives(t.term));
-  if(!hasMulti) { onDone(); return; }
-  _answerModeAsked = true;
-
-  const overlay = document.createElement('div');
-  overlay.className = 'answer-mode-overlay';
-  overlay.id = 'answer-mode-overlay';
-  overlay.innerHTML = `
-    <div class="answer-mode-panel">
-      <div style="font-size:28px;margin-bottom:10px"><svg width="38" height="38" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><path data-name="Subtraction 1" d="M2674 1114h-169.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1099a14.9 14.9 0 0 1-4.393 10.606A14.9 14.9 0 0 1 2674 1114m-220.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1099a14.9 14.9 0 0 1 4.393-10.606A14.9 14.9 0 0 1 2448 1084h5.015a30 30 0 0 0-4.014 15 30 30 0 0 0 4.012 15M2674 1024h-25.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1009a14.9 14.9 0 0 1-4.393 10.605A14.9 14.9 0 0 1 2674 1024m-76.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1009a14.9 14.9 0 0 1 4.393-10.607A14.9 14.9 0 0 1 2448 994h149.014a30 30 0 0 0-4.013 15 30 30 0 0 0 4.012 15" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 56" width="60" height="60" rx="30" transform="translate(2593 979)" fill="var(--text)" opacity=".4"/><rect data-name="Rectangle 55" width="60" height="60" rx="30" transform="translate(2449 1069)" fill="var(--text)" opacity=".4"/><path data-name="Rectangle 53" d="M2623 995a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/><path data-name="Rectangle 54" d="M2479 1085a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/></g></svg></div>
-      <div style="font-size:20px;font-weight:800;margin-bottom:8px">Hoe moeten vragen beantwoord worden?</div>
-      <div style="color:var(--text2);font-size:14px;margin-bottom:24px;line-height:1.5">
-        Sommige antwoorden bevatten meerdere mogelijkheden. Kies hoe je wilt antwoorden.
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+function answerModeStepHTML(){
+  return `
+    <div class="onboard-handle"></div>
+    <div class="onboard-body answer-mode-body">
+      <span class="onboard-icon answer-mode-icon">${_iconAnswerHelp()}</span>
+      <div class="onboard-title">Hoe moeten vragen beantwoord worden?</div>
+      <div class="onboard-desc">Sommige antwoorden bevatten meerdere mogelijkheden. Kies hoe je die wilt beantwoorden.</div>
+      <div class="answer-mode-options">
         <button class="answer-mode-btn" onclick="setAnswerMode(false)">
           <div class="answer-mode-btn-title">Alle antwoorden</div>
-          <div class="answer-mode-btn-desc">Je moet het volledige antwoord geven, inclusief alle alternatieven</div>
+          <div class="answer-mode-btn-desc">Je geeft het volledige antwoord, inclusief alle alternatieven.</div>
         </button>
         <button class="answer-mode-btn" onclick="setAnswerMode(true)">
-          <div class="answer-mode-btn-title">Enkele antwoorden</div>
-          <div class="answer-mode-btn-desc">Eén van de alternatieven invullen is voldoende</div>
+          <div class="answer-mode-btn-title">Eén antwoord</div>
+          <div class="answer-mode-btn-desc">Eén van de mogelijke antwoorden is voldoende.</div>
         </button>
       </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-
-  window._answerModeCallback = onDone;
+    </div>`;
 }
 
-function setAnswerMode(allowSingle) {
-  ST.allowSingle = allowSingle;
-  const overlay = document.getElementById('answer-mode-overlay');
-  if(overlay) overlay.remove();
-  if(window._answerModeCallback) { window._answerModeCallback(); window._answerModeCallback = null; }
+function showAnswerModeStep(overlay,reuseOverlay){
+  const panel=overlay.querySelector('.onboard-panel');
+  const applyStep=()=>{
+    overlay.id='answer-mode-overlay';
+    overlay.style.pointerEvents='';
+    panel.classList.add('answer-mode-panel');
+    panel.innerHTML=answerModeStepHTML();
+    panel.classList.remove('answer-mode-step-out');
+    panel.classList.add('answer-mode-step-in');
+    setTimeout(()=>panel.classList.remove('answer-mode-step-in'),300);
+  };
+  if(reuseOverlay){
+    overlay.style.pointerEvents='none';
+    panel.classList.add('answer-mode-step-out');
+    setTimeout(applyStep,180);
+  }else{
+    applyStep();
+  }
+}
+
+function maybeShowAnswerModePopup(onDone,reuseOverlay=null){
+  const hasMulti=SET.terms.some(t=>hasMultipleAlternatives(t.def)||hasMultipleAlternatives(t.term));
+  if(_answerModeAsked||!hasMulti){
+    if(onDone)onDone();
+    return false;
+  }
+  _answerModeAsked=true;
+  _answerModeCallback=typeof onDone==='function'?onDone:null;
+
+  const overlay=reuseOverlay||document.createElement('div');
+  if(!reuseOverlay){
+    overlay.className='onboard-overlay';
+    overlay.id='answer-mode-overlay';
+    overlay.innerHTML='<div class="onboard-panel answer-mode-panel"></div>';
+    document.body.appendChild(overlay);
+  }
+  showAnswerModeStep(overlay,!!reuseOverlay);
+  return true;
+}
+
+function setAnswerMode(allowSingle){
+  ST.allowSingle=allowSingle;
+  OH.allowSingle=allowSingle;
+  const stToggle=document.getElementById('st-allowsingle-toggle');
+  const ohToggle=document.getElementById('oh-allowsingle-toggle');
+  if(stToggle)stToggle.checked=allowSingle;
+  if(ohToggle)ohToggle.checked=allowSingle;
+  const overlay=document.getElementById('answer-mode-overlay');
+  const onDone=_answerModeCallback;
+  _answerModeCallback=null;
+  dismissOnboardingOverlay(overlay,onDone);
 }
 
 /* ══════════════════════════════════════════
@@ -1083,8 +1358,10 @@ let ST={};
 // Hold-to-skip timer state
 let _skipHoldTimer = null;
 let _skipHoldStarted = false;
+let _skipHoldTriggered = false;
+let _stAutoAdvanceTimer = null;
 
-function renderStampen(){
+function renderStampen(deferAnswerPrompt=false){
   const activeTerms=getActiveTerms();
   if(!ST._active||ST._setId!==SET.id){
     const savedProg=loadSTProgress();
@@ -1114,7 +1391,9 @@ function renderStampen(){
     <div class="st-wrap">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <div><div style="font-size:20px;font-weight:800"><svg width="16px" height="16px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 22" fill="var(--text)"><path data-name="Path 183" d="M104.824 240.655a114 114 0 0 1-21.587-6.727A115 115 0 0 1 63.7 223.283a116 116 0 0 1-17.02-14.1A116 116 0 0 1 32.64 192.1a115.5 115.5 0 0 1-10.6-19.612 115 115 0 0 1-6.7-21.671 116.8 116.8 0 0 1-2.34-23.27 115.6 115.6 0 0 1 6.693-38.905 115.1 115.1 0 0 1 18.53-33.252 115.5 115.5 0 0 1 28.042-25.266A113.9 113.9 0 0 1 101.5 15.176v24.293c-38.352 11.654-65.137 47.873-65.137 88.079 0 50.73 41.111 92 91.641 92s91.641-41.272 91.641-92v-.451h22.911v-9.828c.3 3.4.449 6.861.449 10.279a116.8 116.8 0 0 1-2.336 23.268 115.3 115.3 0 0 1-6.7 21.671 115.5 115.5 0 0 1-10.6 19.612 116 116 0 0 1-14.042 17.086 116 116 0 0 1-17.02 14.1 115 115 0 0 1-19.534 10.645 114 114 0 0 1-21.587 6.727A115.4 115.4 0 0 1 128 243a115.4 115.4 0 0 1-23.176-2.345M219.642 127.1a11.66 11.66 0 0 1 11.771-11.3 11.68 11.68 0 0 1 11.137 8.438v2.855Zm-4.176-27.873a90.6 90.6 0 0 0-5.329-13.2 11.613 11.613 0 0 1 5.266-15.594 11.7 11.7 0 0 1 15.656 5.245q1.908 3.825 3.533 7.808l.051.126.024.059v.009l.024.058.023.058v.012l.023.058.023.054v.011l.023.056v.011l.021.053c.011.027 0 0 0 .007s.015.037.023.055 0 .007.006.015l.022.055v.011l.02.05v.012l.022.054s.006.014.006.018.013.031.019.046v.01l.021.053q-.002.01.008.02c.01.01.013.034.02.052l.006.015.017.042.007.02.02.05.008.019.015.039.01.025c0 .014.01.028.016.041l.01.024.015.038c0 .01.01.024.013.033l.012.031.01.026.018.045.01.028c0 .009.007.02.011.028s.01.027.015.041l.011.028.012.03.011.029.016.042q.002.013.01.027c.008.014.01.028.018.045l.01.025.013.033.006.019.022.056.007.018c0 .014.007.019.013.033l.007.019.021.054.008.021.042.109v.012l.027.068v.007l.015.039.027.071v.013l.044.115.029.077.044.118v.008l.044.119.075.2v.007l.12.324.12.326c.242.658.475 1.313.706 1.976v.007l.042.121.07.2v.01q.022.059.04.118v.007l.023.068v.014l.012.037v.011l.021.063.007.02.02.06v.015c0 .011.008.024.012.035l.006.018.019.057.006.019.011.034v.014l.021.061.006.021.017.05c0 .008.006.016.009.025l.01.031.008.027.015.045c0 .009.006.019.009.028l.011.03c.005.011.01.03.015.045l.008.025.011.033.008.024c0 .016.01.032.015.048l.009.025.012.037c0 .007.008.024.01.031l.013.038.007.023.017.052.006.016.015.046v.014l.018.055.006.017.019.057.019.059v.013l.019.058v.008l.019.057v.007l.02.061v.008l.041.127.021.066.043.134.214.671a11.625 11.625 0 0 1-7.652 14.58 11.7 11.7 0 0 1-3.5.535 11.68 11.68 0 0 1-11.024-8.116ZM193.619 62.85a92.5 92.5 0 0 0-10.766-9.413 11.6 11.6 0 0 1-2.35-16.284 11.71 11.71 0 0 1 16.343-2.345l.023.017.017.012.044.033.019.014.028.021.015.011.047.036.017.012.044.033.019.014.027.02.022.017.04.029.021.015.038.029.023.017.027.02.022.016.036.028.024.019.024.018.038.029.023.017.024.018.036.028.026.019.023.017.035.027.026.02.024.019.023.017.038.028.024.019.027.02.032.024.027.021.021.016.04.031.019.015.029.022.026.019.033.025.02.016.039.029.021.016.029.023.019.015.04.031.02.016.035.026.021.016.033.026.018.013.042.032.018.014.032.025.02.016.039.03.016.012.043.033.016.012.034.026.015.011.043.033.018.014.042.033.011.009.039.03.015.011.044.034.015.011.04.032.007.006.047.037.012.01.048.037.007.006.046.036h.006l.049.037.01.009.049.039.05.038.007.007.049.039.007.006.049.038.049.039.009.007.049.04.05.04.05.04.008.007.051.041.051.041h.006l.051.041.107.085.053.042.107.085.434.349a115 115 0 0 1 8.81 7.9l.147.147.093.093.007.007.044.044.008.008.038.038.008.008.041.041.012.011.04.041.012.012.032.033.013.013.038.038.017.017.032.032.017.017.028.029.019.018.035.036.019.019.021.022.034.034.019.019.023.023.018.019.038.038.014.014.083.084.008.008.051.052.089.09.034.034a11.6 11.6 0 0 1-.215 16.445 11.67 11.67 0 0 1-8.153 3.3 11.67 11.67 0 0 1-8.327-3.476Zm-35.962-22.683a91.4 91.4 0 0 0-13.834-3.528 11.64 11.64 0 0 1-9.508-13.453 11.676 11.676 0 0 1 13.489-9.474q5.064.876 9.968 2.184l.128.034.127.034.075.021h.012l.12.032h.01l.118.032h.016l.061.017h.018l.036.01h.015l.064.018h.016l.036.01h.013l.063.017.022.006.053.015.024.007.033.01.023.006.048.014.028.008.03.008.037.011.036.01.032.008.027.008.049.014.023.006.037.011.021.007.052.015.021.006.045.013.023.006.044.012h.018l.057.016h.013l.049.013h.015l.055.016h.017l.052.015h.007l.059.017h.014l.06.017.058.017h.014l.059.017h.007l.058.017h.006l.062.018h.006l.128.037q2.514.729 4.981 1.57a11.62 11.62 0 0 1 7.275 14.77 11.68 11.68 0 0 1-11.051 7.874 11.7 11.7 0 0 1-3.77-.574ZM101.5 15.073l.065-.015h.007l.129-.031h.006l.133-.031.068-.015.135-.031.133-.031.133-.03.2-.046.133-.03.134-.03.068-.015.135-.03.133-.029.134-.029.341-.074.136-.029.205-.044.137-.029.136-.028q.412-.086.826-.17l.827-.163.136-.026.133-.026.2-.039.134-.025h.006l.134-.025.137-.026.068-.012.133-.024h.006l.132-.024h.006l.134-.024.066-.012.133-.024h.007l.131-.024h.006l.066-.012.065-.011h.006l.065-.011h.009l.061-.011.063-.011h.011l.125-.022h.015l.061-.011h.007l.057-.01h.012l.061-.011h.011l.056-.01h.009l.061-.01h.015l.059-.011h.006l.056-.01h.019l.057-.009h.016l.048-.008h.016l.057-.01h.018l.048-.008h.015l.057-.01h.019l.053-.009h.013l.053-.009h.019l.057-.009h.018l.042-.007h.023l.053-.009h.023l.039-.006h.022l.052-.008h.026l.036-.006.04-.007.035-.006h.028l.04-.007.036-.006h.06l.049-.007h.058l.051-.008h.086l.055-.009h.023l.035-.006h.027l.053-.008h.023l.036-.006h.013l.066-.011h.021l.068-.011h.011l.038-.006h.019l.061-.009h.019l.038-.006h.011l.074-.011h.012l.126-.019h.006q.62-.093 1.243-.179a11.673 11.673 0 0 1 13.161 9.924 11.64 11.64 0 0 1-9.962 13.123 92 92 0 0 0-13.748 3Z" opacity=".6"/><path data-name="Path 184" d="M206 138a25 25 0 0 1 25-25 25 25 0 0 1 25 25 25 25 0 0 1-25 25 25 25 0 0 1-25-25M79 25a25 25 0 0 1 25-25 25 25 0 0 1 25 25 25 25 0 0 1-25 25 25 25 0 0 1-25-25"/></g></svg> Stampen</div><div style="font-size:13px;color:var(--text2)">${esc(SET.title)}</div></div>
-        <div class="settings-dropdown-wrap">
+        <div class="mode-actions">
+          ${modeHelpButtonHTML()}
+          <div class="settings-dropdown-wrap">
           <button class="btn-icon" onclick="toggleDD('st-dd')"><svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><path data-name="Subtraction 1" d="M2674 1114h-169.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1099a14.9 14.9 0 0 1-4.393 10.606A14.9 14.9 0 0 1 2674 1114m-220.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1099a14.9 14.9 0 0 1 4.393-10.606A14.9 14.9 0 0 1 2448 1084h5.015a30 30 0 0 0-4.014 15 30 30 0 0 0 4.012 15M2674 1024h-25.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1009a14.9 14.9 0 0 1-4.393 10.605A14.9 14.9 0 0 1 2674 1024m-76.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1009a14.9 14.9 0 0 1 4.393-10.607A14.9 14.9 0 0 1 2448 994h149.014a30 30 0 0 0-4.013 15 30 30 0 0 0 4.012 15" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 56" width="60" height="60" rx="30" transform="translate(2593 979)" fill="var(--text)" opacity=".4"/><rect data-name="Rectangle 55" width="60" height="60" rx="30" transform="translate(2449 1069)" fill="var(--text)" opacity=".4"/><path data-name="Rectangle 53" d="M2623 995a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/><path data-name="Rectangle 54" d="M2479 1085a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/></g></svg></button>
           <div id="st-dd" class="settings-dropdown" style="display:none">
             <div class="settings-section"><div class="settings-section-title">Vraagrichting</div><div class="settings-row"><span class="settings-row-label">Naar</span><select class="settings-select" onchange="ST.qmode=this.value"><option value="term" ${ST.qmode==='term'?'selected':''}>Begrip → Def.</option><option value="def" ${ST.qmode==='def'?'selected':''}>Def. → Begrip</option><option value="mix" ${ST.qmode==='mix'?'selected':''}>Gemengd</option></select></div></div>
@@ -1126,8 +1405,10 @@ function renderStampen(){
               <div class="settings-row"><span class="settings-row-label">Hint tonen</span><label class="toggle"><input type="checkbox" ${ST.hints?'checked':''} onchange="ST.hints=this.checked"><span class="toggle-slider"></span></label></div>
               <div class="settings-row"><span class="settings-row-label">Geluid afspelen</span><label class="toggle"><input type="checkbox" ${ST.sound?'checked':''} onchange="ST.sound=this.checked"><span class="toggle-slider"></span></label></div>
               <div class="settings-row"><span class="settings-row-label">Juiste antw. overnemen</span><label class="toggle"><input type="checkbox" ${ST.copyCorrect?'checked':''} onchange="ST.copyCorrect=this.checked"><span class="toggle-slider"></span></label></div>
+              ${modeHelpSettingHTML()}
             </div>
             <div style="margin-top:10px"><button class="btn btn-glass btn-sm" style="width:100%" onclick="stHardReset();closeDD('st-dd')">↺ Opnieuw</button></div>
+          </div>
           </div>
         </div>
       </div>
@@ -1141,7 +1422,7 @@ function renderStampen(){
       <div class="results-overlay" id="st-results"></div>
     </div>`;
   if(ST._finished){ stShowResultsOverlay(); }
-  else {
+  else if(!deferAnswerPrompt){
     maybeShowAnswerModePopup(()=>stRenderQ());
   }
 }
@@ -1196,7 +1477,7 @@ function stRenderQ(){
 
   // Show multi-answer hint if applicable
   const multiHint = ST.allowSingle && hasMultipleAlternatives(a)
-    ? `<div style="font-size:12px;color:var(--accent);font-weight:600;margin-top:6px;opacity:0.8">💡 Één antwoord volstaat</div>`
+    ? `<div style="font-size:12px;color:var(--accent);font-weight:600;margin-top:6px;opacity:0.8">Eén antwoord volstaat</div>`
     : '';
 
   let body='';
@@ -1204,16 +1485,16 @@ function stRenderQ(){
     const allTermsForDistractors=SET.terms;
     const opts=shuffle([a,...shuffle(allTermsForDistractors.filter(x=>x!==t)).slice(0,3).map(x=>ST._dir==='term'?x.def:x.term)]);
     body=`<div class="mc-options" id="st-mc-opts">${opts.map((o,i)=>`<button class="mc-option" id="st-opt-${i}" onclick="stPickMC(${i},'${escA(o)}','${escA(a)}')">${'ABCD'[i]}. ${esc(o)}</button>`).join('')}</div>
-    <div style="display:flex;justify-content:center;margin-top:8px"><button class="btn btn-glass btn-sm" onclick="stSkip()">Vraag overslaan</button></div>
+    <div style="display:flex;justify-content:center;margin-top:8px"><button class="btn btn-glass btn-sm" id="st-skip-btn" onclick="stSkip()"><span>Vraag overslaan</span></button></div>
     <div id="st-fb" style="display:none;margin-top:12px"></div>
     <div id="st-next-area" style="display:none;text-align:center;margin-top:10px"><button class="btn btn-glass btn-sm" onclick="stNext()">Volgende →</button></div>`;
   } else {
     body=`<div style="margin-bottom:12px"><input type="text" id="st-inp" placeholder="Jouw antwoord..." onkeydown="stHandleInputKey(event)" autocomplete="off"></div>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="stCheckOpen()">Controleer</button>
-      ${ST.hints?`<button class="st-hint-btn" onclick="document.getElementById('st-hint-area').innerHTML='<span style=color:var(--accent);font-weight:700>Hint: ${escA(hintText)}</span>'">💡 Hint</button>`:''}
+      ${ST.hints?`<button class="st-hint-btn" onclick="document.getElementById('st-hint-area').innerHTML='<span style=color:var(--accent);font-weight:700>Hint: ${escA(hintText)}</span>'">Hint</button>`:''}
       <button class="btn btn-glass" id="st-skip-btn" onclick="stSkip()">
-        Sla over
+        <span>Sla over</span>
       </button>
     </div>
     <div id="st-fb" style="display:none;margin-top:12px"></div>
@@ -1239,7 +1520,9 @@ function stRenderQ(){
 function startSkipHold(e){
   if(e&&e.type==='touchstart') e.preventDefault();
   if(ST.answered) return;
+  cancelSkipHold();
   _skipHoldStarted = true;
+  _skipHoldTriggered = false;
   const btn = document.getElementById('st-skip-btn');
   if(btn){
     // Add fill animation
@@ -1249,30 +1532,26 @@ function startSkipHold(e){
     btn.appendChild(fill);
   }
   _skipHoldTimer = setTimeout(()=>{
-    if(_skipHoldStarted) stSkip();
-  }, 1000);
+    if(_skipHoldStarted){
+      _skipHoldTriggered=true;
+      stSkip();
+      cancelSkipHold(true);
+    }
+  }, 2000);
 }
 
-function cancelSkipHold(){
+function cancelSkipHold(keepTriggered=false){
   _skipHoldStarted = false;
   clearTimeout(_skipHoldTimer);
   _skipHoldTimer = null;
   const fill = document.getElementById('skip-fill-anim');
   if(fill) fill.remove();
+  if(!keepTriggered)_skipHoldTriggered=false;
 }
 
 /* ── Input keydown handler ── */
 function stHandleInputKey(e){
-  if(e.key==='Enter'){
-    e.preventDefault();
-    if(!ST.answered){
-      // Not yet answered: check
-      stCheckOpen();
-    } else {
-      // Already answered: act as "Volgende"
-      stNext();
-    }
-  }
+  if(e.key==='Enter')e.preventDefault();
 }
 
 function stPickMC(idx,chosen,answer){
@@ -1287,7 +1566,7 @@ function stPickMC(idx,chosen,answer){
     else{ST._wrongRetry.shift();ST.wrongItems=ST.wrongItems.filter(w=>w.t!==ST._currentT);}
     checkStreak(ST.streak);stUpdateStats();saveSTProgress();
     const fb=document.getElementById('st-fb');if(fb){fb.style.display='block';fb.className='st-feedback fb-correct';fb.innerHTML='✓ Correct! 🎉';}
-    setTimeout(()=>stRenderQ(),1000);
+    scheduleStAutoAdvance(1000);
   } else {
     ST.streak=0;
     playSFX('incorrect');
@@ -1320,7 +1599,7 @@ function stCheckOpen(){
       fb.innerHTML='✓ Correct! 🎉'+fullAnsNote;
     }
     const na=document.getElementById('st-next-area');if(na)na.style.display='block';
-    setTimeout(()=>stRenderQ(),1200);
+    scheduleStAutoAdvance(1200);
   } else {
     ST.streak=0;
     playSFX('incorrect');
@@ -1373,7 +1652,7 @@ function stOverride(){
   const fb=document.getElementById('st-fb');if(fb){fb.className='st-feedback fb-correct';fb.innerHTML='✓ Als goed gerekend!';}
   const ca=document.getElementById('st-copy-area');if(ca)ca.style.display='none';
   checkStreak(ST.streak);stUpdateStats();
-  setTimeout(()=>stRenderQ(),800);
+  scheduleStAutoAdvance(800);
 }
 
 function stSkip(){
@@ -1394,6 +1673,7 @@ function stSkip(){
 }
 
 function stNext(){
+  if(_stAutoAdvanceTimer){clearTimeout(_stAutoAdvanceTimer);_stAutoAdvanceTimer=null;}
   if(ST.copyCorrect&&ST._useType==='open'&&ST.answered&&!ST._copyDone){
     const ca=document.getElementById('st-copy-area');
     if(ca&&ca.style.display!=='none'){
@@ -1403,6 +1683,11 @@ function stNext(){
     }
   }
   stRenderQ();
+}
+
+function scheduleStAutoAdvance(delay){
+  if(_stAutoAdvanceTimer)clearTimeout(_stAutoAdvanceTimer);
+  _stAutoAdvanceTimer=setTimeout(()=>{_stAutoAdvanceTimer=null;stRenderQ();},delay);
 }
 
 function stUpdateStats(){
@@ -1469,7 +1754,7 @@ function closeCheckpoint(){document.getElementById('checkpoint-layer').innerHTML
 
 /* ── OVERHOREN ── */
 let OH={};
-function renderOverhoren(){
+function renderOverhoren(deferAnswerPrompt=false){
   const activeTerms=getActiveTerms();
   if(!OH._setId||OH._setId!==SET.id){OH={qmode:'term',itype:'mc',shuffleOn:true,typoLevel:2,numOpts:4,numQuestions:Math.min(10,activeTerms.length),allowSingle:false,sound:true,_setId:SET.id};}
   OH.numQuestions=Math.min(OH.numQuestions,activeTerms.length);
@@ -1480,7 +1765,9 @@ function renderOverhoren(){
     <div class="st-wrap">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <div><div style="font-size:20px;font-weight:800"><svg height="16px" width="16px" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-3598 1414)"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M3598-1414h256v256h-256z"/><path data-name="Path 187" d="M3802-1158h-151a15.9 15.9 0 0 1-11.313-4.686A15.9 15.9 0 0 1 3635-1174v-224a15.9 15.9 0 0 1 4.686-11.314A15.9 15.9 0 0 1 3651-1414h117l50 50v190a15.9 15.9 0 0 1-4.686 11.314A15.9 15.9 0 0 1 3802-1158" fill="var(--text)" opacity=".4"/><rect data-name="Rectangle 41" width="112" height="7" rx="3.5" transform="translate(3661 -1331)" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 42" width="130" height="7" rx="3.5" transform="translate(3661 -1314)" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 43" width="109" height="7" rx="3.5" transform="translate(3661 -1298)" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 44" width="80" height="7" rx="3.5" transform="translate(3661 -1281)" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 45" width="91" height="7" rx="3.5" transform="translate(3661 -1264)" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 46" width="40" height="7" rx="3.5" transform="translate(3661 -1248)" fill="var(--text)" opacity=".6"/><path data-name="Path 186" d="M3768-1414v34a15.9 15.9 0 0 0 4.686 11.314A15.9 15.9 0 0 0 3784-1364h34z" fill="var(--text)"/></g></svg> Overhoren</div><div style="font-size:13px;color:var(--text2)">${esc(SET.title)}</div></div>
-        <div class="settings-dropdown-wrap">
+        <div class="mode-actions">
+          ${modeHelpButtonHTML()}
+          <div class="settings-dropdown-wrap">
           <button class="btn-icon" onclick="toggleDD('oh-dd')"><svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><path data-name="Subtraction 1" d="M2674 1114h-169.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1099a14.9 14.9 0 0 1-4.393 10.606A14.9 14.9 0 0 1 2674 1114m-220.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1099a14.9 14.9 0 0 1 4.393-10.606A14.9 14.9 0 0 1 2448 1084h5.015a30 30 0 0 0-4.014 15 30 30 0 0 0 4.012 15M2674 1024h-25.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1009a14.9 14.9 0 0 1-4.393 10.605A14.9 14.9 0 0 1 2674 1024m-76.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1009a14.9 14.9 0 0 1 4.393-10.607A14.9 14.9 0 0 1 2448 994h149.014a30 30 0 0 0-4.013 15 30 30 0 0 0 4.012 15" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 56" width="60" height="60" rx="30" transform="translate(2593 979)" fill="var(--text)" opacity=".4"/><rect data-name="Rectangle 55" width="60" height="60" rx="30" transform="translate(2449 1069)" fill="var(--text)" opacity=".4"/><path data-name="Rectangle 53" d="M2623 995a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/><path data-name="Rectangle 54" d="M2479 1085a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/></g></svg></button>
           <div id="oh-dd" class="settings-dropdown" style="display:none">
             <div class="settings-section"><div class="settings-section-title">Type vragen</div>
@@ -1494,58 +1781,23 @@ function renderOverhoren(){
               <div class="settings-row"><span class="settings-row-label">Enkele antwoorden</span><label class="toggle"><input type="checkbox" id="oh-allowsingle-toggle" ${OH.allowSingle?'checked':''} onchange="OH.allowSingle=this.checked"><span class="toggle-slider"></span></label></div>
               <div class="settings-row"><span class="settings-row-label">Schudden</span><label class="toggle"><input type="checkbox" ${OH.shuffleOn?'checked':''} onchange="OH.shuffleOn=this.checked;ohRestart()"><span class="toggle-slider"></span></label></div>
               <div class="settings-row"><span class="settings-row-label">Geluid afspelen</span><label class="toggle"><input type="checkbox" ${OH.sound?'checked':''} onchange="OH.sound=this.checked"><span class="toggle-slider"></span></label></div>
+              ${modeHelpSettingHTML()}
             </div>
             <div style="margin-top:10px"><button class="btn btn-glass btn-sm" style="width:100%" onclick="ohRestart();closeDD('oh-dd')">↺ Nieuwe toets</button></div>
+          </div>
           </div>
         </div>
       </div>
       <div class="progress-row" style="margin-bottom:12px"><div class="progress-track"><div class="progress-fill" id="oh-prog" style="width:0%"></div></div><span style="font-size:13px;color:var(--text2)" id="oh-ctr">0 / ${OH.numQuestions} beantwoord</span></div>
       <div id="oh-questions"></div>
-      <button class="btn btn-primary btn-lg" style="width:100%;margin-top:20px;display:none" id="oh-submit" onclick="ohSubmit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Toets inleveren</button>
+      <button class="btn btn-primary btn-lg" style="width:100%;margin-top:20px" id="oh-submit" onclick="ohSubmit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Toets inleveren</button>
     </div>`;
 
-  // Show popup then build
-  maybeShowAnswerModeForOH(()=>ohBuild());
+  if(!deferAnswerPrompt)maybeShowAnswerModeForOH(()=>ohBuild());
 }
 
-function maybeShowAnswerModeForOH(onDone){
-  if(_answerModeAsked){ onDone(); return; }
-  const hasMulti = SET.terms.some(t => hasMultipleAlternatives(t.def) || hasMultipleAlternatives(t.term));
-  if(!hasMulti){ onDone(); return; }
-  _answerModeAsked = true;
-  const overlay = document.createElement('div');
-  overlay.className = 'answer-mode-overlay';
-  overlay.id = 'answer-mode-overlay';
-  overlay.innerHTML = `
-    <div class="answer-mode-panel">
-      <div style="font-size:28px;margin-bottom:10px"><svg width="38" height="38" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><path data-name="Subtraction 1" d="M2674 1114h-169.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1099a14.9 14.9 0 0 1-4.393 10.606A14.9 14.9 0 0 1 2674 1114m-220.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1099a14.9 14.9 0 0 1 4.393-10.606A14.9 14.9 0 0 1 2448 1084h5.015a30 30 0 0 0-4.014 15 30 30 0 0 0 4.012 15M2674 1024h-25.013a30 30 0 0 0 4.013-15 30 30 0 0 0-4.013-15H2674a14.9 14.9 0 0 1 10.606 4.394A14.9 14.9 0 0 1 2689 1009a14.9 14.9 0 0 1-4.393 10.605A14.9 14.9 0 0 1 2674 1024m-76.987 0H2448a14.9 14.9 0 0 1-10.606-4.393A14.9 14.9 0 0 1 2433 1009a14.9 14.9 0 0 1 4.393-10.607A14.9 14.9 0 0 1 2448 994h149.014a30 30 0 0 0-4.013 15 30 30 0 0 0 4.012 15" fill="var(--text)" opacity=".6"/><rect data-name="Rectangle 56" width="60" height="60" rx="30" transform="translate(2593 979)" fill="var(--text)" opacity=".4"/><rect data-name="Rectangle 55" width="60" height="60" rx="30" transform="translate(2449 1069)" fill="var(--text)" opacity=".4"/><path data-name="Rectangle 53" d="M2623 995a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/><path data-name="Rectangle 54" d="M2479 1085a14 14 0 1 0 14 14 14.016 14.016 0 0 0-14-14m0-16a30 30 0 1 1-30 30 30 30 0 0 1 30-30" fill="var(--text)"/></g></svg></div>
-      <div style="font-size:20px;font-weight:800;margin-bottom:8px">Hoe moeten vragen beantwoord worden?</div>
-      <div style="color:var(--text2);font-size:14px;margin-bottom:24px;line-height:1.5">
-        Sommige antwoorden bevatten meerdere mogelijkheden. Kies hoe je wilt antwoorden.
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <button class="answer-mode-btn" onclick="setAnswerMode(false)">
-          <div class="answer-mode-btn-title">Alle antwoorden</div>
-          <div class="answer-mode-btn-desc">Je moet het volledige antwoord geven, inclusief alle alternatieven</div>
-        </button>
-        <button class="answer-mode-btn" onclick="setAnswerMode(true)">
-          <div class="answer-mode-btn-title">Enkele antwoorden</div>
-          <div class="answer-mode-btn-desc">Eén van de alternatieven invullen is voldoende</div>
-        </button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  window._answerModeCallback = onDone;
-}
-
-function setAnswerModeOH(allowSingle){
-  OH.allowSingle = allowSingle;
-  // Also sync to ST for consistency
-  ST.allowSingle = allowSingle;
-  const overlay = document.getElementById('answer-mode-overlay');
-  if(overlay) overlay.remove();
-  if(window._answerModeCallback){ window._answerModeCallback(); window._answerModeCallback=null; }
+function maybeShowAnswerModeForOH(onDone,reuseOverlay=null){
+  return maybeShowAnswerModePopup(onDone,reuseOverlay);
 }
 
 function ohBuild(){
@@ -1562,23 +1814,26 @@ function ohBuild(){
   });
   OH.answers={};
   document.getElementById('oh-questions').innerHTML=OH.questions.map((qq,i)=>`
-    <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r);padding:20px;margin-bottom:12px;animation:set-slideUp ${.1+i*.05}s var(--ease2) both" id="oh-q-${i}">
+    <div class="oh-question-card" style="--oh-question-index:${Math.min(i,7)}" id="oh-q-${i}">
       <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:14px">
         <span style="background:var(--accent-light);color:var(--accent);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">${i+1}</span>
         <div style="font-size:15px;font-weight:700">${qq.dir==='term'?renderTerm(qq.t,'term')+renderImages(qq.t):renderTerm(qq.t,'def')}</div>
       </div>
-      ${OH.allowSingle && hasMultipleAlternatives(qq.a) ? `<div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:8px;opacity:0.8">💡 Één antwoord volstaat</div>` : ''}
-      ${qq.type==='mc'?`<div class="mc-options" id="oh-opts-${i}">${qq.opts.map((o,j)=>`<button class="mc-option" id="oh-opt-${i}-${j}" onclick="ohPickMC(${i},${j},'${escA(o)}','${escA(qq.a)}')">${'ABCDEF'[j]}. ${esc(o)}</button>`).join('')}</div>`
+      ${OH.allowSingle && hasMultipleAlternatives(qq.a) ? `<div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:8px;opacity:0.8">Eén antwoord volstaat</div>` : ''}
+      ${qq.type==='mc'?`<div class="mc-options" id="oh-opts-${i}">${qq.opts.map((o,j)=>`<button type="button" class="mc-option" id="oh-opt-${i}-${j}" aria-pressed="false" onclick="ohPickMC(${i},${j})">${'ABCDEF'[j]}. ${esc(o)}</button>`).join('')}</div>`
       :`<input type="text" id="oh-open-${i}" placeholder="Jouw antwoord..." oninput="ohOpenInput(${i},this.value)" autocomplete="off">`}
     </div>`).join('');
 }
 
-function ohPickMC(qi,oi,chosen,answer){
-  document.querySelectorAll(`#oh-opts-${qi} .mc-option`).forEach(b=>{b.style.background='';b.style.borderColor='';b.style.fontWeight='600';});
+function ohPickMC(qi,oi){
+  const question=OH.questions[qi];
+  if(!question||!question.opts||question.opts[oi]===undefined)return;
+  document.querySelectorAll(`#oh-opts-${qi} .mc-option`).forEach(b=>{b.classList.remove('is-selected');b.setAttribute('aria-pressed','false');});
   const btn=document.getElementById(`oh-opt-${qi}-${oi}`);
-  const accentColor=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-  const accentLight=getComputedStyle(document.documentElement).getPropertyValue('--accent-light').trim();
-  btn.style.background=accentLight;btn.style.borderColor=accentColor;btn.style.fontWeight='800';
+  if(!btn)return;
+  btn.classList.add('is-selected');
+  btn.setAttribute('aria-pressed','true');
+  const chosen=question.opts[oi],answer=question.a;
   OH.answers[qi]={type:'mc',chosen,answer,correct:chosen===answer};ohCheckAll();
 }
 function ohOpenInput(qi,val){OH.answers[qi]={type:'open',chosen:val,answer:OH.questions[qi].a};ohCheckAll();}
@@ -1586,7 +1841,7 @@ function ohCheckAll(){
   const total=OH.questions.length,done=Object.keys(OH.answers).length;
   const prog=document.getElementById('oh-prog');if(prog)prog.style.width=Math.round((done/total)*100)+'%';
   const ctr=document.getElementById('oh-ctr');if(ctr)ctr.textContent=`${done} / ${total} beantwoord`;
-  const sb=document.getElementById('oh-submit');if(sb)sb.style.display=done>=total?'':'none';
+  const sb=document.getElementById('oh-submit');if(sb){sb.style.display='';sb.disabled=false;}
 }
 function ohSubmit(){
   playSFX('finish');
@@ -1600,7 +1855,6 @@ function ohSubmit(){
   const tot=OH.questions.length,pct=Math.round((correct/tot)*100);
   const el=document.querySelector('#main-screen .st-wrap');
   el.innerHTML=`
-    <button class="back-btn" onclick="backToSet()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Terug</button>
     <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r2);padding:32px;text-align:center;margin-bottom:24px;box-shadow:var(--glass-shadow)">
       <div style="font-size:72px;font-weight:800;letter-spacing:-2px;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${pct}%</div>
       <div style="color:var(--text2);font-size:18px;font-weight:600;margin-bottom:24px">${correct} van ${tot} goed</div>
@@ -1620,19 +1874,152 @@ function showMilestone(n){const msgs={5:'5 op rij!',10:'10 op rij!',15:'15 op ri
 
 /* ── DROPDOWN ── */
 let openDD=null;
-function toggleDD(id){const el=document.getElementById(id);if(!el)return;if(openDD&&openDD!==id)closeDD(openDD);if(el.style.display==='none'||!el.style.display){el.style.display='block';openDD=id;}else closeDD(id);}
+function toggleDD(id){
+  const el=document.getElementById(id);if(!el)return;
+  if(openDD&&openDD!==id)closeDD(openDD);
+  if(el.style.display==='none'||!el.style.display){
+    const originalWrap=el.parentElement;
+    const trigger=el.previousElementSibling;
+    el.style.display='block';openDD=id;
+    if(id==='set-menu'&&window.innerWidth>640){
+      const rect=trigger?.getBoundingClientRect();
+      if(rect){
+        const width=Math.min(280,window.innerWidth-24);
+        el.dataset.portalWrap=originalWrap?.id||'';
+        document.body.appendChild(el);
+        el.style.position='fixed';el.style.width=`${width}px`;el.style.right='auto';
+        el.style.left=`${Math.max(12,Math.min(rect.right-width,window.innerWidth-width-12))}px`;
+        el.style.top=`${Math.min(rect.bottom+8,window.innerHeight-120)}px`;
+        el.style.maxHeight=`${Math.max(110,window.innerHeight-Math.min(rect.bottom+8,window.innerHeight-120)-12)}px`;
+      }
+    }
+  }else closeDD(id);
+}
 function closeDD(id){
   const el=document.getElementById(id);
   if(!el)return;
   el.classList.add('closing');
-  setTimeout(()=>{ el.classList.remove('closing'); el.style.display='none'; },200);
+  setTimeout(()=>{
+    el.classList.remove('closing');el.style.display='none';
+    const wrap=el.dataset.portalWrap&&document.getElementById(el.dataset.portalWrap);
+    if(wrap){wrap.appendChild(el);delete el.dataset.portalWrap;['position','width','right','left','top','max-height'].forEach(prop=>el.style.removeProperty(prop));}
+  },200);
   if(openDD===id)openDD=null;
 }
 document.addEventListener('click',e=>{if(openDD&&!e.target.closest('.settings-dropdown-wrap'))closeDD(openDD);});
 
 /* ── MODAL / TOAST ── */
-function showModal(html){document.getElementById('modal-panel').innerHTML=html;document.getElementById('modal-bg').style.display='flex';document.body.style.overflow='hidden';}
-function closeModal(){document.getElementById('modal-bg').style.display='none';document.body.style.overflow='';}
+function showModal(html){const panel=document.getElementById('modal-panel');const bg=document.getElementById('modal-bg');panel.className='';bg.classList.remove('share-modal-bg','closing');panel.innerHTML=html;bg.style.display='flex';document.body.style.overflow='hidden';}
+function closeModal(){
+  const bg=document.getElementById('modal-bg');
+  const panel=document.getElementById('modal-panel');
+  if(bg.classList.contains('share-modal-bg')&&!bg.classList.contains('closing')){
+    const content=panel.querySelector('.share-sheet-content');
+    panel.classList.remove('is-dragging','is-returning');
+    panel.style.removeProperty('transition');
+    panel.style.removeProperty('transform');
+    if(content){content.style.removeProperty('transition');content.style.removeProperty('opacity');}
+    bg.classList.add('closing');
+    setTimeout(()=>{
+      bg.style.display='none';
+      bg.classList.remove('share-modal-bg','closing');
+      panel.className='';
+      panel.style.removeProperty('transition');
+      panel.style.removeProperty('transform');
+      panel.style.removeProperty('--share-dismiss-start');
+      panel.style.removeProperty('--share-content-opacity');
+      document.body.style.overflow='';
+    },420);
+    return;
+  }
+  bg.style.display='none';
+  bg.classList.remove('share-modal-bg','closing');
+  panel.className='';
+  panel.style.removeProperty('transition');
+  panel.style.removeProperty('transform');
+  panel.style.removeProperty('--share-dismiss-start');
+  panel.style.removeProperty('--share-content-opacity');
+  document.body.style.overflow='';
+}
+
+function setupShareSheetSwipe(panel){
+  const content=panel.querySelector('.share-sheet-content');
+  const markSheetReady=()=>panel.classList.add('is-ready');
+  panel.addEventListener('animationend',event=>{
+    if(event.target===panel&&(event.animationName==='set-shareSheetMobileIn'||event.animationName==='set-shareSheetIn'))markSheetReady();
+  });
+  setTimeout(()=>{if(panel.isConnected)markSheetReady();},380);
+  let startX=0,startY=0,currentY=0,renderedDistance=0,dragging=false,directionLocked=false,activeScroller=null;
+  panel.addEventListener('touchstart',event=>{
+    if(window.innerWidth>640||event.touches.length!==1)return;
+    let candidate=event.target;
+    activeScroller=null;
+    while(candidate&&candidate!==panel){
+      const style=getComputedStyle(candidate);
+      if(candidate.scrollHeight>candidate.clientHeight+1&&/(auto|scroll)/.test(style.overflowY)){activeScroller=candidate;break;}
+      candidate=candidate.parentElement;
+    }
+    startX=event.touches[0].clientX;
+    startY=event.touches[0].clientY;
+    currentY=startY;
+    renderedDistance=0;
+    dragging=true;
+    directionLocked=false;
+    panel.classList.add('is-dragging');
+  },{passive:true});
+  panel.addEventListener('touchmove',event=>{
+    if(!dragging||event.touches.length!==1)return;
+    const deltaX=event.touches[0].clientX-startX;
+    const deltaY=event.touches[0].clientY-startY;
+    if(!directionLocked&&Math.max(Math.abs(deltaX),Math.abs(deltaY))>6){
+      directionLocked=true;
+      if(Math.abs(deltaX)>Math.abs(deltaY)){dragging=false;panel.classList.remove('is-dragging');return;}
+    }
+    currentY=event.touches[0].clientY;
+    const distance=Math.max(0,deltaY);
+    if(distance<=2)return;
+    if(activeScroller&&activeScroller.scrollTop>0){dragging=false;panel.classList.remove('is-dragging');return;}
+    event.preventDefault();
+    const maxDrag=panel.offsetHeight*.8;
+    renderedDistance=Math.min(distance,maxDrag);
+    const progress=maxDrag?renderedDistance/maxDrag:0;
+    panel.style.transform=`translateY(${renderedDistance}px)`;
+    if(content)content.style.opacity=String(1-progress);
+  },{passive:false});
+  const finishGesture=()=>{
+    if(!dragging)return;
+    dragging=false;
+    const distance=Math.max(0,currentY-startY);
+    if(distance>=panel.offsetHeight*.4){
+      const maxDrag=panel.offsetHeight*.8;
+      panel.style.setProperty('--share-dismiss-start',`${renderedDistance}px`);
+      panel.style.setProperty('--share-content-opacity',String(Math.max(0,1-(renderedDistance/maxDrag))));
+      panel.classList.remove('is-dragging');
+      panel.classList.add('swipe-dismiss');
+      closeModal();
+      return;
+    }
+    panel.classList.add('is-returning');
+    panel.classList.remove('is-dragging');
+    panel.getBoundingClientRect();
+    panel.style.transform='translateY(0)';
+    if(content)content.style.opacity='1';
+    setTimeout(()=>{
+      if(!panel.isConnected)return;
+      panel.style.removeProperty('transform');
+      if(content)content.style.removeProperty('opacity');
+      panel.classList.remove('is-returning');
+    },340);
+  };
+  panel.addEventListener('touchend',finishGesture,{passive:true});
+  panel.addEventListener('touchcancel',()=>{
+    if(!dragging)return;
+    dragging=false;
+    panel.classList.remove('is-dragging');
+    panel.style.removeProperty('transform');
+    if(content)content.style.removeProperty('opacity');
+  },{passive:true});
+}
 let _tt;function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2500);}
 
 /* ── KEYBOARD ── */
@@ -1651,6 +2038,16 @@ document.addEventListener('keydown',e=>{
     if(openDD)closeDD(openDD);
     if(termsSearchState.active)closeTermsSearch();
   }
+  if(currentMode==='stampen'&&e.key==='Enter'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+    if(e.target?.id==='st-copy-inp')return;
+    e.preventDefault();
+    if(ST.answered){
+      if(!e.repeat)stNext();
+      return;
+    }
+    if(!e.repeat)startSkipHold(e);
+    return;
+  }
   if(currentMode==='flashcards'){
     if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
     if(e.key==='ArrowLeft'){e.preventDefault();fcMark(false);}
@@ -1658,29 +2055,71 @@ document.addEventListener('keydown',e=>{
     else if(e.key===' '){e.preventDefault();fcFlip();}
   }
 });
+document.addEventListener('keyup',e=>{
+  if(currentMode!=='stampen'||e.key!=='Enter'||e.target?.id==='st-copy-inp')return;
+  e.preventDefault();
+  const wasTriggered=_skipHoldTriggered;
+  cancelSkipHold();
+  if(wasTriggered)return;
+  if(!ST.answered&&ST._useType==='open')stCheckOpen();
+});
+window.addEventListener('blur',()=>cancelSkipHold());
 
 /* ══════════════════════════════════════════
    SET ACTIONS
 ══════════════════════════════════════════ */
+let activeSharePayload=null;
 function showShareModal(){
   const url=`${window.location.origin}${window.location.pathname}?set=${encodeURIComponent(SET.slug)}`;
-  const shareText=`Bekijk mijn set: ${SET.title}`;
+  activeSharePayload={title:SET.title,text:`Bekijk deze set op Velios+: ${SET.title}`,url};
   showModal(`
-    <h3 style="margin-bottom:16px">Delen</h3>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <input type="text" id="share-url" value="${esc(url)}" readonly style="flex:1;padding:10px;border:1px solid rgba(200,195,230,0.6);border-radius:8px;font-size:13px;background:rgba(255,255,255,0.7)">
-      <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('share-url').value).then(()=>showToast('✓ Gekopieerd!')).catch(()=>showToast('Kopiëren mislukt'))"><svg width="13px" height="13px" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 20" transform="translate(-3611 1401)"><rect data-name="Rectangle 34" width="193" height="193" rx="33" transform="translate(3660 -1357)" fill="rgba(255,255,255,0.4)"/><rect data-name="Rectangle 33" width="193" height="193" rx="33" transform="translate(3626 -1382)" fill="#fff"/></g></svg> Kopieer</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button class="btn btn-glass btn-sm" onclick="window.open('https://wa.me/?text=${encodeURIComponent(shareText+' '+url)}','_blank')">WhatsApp</button>
-      <button class="btn btn-glass btn-sm" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}','_blank')">Twitter</button>
-      <button class="btn btn-glass btn-sm" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}','_blank')">Facebook</button>
-      <button class="btn btn-glass btn-sm" onclick="showToast('📌 Link kopiëren en delen in Instagram')">Instagram</button>
-    </div>
-    <div style="margin-top:16px;display:flex;justify-content:flex-end">
-      <button class="btn btn-glass" onclick="closeModal()">Sluiten</button>
-    </div>
-  `);
+    <div class="share-sheet-handle" aria-hidden="true"></div>
+    <div class="share-sheet-content">
+      <div class="share-sheet-header"><div><h3>Delen</h3><p>${esc(SET.title)}</p></div><button class="share-close-btn" onclick="closeModal()" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="share-apps" aria-label="Delen via app">
+        <button class="share-app" onclick="shareViaApp('whatsapp')"><img class="share-app-icon" src="assets/share/whatsapp.png" alt=""><span>WhatsApp</span></button>
+        <button class="share-app" onclick="shareViaApp('messages')"><img class="share-app-icon" src="assets/share/messages.png" alt=""><span>Berichten</span></button>
+        <button class="share-app" onclick="shareViaApp('messenger')"><img class="share-app-icon" src="assets/share/messenger.png" alt=""><span>Messenger</span></button>
+        <button class="share-app" onclick="shareViaApp('mail')"><img class="share-app-icon" src="assets/share/mail.png" alt=""><span>Mail</span></button>
+        <button class="share-app" onclick="shareViaApp('telegram')"><img class="share-app-icon" src="assets/share/telegram.png" alt=""><span>Telegram</span></button>
+      </div>
+      <div class="share-actions">
+        <button class="share-action" onclick="copyShareLink()"><span class="share-action-icon"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="3"/><path d="M16 8V6a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h2"/></svg></span><span>Link kopiëren</span><svg class="share-action-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+        <button class="share-action" onclick="shareViaSystem()"><span class="share-action-icon"><svg viewBox="0 0 24 24"><path d="M12 3v12m0-12L8 7m4-4 4 4"/><path d="M5 11v7a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-7"/></svg></span><span>Meer</span><svg class="share-action-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
+    </div>`);
+  document.getElementById('modal-bg').classList.add('share-modal-bg');
+  const panel=document.getElementById('modal-panel');
+  panel.classList.add('share-modal-panel');
+  setupShareSheetSwipe(panel);
+}
+
+async function copyShareLink(){
+  if(!activeSharePayload)return;
+  try{
+    if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(activeSharePayload.url);
+    else{const input=document.createElement('textarea');input.value=activeSharePayload.url;input.style.position='fixed';input.style.opacity='0';document.body.appendChild(input);input.select();document.execCommand('copy');input.remove();}
+    showToast('Link gekopieerd');
+  }catch(e){showToast('Kopiëren is mislukt');}
+}
+
+function shareViaApp(app){
+  if(!activeSharePayload)return;
+  const {title,text,url}=activeSharePayload;
+  if(app==='whatsapp')window.open(`https://wa.me/?text=${encodeURIComponent(text+' '+url)}`,'_blank','noopener');
+  else if(app==='messages')window.location.href=`sms:?&body=${encodeURIComponent(text+' '+url)}`;
+  else if(app==='messenger')window.location.href=`fb-messenger://share?link=${encodeURIComponent(url)}`;
+  else if(app==='mail')window.location.href=`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text+'\n\n'+url)}`;
+  else if(app==='telegram')window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank','noopener');
+}
+
+async function shareViaSystem(){
+  if(!activeSharePayload)return;
+  if(navigator.share){
+    try{await navigator.share(activeSharePayload);return;}catch(e){if(e&&e.name==='AbortError')return;}
+  }
+  await copyShareLink();
+  showToast('Systeemdelen wordt hier niet ondersteund; de link is gekopieerd');
 }
 
 function makeCopyOfSet(){
@@ -1895,11 +2334,16 @@ function downloadVset(){
 }
 
 let termsSearchState={active:false,matches:[],currentIdx:-1,highlighted:false};
+let termsSearchCloseTimer=null;
 
 function openTermsSearch(){
   const searchBox=document.getElementById('searchBox');
   const input=document.getElementById('termsSearchInput');
+  clearTimeout(termsSearchCloseTimer);
+  searchBox.classList.remove('search-closing');
   searchBox.style.display='flex';
+  searchBox.offsetHeight;
+  searchBox.classList.add('search-open');
   input.focus();
   termsSearchState.active=true;
 }
@@ -1907,12 +2351,21 @@ function openTermsSearch(){
 function closeTermsSearch(){
   const searchBox=document.getElementById('searchBox');
   const input=document.getElementById('termsSearchInput');
-  searchBox.style.display='none';
+  clearTimeout(termsSearchCloseTimer);
+  searchBox.classList.remove('search-open');
+  searchBox.classList.add('search-closing');
+  termsSearchCloseTimer=setTimeout(()=>{
+    searchBox.classList.remove('search-closing');
+    searchBox.style.display='none';
+  },180);
   input.value='';
   termsSearchState={active:false,matches:[],currentIdx:-1,highlighted:false};
   restoreTermsHTML();
   const termsList=document.querySelector('.terms-list');
-  if(termsList) termsList.querySelectorAll('.term-item').forEach(el=>el.style.display='');
+  if(termsList) termsList.querySelectorAll('.term-item').forEach(el=>el.classList.remove('term-search-hidden'));
+  document.getElementById('searchCounter').textContent='0/0';
+  document.getElementById('searchNext').disabled=true;
+  document.getElementById('searchPrev').disabled=true;
 }
 
 // Sla originele innerHTML op zodat we altijd kunnen resetten
@@ -1958,7 +2411,7 @@ function filterTerms(){
   termsSearchState.currentIdx=-1;
 
   if(!query){
-    termsList.querySelectorAll('.term-item').forEach(el=>el.style.display='');
+    termsList.querySelectorAll('.term-item').forEach(el=>el.classList.remove('term-search-hidden'));
     document.getElementById('searchCounter').textContent='0/0';
     document.getElementById('searchNext').disabled=true;
     document.getElementById('searchPrev').disabled=true;
@@ -1967,17 +2420,16 @@ function filterTerms(){
 
   const allItems=Array.from(termsList.querySelectorAll('.term-item'));
   allItems.forEach((item,idx)=>{
-  // Haal tekst op zonder de label-divs (BEGRIP / DEFINITIE)
-  const labelText = Array.from(item.querySelectorAll('.term-label'))
-    .map(l=>l.textContent).join(' ').toLowerCase();
-  const fullText = item.textContent.toLowerCase();
-  const searchableText = fullText.replace(labelText, '');
+  // Zoek alleen in de echte inhoud, niet in labels of knopnamen.
+  const searchableItem=item.cloneNode(true);
+  searchableItem.querySelectorAll('.term-label,button').forEach(el=>el.remove());
+  const searchableText=searchableItem.textContent.toLowerCase();
   
   if(searchableText.includes(query)){
-    item.style.display='';
+    item.classList.remove('term-search-hidden');
     termsSearchState.matches.push({item,idx});
   }else{
-    item.style.display='none';
+    item.classList.add('term-search-hidden');
   }
 });
 
@@ -2080,8 +2532,13 @@ function handleSearchKeydown(e){
 
 boot();
 
+updateSetConnectionState();
+window.addEventListener('online',updateSetConnectionState);
+window.addEventListener('offline',updateSetConnectionState);
+
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'){
+    updateSetConnectionState();
     loadThemeSettings();
     initSetHeaderAccount();
     if(currentMode==='home'&&await refreshOpenSyncedSet())renderSetView();

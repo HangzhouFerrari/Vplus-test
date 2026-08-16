@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="sw-register.js?v=20260812-6"></script>
+<script src="sw-register.js?v=20260816-47"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Velios+">
 <meta id="theme-meta" name="theme-color" content="#f0eef9">
 <title>Velios+ — Gesynchroniseerde sets</title>
+<link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -20,7 +22,7 @@
   --glass-shadow:0 2px 8px rgba(0,98,255,0.1),inset 1px 1px 0 rgba(255,255,255,1),inset -1px -1px 2px rgba(255,255,255,0.5);
   --glass-shadow-lg:0 8px 32px rgba(0,98,255,0.15),inset 1px 1px 0 rgba(255,255,255,1),inset -1px -1px 2px rgba(255,255,255,0.5);
   --text:#0b0f2a;--text2:#3d3a55;--text3:#7c7899;
-  --accent:#0062ff;--accent2:#0075ff;--accent-light:rgba(0,98,255,0.12);
+  --accent:#ff9f0a;--accent2:#e47f00;--accent-light:rgba(255,159,10,0.14);--accent-contrast:#fff;
   --green:#18b672;--red:#e83a4a;--orange:#f07b20;
   --r:30px;--r2:36px;--r3:34px;--r4:30px;
   --font:'DM Sans',sans-serif;
@@ -152,7 +154,7 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
 .page-header{animation:none}.page-avatar{border-radius:50%;background:var(--accent);box-shadow:none}.page-avatar img{border-radius:50%}
 .sync-meter-wrap,.synced-card,.local-card{box-shadow:none;border-radius:var(--r2);animation:none}.synced-card::before{display:none}
 .synced-card:hover,.local-card:hover{transform:none;box-shadow:none}.sync-fill{background:var(--accent);box-shadow:none}.sync-fill.full{background:var(--red)}
-.badge{border-radius:999px}.btn-sync{background:var(--accent);border-color:var(--accent);color:#fff}.btn-sync:hover{background:var(--accent);transform:none}
+.badge{border-radius:999px}.btn-sync{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast)}.btn-sync:hover{background:var(--accent);transform:none}
 .btn,.btn-sync,.btn-unsync{border-radius:999px!important}
 .empty-icon{width:48px;height:48px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:grid;place-items:center;margin:0 auto 12px}.empty-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .modal-bg{background:rgba(0,0,0,.45);backdrop-filter:blur(8px)}.modal-panel{box-shadow:none;background:var(--glass);border-radius:var(--r2)}.btn-glass{box-shadow:none;background:var(--bg-grad)}
@@ -240,7 +242,7 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260812-6"></script>
+<script src="supabase-client.js?v=20260816-47"></script>
 <script>
 let profile = null;
 let syncedSets = [];
@@ -263,9 +265,9 @@ let toastTimer;
 
 function applyTheme() {
   const s = JSON.parse(localStorage.getItem('sd_theme') || '{}');
-  const dark = s.followSystem ? window.matchMedia('(prefers-color-scheme: dark)').matches : !!s.darkMode;
+  const dark = s.followSystem !== false ? window.matchMedia('(prefers-color-scheme: dark)').matches : !!s.darkMode;
   if (dark) { document.body.classList.add('dark-mode'); document.getElementById('theme-meta').content = '#000000'; }
-  if (s.accentColor) setAccentCss(s.accentColor);
+  setAccentCss(s.accentColor==='#0062ff'&&!s.accentWasChosen?'#ff9f0a':(s.accentColor||'#ff9f0a'));
 }
 function setAccentCss(color) {
   const h = color.replace('#','');
@@ -274,6 +276,7 @@ function setAccentCss(color) {
   R.setProperty('--accent',color);
   R.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
   R.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
+  R.setProperty('--accent-contrast','#fff');
 }
 
 function renderHeader() {

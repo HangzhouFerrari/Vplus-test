@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html lang="nl" class="index-page">
 <head>
-<script src="sw-register.js?v=20260812-6"></script>
+<script>
+try {
+  const welcomeBypass=new URLSearchParams(location.search).has('skipWelcome');
+  if(!welcomeBypass&&!localStorage.getItem('sd_welcome_seen'))location.replace('welcome.html');
+} catch(e) {}
+</script>
+<script src="sw-register.js?v=20260816-47"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260812-6"></script>
+<script src="supabase-client.js?v=20260816-47"></script>
 <script>
 if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
   window.location.href = 'unsupported.html';
@@ -20,11 +26,11 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <meta id="theme-color-meta" name="theme-color" content="#0a0812">
 <title>Velios+</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="appicon-png512x512.png">
-<link rel="icon" href="favicon_light.png" media="(prefers-color-scheme: light)">
-<link rel="icon" href="favicon_dark.png" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260812-6">
+<link rel="stylesheet" href="style.css?v=20260816-47">
 </head>
 <body>
 <div id="loading-screen" style="position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;pointer-events:none">
@@ -56,6 +62,10 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
     </div>
   </div>
 </nav>
+<div class="offline-page-notice" id="offline-page-notice" role="status" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.8a15.7 15.7 0 0 1 3.1-2.1M8.5 5.3A15.4 15.4 0 0 1 22 8.8M5 12.4a10.8 10.8 0 0 1 3.1-1.8m3.9-.7a10.8 10.8 0 0 1 7 2.5M8.6 16a5.3 5.3 0 0 1 6.8 0M12 20h.01M3 3l18 18"/></svg>
+  <div><strong>Geen verbinding</strong><span>Je ziet de gegevens die op dit apparaat beschikbaar zijn.</span></div>
+</div>
 <div class="sidebar">
     <div class="sidebar-btn active" onclick="showPage('home')" title="Home">
       <svg  width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="200" viewBox="0 0 256 200"><path data-name="Path 151" d="M0 32.218C0 14.424 14.014-.001 31.3-.001h193.4c17.288 0 31.3 14.425 31.3 32.219V167.78c0 17.794-14.014 32.219-31.3 32.219H31.301c-17.287 0-31.3-14.425-31.3-32.219Z" opacity="0.4" fill="var(--text)"/><g data-name="Group 4" transform="translate(-2032 1444.819)" fill="var(--text)"><rect data-name="Rectangle 5" width="137" height="174" rx="21" transform="translate(2045 -1433)"/><rect data-name="Rectangle 6" width="81" height="71" rx="21" transform="translate(2194 -1433)"/><rect data-name="Rectangle 9" width="81" height="33" rx="16.5" transform="translate(2194 -1292)"/><rect data-name="Rectangle 7" width="41" height="47" rx="10" transform="translate(2194 -1351)"/><rect data-name="Rectangle 8" width="29" height="47" rx="10" transform="translate(2246 -1351)"/></g></svg>
@@ -83,7 +93,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
     <div style="flex:1"></div>
   </div>
 
-<div id="app-content" style="opacity:0;pointer-events:none;transition:opacity 0.7s cubic-bezier(0.34,1.56,0.64,1);display:flex;flex:1">
+<div id="app-content" style="opacity:0;pointer-events:none;transition:opacity .32s ease;display:flex;flex:1">
   <div id="page-scroll-container" style="flex:1;overflow-y:auto">
     <!-- HOME PAGE -->
     <div id="home" class="page active">
@@ -258,7 +268,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 </div>
 <div id="toast"></div>
 
-<script src="app.js?v=20260812-6"></script>
+<script src="app.js?v=20260816-47"></script>
 </div>
 </body>
 </html>

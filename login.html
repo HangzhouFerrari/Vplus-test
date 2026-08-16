@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="sw-register.js?v=20260812-6"></script>
+<script src="sw-register.js?v=20260816-47"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" id="theme-meta" content="#f2f2f2">
 <title>Velios+ — Inloggen</title>
-<link rel="icon" href="favicon.png">
+<link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -25,18 +26,18 @@ h1{font-size:24px;line-height:1.25;font-weight:600;margin-bottom:12px;letter-spa
 .field{margin:18px 0 12px}.field label{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
 .field input{width:100%;height:38px;padding:6px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;color:var(--text);font:15px var(--font);outline:0}.field input:focus{border-bottom:2px solid var(--accent)}.field input::placeholder{color:var(--muted)}
 .pw-row{position:relative}.pw-row input{padding-right:40px}.show-pw{position:absolute;right:0;top:0;width:36px;height:36px;border:0;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center}.show-pw svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
-.error{min-height:18px;color:var(--danger);font-size:13px;line-height:1.35;margin-top:7px}
+.error{min-height:18px;color:var(--danger);font-size:13px;line-height:1.35;margin-top:7px}.error a,.error button{border:0;background:none;padding:0;color:var(--accent);font:inherit;font-weight:750;cursor:pointer;text-decoration:underline}.field-status{min-height:18px;color:#138a50;font-size:13px;line-height:1.35;font-weight:650;margin-top:7px}
 .links{font-size:13px;line-height:1.55;margin:15px 0}.links a,.link-btn{color:var(--accent);text-decoration:none;border:0;background:none;font:inherit;cursor:pointer;padding:0}.links a:hover,.link-btn:hover{text-decoration:underline}
 .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:25px}.btn{min-width:108px;height:34px;padding:0 18px;border:0;font:600 14px var(--font);cursor:pointer}.btn.primary{background:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-hover)}.btn.secondary{background:var(--soft);color:var(--text)}.btn:disabled{opacity:.55;cursor:default}
 .spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite;margin:auto}@keyframes spin{to{transform:rotate(360deg)}}
 .verify-icon{width:48px;height:48px;border-radius:50%;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);display:grid;place-items:center;margin-bottom:18px}.verify-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7}
 .email-pill{font-weight:600;margin:8px 0 18px;overflow-wrap:anywhere}
-.footer{font-size:12px;color:var(--muted);text-align:center;margin-top:18px}.footer a{color:inherit;text-decoration:none;margin:0 8px}.footer a:hover{text-decoration:underline}
+.social-auth{margin:20px 0 18px}.google-btn{width:100%;height:50px;border:1px solid var(--line);border-radius:999px;background:var(--input-bg);color:var(--text);display:flex;align-items:center;justify-content:center;gap:11px;font:750 14px var(--font);cursor:pointer;transition:border-color .18s ease,background .18s ease,transform .18s ease}.google-btn:hover{border-color:color-mix(in srgb,var(--text) 32%,var(--line));background:color-mix(in srgb,var(--input-bg) 92%,var(--text) 8%)}.google-btn:active{transform:scale(.985)}.google-btn:disabled{opacity:.58;cursor:default}.google-btn svg{width:20px;height:20px;flex:0 0 20px}.auth-divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-weight:650;margin:18px 0}.auth-divider::before,.auth-divider::after{content:'';height:1px;flex:1;background:var(--line)}.oauth-loading{min-height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}.oauth-loading .spinner{width:26px;height:26px;border-color:color-mix(in srgb,var(--accent) 28%,transparent);border-top-color:var(--accent)}.oauth-loading strong{font-size:18px}.oauth-loading span{color:var(--muted);font-size:13px}.auth-page-error{padding:11px 14px;margin:0 0 14px;border-radius:18px;background:color-mix(in srgb,var(--danger) 10%,transparent);color:var(--danger);font-size:13px;font-weight:650;line-height:1.4}
 #toast{position:fixed;right:24px;bottom:24px;max-width:min(360px,calc(100vw - 32px));padding:12px 16px;background:var(--card);border:1px solid var(--soft);box-shadow:0 4px 18px rgba(0,0,0,.18);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}#toast.show{opacity:1;transform:none}#toast.err{color:var(--danger)}
-@media(max-width:600px){body{justify-content:flex-start;padding:0;background:var(--card)}.auth-shell{max-width:none}.auth-card{min-height:auto;box-shadow:none;padding:calc(36px + env(safe-area-inset-top)) 28px 36px}.footer{margin-top:auto;padding:22px}.brand{margin-bottom:32px}}
+@media(max-width:600px){body{justify-content:flex-start;padding:0;background:var(--card)}.auth-shell{max-width:none}.auth-card{min-height:auto;box-shadow:none;padding:calc(36px + env(safe-area-inset-top)) 28px 36px}.brand{margin-bottom:32px}}
 
 /* Velios-uitwerking: dezelfde rustige stap-voor-stapflow, in de stijl van de app. */
-:root{--bg:#f2f2f7;--card:#fff;--input-bg:#f7f7f8;--text:#0b1029;--muted:#6f7184;--line:#dedee6;--soft:#eeeef3;--accent:#0062ff;--accent-hover:#0058e6;--font:'DM Sans',sans-serif}
+:root{--bg:#f2f2f7;--card:#fff;--input-bg:#f7f7f8;--text:#0b1029;--muted:#6f7184;--line:#dedee6;--soft:#eeeef3;--accent:#ff9f0a;--accent-hover:#e47f00;--accent-contrast:#fff;--font:'DM Sans',sans-serif}
 body.dark-mode{color-scheme:dark;color:#fff;--bg:#000;--card:#171719;--input-bg:#2c2c2e;--text:#fff;--muted:#b3b3bd;--line:#3b3b40;--soft:#29292d}
 body{font-family:var(--font);background:var(--bg)}
 .auth-shell{max-width:470px}.auth-card{min-height:390px;border:1px solid var(--line);border-radius:36px;padding:42px 44px 38px;box-shadow:none;color:var(--text)}
@@ -50,84 +51,152 @@ h1{font-size:30px;font-weight:800;line-height:1.15;letter-spacing:-.7px;margin-b
 .field input:focus{border:1px solid var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 13%,transparent)}
 .field input::placeholder{color:var(--muted);opacity:1}.pw-row input{padding-right:48px}.show-pw{right:6px;top:7px;color:var(--muted)}
 .links{font-size:14px;font-weight:550;color:var(--text)}.links a,.link-btn{color:var(--accent);font-family:var(--font)}
-.actions{margin-top:27px}.btn{height:44px;min-width:118px;border-radius:999px;font:750 14px var(--font)}.btn.primary{background:var(--accent)}.btn.primary:hover{background:var(--accent);filter:brightness(.94)}
-.btn.secondary{background:var(--soft);color:var(--text)}.error{font-weight:600}.footer{font-family:var(--font)}
+.actions{margin-top:27px}.btn{height:44px;min-width:118px;border-radius:999px;font:750 14px var(--font)}.btn.primary{background:var(--accent);color:var(--accent-contrast)}.btn.primary:hover{background:var(--accent);filter:brightness(.94)}
+.btn.secondary{background:var(--soft);color:var(--text)}.error{font-weight:600}
 body.dark-mode .auth-card{background:#171719;border-color:#343439}body.dark-mode .field input{background:var(--input-bg);border-color:#44444a;color:#fff}body.dark-mode .field input:focus{border-color:var(--accent)}body.dark-mode .btn.secondary{background:#2b2b2f;color:#fff}
 .field input:-webkit-autofill,.field input:-webkit-autofill:hover,.field input:-webkit-autofill:focus{-webkit-text-fill-color:var(--text);box-shadow:0 0 0 1000px var(--input-bg) inset;transition:background-color 9999s ease-out}
 body.dark-mode .field input:-webkit-autofill,body.dark-mode .field input:-webkit-autofill:hover,body.dark-mode .field input:-webkit-autofill:focus{-webkit-text-fill-color:#fff;box-shadow:0 0 0 1000px var(--input-bg) inset}
-@media(max-width:600px){body,body.dark-mode{background:var(--card)}.auth-card{border:0;border-radius:0;min-height:auto;padding:calc(38px + env(safe-area-inset-top)) 26px 42px}.auth-shell{max-width:none}.footer{padding-bottom:calc(22px + env(safe-area-inset-bottom))}}
+@media(max-width:600px){body,body.dark-mode{background:var(--card)}.auth-card{border:0;border-radius:0;min-height:auto;padding:calc(38px + env(safe-area-inset-top)) 26px calc(42px + env(safe-area-inset-bottom))}.auth-shell{max-width:none}}
 </style>
 </head>
 <body>
 <main class="auth-shell">
   <section class="auth-card" id="authCard" aria-live="polite"></section>
-  <div class="footer"><a href="index.html">Velios+</a><a href="#">Privacy</a><a href="#">Voorwaarden</a></div>
 </main>
 <div id="toast" role="status"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260812-6"></script>
+<script src="supabase-client.js?v=20260816-47"></script>
 <script>
-const state={mode:'login',step:0,busy:false,data:{email:'',username:'',displayName:'',password:'',confirm:''}};
+const state={mode:'initializing',step:0,busy:false,availabilityToken:0,pageError:'',oauthUser:null,oauthProfile:null,oauthFields:[],data:{email:'',username:'',displayName:'',birthDate:'',password:'',confirm:'',avatarUrl:''}};
 const card=document.getElementById('authCard');
 const emailPattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPattern=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
 let toastTimer;
+let availabilityTimer;
+
+function withTimeout(promise,timeout=15000){
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error('auth_timeout')),timeout);
+    Promise.resolve(promise).then(
+      value=>{clearTimeout(timer);resolve(value)},
+      error=>{clearTimeout(timer);reject(error)}
+    );
+  });
+}
+
+function waitForOAuthSession(timeout=6500){
+  return new Promise(resolve=>{
+    let settled=false,subscription=null,timer=0;
+    const finish=session=>{
+      if(settled)return;
+      settled=true;
+      clearTimeout(timer);
+      subscription?.unsubscribe();
+      resolve(session||null);
+    };
+    try{
+      const listener=VeliosAuth.client.auth.onAuthStateChange((_event,session)=>{
+        if(session?.user)finish(session);
+      });
+      subscription=listener?.data?.subscription||null;
+    }catch(e){console.warn('OAuth-sessieluisteraar kon niet starten:',e)}
+    timer=setTimeout(()=>finish(null),timeout);
+  });
+}
+
+function randomAnimalAvatar(){
+  const avatars=VeliosAuth?.AVATAR_OPTIONS||[];
+  if(!avatars.length)return '';
+  const randomValue=globalThis.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]/4294967296:Math.random();
+  return avatars[Math.floor(randomValue*avatars.length)].url;
+}
+function animalAvatarOrRandom(value){
+  const resolved=VeliosAuth?.resolveAvatarUrl?.(value)||String(value||'');
+  return (VeliosAuth?.AVATAR_OPTIONS||[]).some(avatar=>avatar.url===resolved)?resolved:randomAnimalAvatar();
+}
 
 function applyTheme(){
   let settings={};try{settings=JSON.parse(localStorage.getItem('sd_theme')||'{}')}catch(e){}
-  const dark=settings.followSystem?matchMedia('(prefers-color-scheme: dark)').matches:!!settings.darkMode;
+  const dark=settings.followSystem!==false?matchMedia('(prefers-color-scheme: dark)').matches:!!settings.darkMode;
   document.body.classList.toggle('dark-mode',dark);
   document.getElementById('theme-meta').content=dark?'#111111':'#f2f2f2';
-  if(settings.accentColor)document.documentElement.style.setProperty('--accent',settings.accentColor);
+  const accent=settings.accentColor==='#0062ff'&&!settings.accentWasChosen?'#ff9f0a':(settings.accentColor||'#ff9f0a');
+  document.documentElement.style.setProperty('--accent',accent);
+  const hex=accent.replace('#',''),r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  document.documentElement.style.setProperty('--accent-contrast','#fff');
 }
 function esc(value){return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function logo(){return '<span class="brand" role="img" aria-label="Velios+"><img class="brand-base" src="assets/branding/logo_full-svg.svg" alt=""><span class="brand-plus" aria-hidden="true"></span></span>'}
 function backLine(text){return `<div class="account-line"><button class="back" type="button" onclick="goBack()" aria-label="Terug"><svg viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6"/></svg></button><span>${esc(text)}</span></div>`}
 function eyeButton(id){return `<button class="show-pw" type="button" onclick="togglePassword('${id}',this)" aria-label="Wachtwoord tonen"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></button>`}
-function field({id,label,type='text',placeholder='',autocomplete=''}){return `<div class="field">${label?`<label for="${id}">${label}</label>`:''}<div class="${type==='password'?'pw-row':''}"><input id="${id}" type="${type}" value="${esc(currentValue())}" placeholder="${placeholder}" autocomplete="${autocomplete}" autocapitalize="none" spellcheck="false">${type==='password'?eyeButton(id):''}</div><div class="error" id="fieldError"></div></div>`}
-function buttons(primary,secondary=''){return `<div class="actions">${secondary?`<button class="btn secondary" type="button" onclick="goBack()">${secondary}</button>`:''}<button class="btn primary" id="primaryBtn" type="submit">${state.busy?'<span class="spinner"></span>':primary}</button></div>`}
+function field({id,label,type='text',placeholder='',autocomplete=''}){return `<div class="field">${label?`<label for="${id}">${label}</label>`:''}<div class="${type==='password'?'pw-row':''}"><input id="${id}" type="${type}" value="${esc(currentValue())}" placeholder="${placeholder}" autocomplete="${autocomplete}" autocapitalize="none" spellcheck="false" oninput="handleAuthInput()">${type==='password'?eyeButton(id):''}</div><div class="error" id="fieldError"></div><div class="field-status" id="fieldStatus"></div></div>`}
+function buttons(primary,back=false){return `<div class="actions"><button class="btn secondary" type="button" onclick="${back?'goBack()':"location.href='index.html'"}">${back?'Terug':'Annuleren'}</button><button class="btn primary" id="primaryBtn" type="submit">${state.busy?'<span class="spinner"></span>':primary}</button></div>`}
+function googleButton(){return `<div class="social-auth"><button class="google-btn" type="button" onclick="startGoogleAuth()" ${state.busy?'disabled':''}><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.8 12.2c0-.7-.1-1.5-.2-2.2H12v4.2h5.5a4.7 4.7 0 0 1-2 3.1V20h3.3c1.9-1.8 3-4.4 3-7.8Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.8-2.4l-3.3-2.6c-.9.6-2.1 1-3.5 1a6 6 0 0 1-5.6-4.1H3v2.7A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.9a6 6 0 0 1 0-3.8V7.4H3a10 10 0 0 0 0 9.2l3.4-2.7Z"/><path fill="#EA4335" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 12 2a10 10 0 0 0-9 5.4l3.4 2.7A6 6 0 0 1 12 6Z"/></svg><span>Doorgaan met Google</span></button><div class="auth-divider"><span>of</span></div></div>`}
+function oauthButtons(last){return `<div class="actions"><button class="btn secondary" type="button" onclick="${state.step?'oauthBack()':'cancelOAuthSetup()'}">${state.step?'Terug':'Annuleren'}</button><button class="btn primary" id="primaryBtn" type="submit">${state.busy?'<span class="spinner"></span>':last?'Afronden':'Volgende'}</button></div>`}
+
+const OAUTH_FIELDS={
+  username:{title:'Kies een gebruikersnaam',lead:'Deze naam is zichtbaar in Velios+.',label:'Gebruikersnaam',type:'text',placeholder:'gebruikersnaam',autocomplete:'username'},
+  displayName:{title:'Hoe mogen we je noemen?',lead:'Deze naam gebruiken we bijvoorbeeld op je dashboard.',label:'Weergavenaam',type:'text',placeholder:'Jouw naam',autocomplete:'name'},
+  birthDate:{title:'Wanneer ben je geboren?',lead:'Google deelt je geboortedatum niet met Velios+.',label:'Geboortedatum',type:'date',placeholder:'',autocomplete:'bday'}
+};
 
 function currentValue(){
+  if(state.mode==='oauthSetup')return state.data[state.oauthFields[state.step]]||'';
   if(state.mode==='login')return state.step===0?state.data.email:state.data.password;
   if(state.mode==='forgot')return state.data.email;
-  return [state.data.email,state.data.username,state.data.displayName,state.data.password,state.data.confirm][state.step]||'';
+  return [state.data.email,state.data.username,state.data.displayName,state.data.birthDate,state.data.password,state.data.confirm][state.step]||'';
 }
 function render(){
   let html=logo();
-  if(state.mode==='verify'){
+  if(state.mode==='initializing'||state.mode==='oauthRedirect'){
+    html+=`<div class="oauth-loading"><span class="spinner"></span><strong>${state.mode==='oauthRedirect'?'Google wordt geopend…':'Aanmelding controleren…'}</strong><span>Een moment geduld.</span></div>`;
+  }else if(state.mode==='verify'){
     html+=`<div class="step"><div class="verify-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div><h1>Controleer je e-mail</h1><p class="lead">We hebben een bevestigingslink gestuurd naar:</p><div class="email-pill">${esc(state.data.email)}</div><p class="lead">Open de link om je account te activeren. Daarna kun je hier inloggen.</p><div class="actions"><button class="btn primary" type="button" onclick="finishVerification()">Terug naar inloggen</button></div></div>`;
   }else if(state.mode==='login'){
-    if(state.step===0)html+=`<form class="step" onsubmit="submitStep(event)"><h1>Inloggen</h1>${field({id:'authInput',label:'',placeholder:'E-mailadres',autocomplete:'email'})}<div class="links">Nog geen account? <button class="link-btn" type="button" onclick="startRegister()">Maak er een.</button></div><div class="links"><button class="link-btn" type="button" onclick="startForgot()">Geen toegang tot je account?</button></div>${buttons('Volgende')}</form>`;
+    if(state.step===0)html+=`<form class="step" onsubmit="submitStep(event)"><h1>Inloggen</h1>${state.pageError?`<div class="auth-page-error">${esc(state.pageError)}</div>`:''}${googleButton()}${field({id:'authInput',label:'',placeholder:'E-mailadres',autocomplete:'email'})}<div class="links">Nog geen account? <button class="link-btn" type="button" onclick="startRegister()">Maak er een.</button></div><div class="links"><button class="link-btn" type="button" onclick="startForgot()">Geen toegang tot je account?</button></div>${buttons('Volgende')}</form>`;
     else html+=`<form class="step" onsubmit="submitStep(event)">${backLine(state.data.email)}<h1>Wachtwoord invoeren</h1>${field({id:'authInput',label:'Wachtwoord',type:'password',placeholder:'Wachtwoord',autocomplete:'current-password'})}<div class="links"><button class="link-btn" type="button" onclick="startForgot()">Wachtwoord vergeten?</button></div>${buttons('Inloggen')}</form>`;
   }else if(state.mode==='forgot'){
-    html+=`<form class="step" onsubmit="submitStep(event)">${backLine('Inloggen')}<h1>Je account herstellen</h1><p class="lead">Vul je e-mailadres in. Je ontvangt een link waarmee je een nieuw wachtwoord kunt kiezen.</p>${field({id:'authInput',label:'E-mailadres',placeholder:'naam@voorbeeld.nl',autocomplete:'email'})}${buttons('Volgende','Annuleren')}</form>`;
+    html+=`<form class="step" onsubmit="submitStep(event)">${backLine('Inloggen')}<h1>Je account herstellen</h1><p class="lead">Vul je e-mailadres in. Je ontvangt een link waarmee je een nieuw wachtwoord kunt kiezen.</p>${field({id:'authInput',label:'E-mailadres',placeholder:'naam@voorbeeld.nl',autocomplete:'email'})}${buttons('Volgende',true)}</form>`;
+  }else if(state.mode==='oauthSetup'){
+    const key=state.oauthFields[state.step],f=OAUTH_FIELDS[key],last=state.step===state.oauthFields.length-1;
+    html+=`<form class="step" onsubmit="submitStep(event)"><div class="account-line"><span>${esc(state.data.email)}</span></div><h1>${f.title}</h1><p class="lead">${f.lead}</p><div class="progress">Stap ${state.step+1} van ${state.oauthFields.length}</div>${field({id:'authInput',...f})}${oauthButtons(last)}</form>`;
   }else{
     const fields=[
       {title:'Account maken',lead:'Gebruik een e-mailadres waarmee je straks kunt inloggen.',label:'E-mailadres',type:'text',placeholder:'naam@voorbeeld.nl',autocomplete:'email'},
       {title:'Kies een gebruikersnaam',lead:'Deze naam is zichtbaar in Velios+.',label:'Gebruikersnaam',type:'text',placeholder:'gebruikersnaam',autocomplete:'username'},
       {title:'Hoe mogen we je noemen?',lead:'Deze naam gebruiken we bijvoorbeeld op je dashboard.',label:'Weergavenaam',type:'text',placeholder:'Jouw naam',autocomplete:'name'},
+      {title:'Wanneer ben je geboren?',lead:'Je geboortedatum helpt ons om je account passend in te stellen.',label:'Geboortedatum',type:'date',placeholder:'',autocomplete:'bday'},
       {title:'Maak een wachtwoord',lead:'Gebruik minimaal 8 tekens, met een hoofdletter, kleine letter en cijfer. Speciale tekens zijn toegestaan.',label:'Wachtwoord',type:'password',placeholder:'Wachtwoord',autocomplete:'new-password'},
       {title:'Bevestig je wachtwoord',lead:'Vul hetzelfde wachtwoord nog een keer in.',label:'Wachtwoord herhalen',type:'password',placeholder:'Wachtwoord herhalen',autocomplete:'new-password'}
     ];
     const f=fields[state.step];
-    html+=`<form class="step" onsubmit="submitStep(event)">${backLine(state.step?state.data.email:'Inloggen')}<h1>${f.title}</h1><p class="lead">${f.lead}</p><div class="progress">Stap ${state.step+1} van ${fields.length}</div>${field({id:'authInput',...f})}${buttons(state.step===fields.length-1?'Account maken':'Volgende')}</form>`;
+    html+=`<form class="step" onsubmit="submitStep(event)">${backLine(state.step?state.data.email:'Inloggen')}<h1>${f.title}</h1><p class="lead">${f.lead}</p><div class="progress">Stap ${state.step+1} van ${fields.length}</div>${state.step===0?googleButton():''}${field({id:'authInput',...f})}${buttons(state.step===fields.length-1?'Account maken':'Volgende')}</form>`;
   }
   card.innerHTML=html;
-  const input=document.getElementById('authInput');if(input&&!state.busy){input.focus();input.setSelectionRange?.(input.value.length,input.value.length)}
+  const input=document.getElementById('authInput');
+  if(input&&!state.busy){
+    input.focus();
+    try{input.setSelectionRange?.(input.value.length,input.value.length)}catch(e){}
+  }
 }
 function saveInput(){
   const input=document.getElementById('authInput');if(!input)return;
   const value=input.value;
-  if(state.mode==='login'){if(state.step===0)state.data.email=value.trim().toLowerCase();else state.data.password=value}
+  if(state.mode==='oauthSetup'){
+    const key=state.oauthFields[state.step];state.data[key]=key==='username'?value.trim().toLowerCase():key==='displayName'?value.trim():value;
+  }else if(state.mode==='login'){if(state.step===0)state.data.email=value.trim().toLowerCase();else state.data.password=value}
   else if(state.mode==='forgot')state.data.email=value.trim().toLowerCase();
-  else ['email','username','displayName','password','confirm'].forEach((key,index)=>{if(index===state.step)state.data[key]=index<2?value.trim().toLowerCase():index===2?value.trim():value});
+  else ['email','username','displayName','birthDate','password','confirm'].forEach((key,index)=>{if(index===state.step)state.data[key]=index<2?value.trim().toLowerCase():index===2?value.trim():value});
 }
 function setError(message){const el=document.getElementById('fieldError');if(el)el.textContent=message}
+function setErrorHtml(message){const el=document.getElementById('fieldError');if(el)el.innerHTML=message}
+function setStatus(message){const el=document.getElementById('fieldStatus');if(el)el.textContent=message}
 function setBusy(busy){state.busy=busy;render()}
 async function briefLoad(){setBusy(true);await new Promise(resolve=>setTimeout(resolve,260));setBusy(false)}
 
 async function submitStep(event){
   event.preventDefault();if(state.busy)return;saveInput();setError('');
+  if(state.mode==='oauthSetup'){await advanceOAuthSetup();return}
   if(state.mode==='verify'){state.mode='login';state.step=0;state.data.password='';render();return}
   if(state.mode==='forgot'){await sendReset();return}
   if(state.mode==='login'){
@@ -137,29 +206,46 @@ async function submitStep(event){
   await advanceRegistration();
 }
 async function advanceRegistration(){
-  const {email,username,displayName,password,confirm}=state.data;
-  if(state.step===0&&!emailPattern.test(email)){setError('Vul een geldig e-mailadres in.');return}
+  const {email,username,displayName,birthDate,password,confirm}=state.data;
+  if(state.step===0){
+    if(!emailPattern.test(email)){setError('Vul een geldig e-mailadres in.');return}
+    setBusy(true);const used=await VeliosAuth.emailExists(email);setBusy(false);
+    if(used===true){setErrorHtml('Dit e-mailadres is al in gebruik. <button type="button" onclick="useExistingEmail()">Ga naar inloggen</button>');return}
+  }
   if(state.step===1){
     if(!/^[a-z][a-z0-9_.]{2,19}$/.test(username)){setError('Gebruik 3–20 tekens en begin met een letter.');return}
     setBusy(true);try{if(await VeliosAuth.usernameExists(username)){setBusy(false);setError('Deze gebruikersnaam is al in gebruik.');return}}catch(e){setBusy(false);setError('Controleren is niet gelukt. Probeer het opnieuw.');return}setBusy(false);
   }
   if(state.step===2&&!displayName){setError('Vul een weergavenaam in.');return}
-  if(state.step===3&&!passwordPattern.test(password)){setError('Gebruik minimaal 8 tekens met een hoofdletter, kleine letter en cijfer.');return}
-  if(state.step===4&&confirm!==password){setError('De wachtwoorden komen niet overeen.');return}
-  if(state.step<4){await briefLoad();state.step++;render();return}
+  if(state.step===3){
+    const birth=new Date(`${birthDate}T12:00:00`),now=new Date();
+    if(!birthDate||Number.isNaN(birth.getTime())){setError('Vul je geboortedatum in.');return}
+    if(birth>now){setError('Je geboortedatum kan niet in de toekomst liggen.');return}
+    if(now.getFullYear()-birth.getFullYear()>120){setError('Controleer of je geboortedatum klopt.');return}
+  }
+  if(state.step===4&&!passwordPattern.test(password)){setError('Gebruik minimaal 8 tekens met een hoofdletter, kleine letter en cijfer.');return}
+  if(state.step===5&&confirm!==password){setError('De wachtwoorden komen niet overeen.');return}
+  if(state.step<5){await briefLoad();state.step++;render();return}
   await register();
 }
 async function signIn(){
   setBusy(true);
-  const {error}=await VeliosAuth.client.auth.signInWithPassword({email:state.data.email,password:state.data.password});
-  if(error){setBusy(false);setError(error.message.includes('Email not confirmed')?'Bevestig eerst je e-mailadres via de link in je inbox.':'Het e-mailadres of wachtwoord klopt niet.');return}
-  location.href='index.html';
+  try{
+    const {error}=await withTimeout(VeliosAuth.client.auth.signInWithPassword({email:state.data.email,password:state.data.password}));
+    if(error){setBusy(false);setError(error.message.includes('Email not confirmed')?'Bevestig eerst je e-mailadres via de link in je inbox.':'Het e-mailadres of wachtwoord klopt niet.');return}
+    location.replace('index.html');
+  }catch(error){
+    console.error('Inloggen mislukt:',error);
+    setBusy(false);
+    setError(error?.message==='auth_timeout'?'Inloggen duurt te lang. Sluit eventuele andere Velios+-tabbladen en probeer het opnieuw.':'Inloggen kon geen verbinding maken. Controleer je internetverbinding en probeer het opnieuw.');
+  }
 }
 async function register(){
   setBusy(true);
   const redirectTo=new URL('login.html',location.href).href;
-  const {error}=await VeliosAuth.client.auth.signUp({email:state.data.email,password:state.data.password,options:{data:{username:state.data.username,display_name:state.data.displayName},emailRedirectTo:redirectTo}});
-  if(error){setBusy(false);setError(error.message.includes('already registered')?'Dit e-mailadres is al in gebruik.':error.message);return}
+  state.data.avatarUrl=state.data.avatarUrl||randomAnimalAvatar();
+  const {data,error}=await VeliosAuth.client.auth.signUp({email:state.data.email,password:state.data.password,options:{data:{username:state.data.username,display_name:state.data.displayName,birth_date:state.data.birthDate,avatar_url:state.data.avatarUrl},emailRedirectTo:redirectTo}});
+  if(error||data?.user?.identities?.length===0){setBusy(false);if(error?.message?.includes('already registered')||data?.user?.identities?.length===0)setErrorHtml('Dit e-mailadres is al in gebruik. <button type="button" onclick="useExistingEmail()">Ga naar inloggen</button>');else setError(error?.message||'Account maken is niet gelukt.');return}
   state.busy=false;state.mode='verify';render();
 }
 async function sendReset(){
@@ -175,13 +261,136 @@ function goBack(){
   else if(state.mode==='login'&&state.step>0){state.step=0;state.data.password=''}
   render();
 }
-function startRegister(){state.mode='register';state.step=0;state.data={email:state.data.email,username:'',displayName:'',password:'',confirm:''};render()}
+function startRegister(){state.mode='register';state.step=0;state.data={email:state.data.email,username:'',displayName:'',birthDate:'',password:'',confirm:'',avatarUrl:randomAnimalAvatar()};render()}
+function useExistingEmail(){saveInput();state.mode='login';state.step=0;render()}
+function handleAuthInput(){
+  saveInput();setError('');setStatus('');clearTimeout(availabilityTimer);const token=++state.availabilityToken;
+  const oauthUsername=state.mode==='oauthSetup'&&state.oauthFields[state.step]==='username';
+  if(!oauthUsername&&(state.mode!=='register'||(state.step!==0&&state.step!==1)))return;
+  availabilityTimer=setTimeout(async()=>{
+    if(token!==state.availabilityToken)return;
+    if(state.mode==='register'&&state.step===0){
+      if(!emailPattern.test(state.data.email))return;
+      const used=await VeliosAuth.emailExists(state.data.email);if(token!==state.availabilityToken)return;
+      if(used===true)setErrorHtml('Dit e-mailadres is al in gebruik. <button type="button" onclick="useExistingEmail()">Ga naar inloggen</button>');
+      else if(used===false)setStatus('Dit e-mailadres is beschikbaar.');
+    }else{
+      if(!/^[a-z][a-z0-9_.]{2,19}$/.test(state.data.username))return;
+      try{const used=await VeliosAuth.usernameExists(state.data.username);if(token!==state.availabilityToken)return;used?setError('Deze gebruikersnaam is al in gebruik.'):setStatus('Deze gebruikersnaam is beschikbaar.')}catch(e){}
+    }
+  },420);
+}
 function startForgot(){saveInput();state.mode='forgot';state.step=0;render()}
 function finishVerification(){state.mode='login';state.step=0;state.data.password='';render()}
 function togglePassword(id,button){const input=document.getElementById(id);const show=input.type==='password';input.type=show?'text':'password';button.setAttribute('aria-label',show?'Wachtwoord verbergen':'Wachtwoord tonen')}
 function showToast(message,type=''){const toast=document.getElementById('toast');toast.textContent=message;toast.className='show '+type;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.className='',3200)}
 
-applyTheme();render();
+async function startGoogleAuth(){
+  if(state.busy)return;
+  state.busy=true;state.mode='oauthRedirect';render();
+  const redirectTo=new URL('login.html?oauth=google',location.href).href;
+  try{
+    const {data,error}=await withTimeout(VeliosAuth.client.auth.signInWithOAuth({provider:'google',options:{redirectTo,queryParams:{prompt:'select_account'}}}),12000);
+    if(error)throw error;
+    // Normaal navigeert Supabase zelf. Deze fallback helpt browsers die die
+    // eerste navigatie blokkeren of uitstellen.
+    if(data?.url)location.assign(data.url);
+  }catch(error){
+    console.error('Google-aanmelding starten mislukt:',error);
+    state.busy=false;state.mode='login';
+    state.pageError=error?.message==='auth_timeout'?'Google reageert niet. Probeer het opnieuw of gebruik je e-mailadres.':'Aanmelden met Google is niet gelukt. Probeer het opnieuw.';
+    render();
+  }
+}
+
+async function initializeAuthPage(){
+  state.mode='initializing';render();
+  const query=new URLSearchParams(location.search),hash=new URLSearchParams(location.hash.replace(/^#/,''));
+  const isOAuthReturn=query.get('oauth')==='google'||query.has('code')||hash.has('access_token')||hash.has('refresh_token');
+  const oauthError=query.get('error_description')||hash.get('error_description');
+  if(oauthError){
+    state.mode='login';state.pageError=decodeURIComponent(oauthError.replace(/\+/g,' '));
+    history.replaceState(null,'',location.pathname);render();return;
+  }
+  try{
+    let {data:{session}}=await withTimeout(VeliosAuth.client.auth.getSession(),8000);
+    if(!session&&isOAuthReturn)session=await waitForOAuthSession();
+    if(session?.user){await prepareSignedInUser(session.user);return}
+  }catch(e){console.warn('Aanmelding controleren is niet gelukt:',e)}
+  state.mode='login';state.busy=false;
+  if(isOAuthReturn)state.pageError='Google heeft geen geldige aanmelding teruggestuurd. Probeer het opnieuw.';
+  history.replaceState(null,'',location.pathname);
+  render();
+}
+
+async function prepareSignedInUser(user){
+  const meta=user.user_metadata||{};
+  let profile=null;
+  try{
+    const {data}=await VeliosAuth.client.from('profiles').select('*').eq('id',user.id).maybeSingle();profile=data||null;
+  }catch(e){console.warn('Profiel controleren is niet gelukt:',e)}
+  const username=String(profile?.username||meta.username||'').trim().toLowerCase();
+  const displayName=String(profile?.display_name||meta.display_name||meta.full_name||meta.name||'').trim();
+  const birthDate=String(profile?.birth_date||meta.birth_date||'').slice(0,10);
+  const avatarUrl=animalAvatarOrRandom(profile?.avatar_url||meta.avatar_url);
+  const fields=[];
+  if(!username)fields.push('username');
+  if(!displayName)fields.push('displayName');
+  if(!birthDate)fields.push('birthDate');
+  if(!fields.length&&profile?.id){location.replace('index.html');return}
+  state.oauthUser=user;state.oauthProfile=profile;state.oauthFields=fields.length?fields:['username'];state.step=0;state.busy=false;
+  state.data={email:user.email||'',username,displayName,birthDate,password:'',confirm:'',avatarUrl};
+  state.mode='oauthSetup';history.replaceState(null,'',location.pathname);render();
+}
+
+async function advanceOAuthSetup(){
+  const key=state.oauthFields[state.step],value=state.data[key];
+  if(key==='username'){
+    if(!/^[a-z][a-z0-9_.]{2,19}$/.test(value)){setError('Gebruik 3–20 tekens en begin met een letter.');return}
+    setBusy(true);
+    try{if(await VeliosAuth.usernameExists(value)){setBusy(false);setError('Deze gebruikersnaam is al in gebruik.');return}}
+    catch(e){setBusy(false);setError('Controleren is niet gelukt. Probeer het opnieuw.');return}
+    setBusy(false);
+  }
+  if(key==='displayName'&&!value){setError('Vul een weergavenaam in.');return}
+  if(key==='birthDate'){
+    const birth=new Date(`${value}T12:00:00`),now=new Date();
+    if(!value||Number.isNaN(birth.getTime())){setError('Vul je geboortedatum in.');return}
+    if(birth>now){setError('Je geboortedatum kan niet in de toekomst liggen.');return}
+    if(now.getFullYear()-birth.getFullYear()>120){setError('Controleer of je geboortedatum klopt.');return}
+  }
+  if(state.step<state.oauthFields.length-1){await briefLoad();state.step++;render();return}
+  await saveOAuthProfile();
+}
+
+async function saveOAuthProfile(){
+  setBusy(true);
+  const avatarUrl=state.data.avatarUrl||randomAnimalAvatar();
+  const user=state.oauthUser,meta={...(user.user_metadata||{}),username:state.data.username,display_name:state.data.displayName,birth_date:state.data.birthDate,avatar_url:avatarUrl};
+  const profileValues={username:state.data.username,display_name:state.data.displayName,avatar_url:avatarUrl};
+  try{
+    let profileError=null;
+    if(state.oauthProfile?.id){
+      ({error:profileError}=await VeliosAuth.client.from('profiles').update(profileValues).eq('id',user.id));
+    }else{
+      ({error:profileError}=await VeliosAuth.client.from('profiles').insert({id:user.id,email:user.email||state.data.email,...profileValues}));
+    }
+    if(profileError)throw profileError;
+    const {error:metadataError}=await VeliosAuth.client.auth.updateUser({data:meta});
+    if(metadataError)throw metadataError;
+    location.replace('index.html');
+  }catch(e){
+    console.error('Google-profiel opslaan mislukt:',e);
+    state.busy=false;render();
+    const duplicate=e?.code==='23505'||/duplicate|unique|username/i.test(e?.message||'');
+    setError(duplicate?'Deze gebruikersnaam is inmiddels in gebruik. Kies een andere.':'Je profiel kon niet worden opgeslagen. Probeer het opnieuw.');
+  }
+}
+
+function oauthBack(){if(state.busy||state.step<1)return;saveInput();state.step--;render()}
+async function cancelOAuthSetup(){if(state.busy)return;await VeliosAuth.client.auth.signOut({scope:'local'});state.mode='login';state.step=0;state.oauthUser=null;state.oauthProfile=null;state.oauthFields=[];state.pageError='';render()}
+
+applyTheme();initializeAuthPage();
 </script>
 </body>
 </html>

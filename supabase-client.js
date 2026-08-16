@@ -8,20 +8,30 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 /* De avatarbestanden horen bij de app. In Supabase bewaren we alleen dit pad. */
+const CLASSIC_AVATAR_OPTIONS = [
+  { id: 'fox', label: 'Vos', url: 'assets/avatars/fox.jpg', group: 'classic' },
+  { id: 'dog', label: 'Hond', url: 'assets/avatars/dog.jpg', group: 'classic' },
+  { id: 'cat', label: 'Kat', url: 'assets/avatars/cat.jpg', group: 'classic' },
+  { id: 'rabbit', label: 'Konijn', url: 'assets/avatars/rabbit.jpg', group: 'classic' },
+  { id: 'owl', label: 'Uil', url: 'assets/avatars/owl.jpg', group: 'classic' },
+  { id: 'red-panda', label: 'Rode panda', url: 'assets/avatars/red-panda.jpg', group: 'classic' },
+];
+
 const AVATAR_OPTIONS = [
-  { id: 'fox', label: 'Vos', url: 'assets/avatars/fox.jpg' },
-  { id: 'dog', label: 'Hond', url: 'assets/avatars/dog.jpg' },
-  { id: 'cat', label: 'Kat', url: 'assets/avatars/cat.jpg' },
-  { id: 'rabbit', label: 'Konijn', url: 'assets/avatars/rabbit.jpg' },
-  { id: 'owl', label: 'Uil', url: 'assets/avatars/owl.jpg' },
-  { id: 'red-panda', label: 'Rode panda', url: 'assets/avatars/red-panda.jpg' },
+  { id: 'study-red-panda', label: 'Rode panda met pen', url: 'assets/avatars/study-red-panda.webp', group: 'study' },
+  { id: 'study-dog', label: 'Hond met boek', url: 'assets/avatars/study-dog.webp', group: 'study' },
+  { id: 'study-eagle', label: 'Slapende arend', url: 'assets/avatars/study-eagle.webp', group: 'study' },
+  { id: 'study-giraffe', label: 'Giraffe met paperclip', url: 'assets/avatars/study-giraffe.webp', group: 'study' },
+  { id: 'study-rabbit', label: 'Konijn met bril', url: 'assets/avatars/study-rabbit.webp', group: 'study' },
+  { id: 'study-cat', label: 'Zelfverzekerde kat', url: 'assets/avatars/study-cat.webp', group: 'study' },
+  ...CLASSIC_AVATAR_OPTIONS,
 ];
 
 /** Zet oude preset:N-waarden zonder kapotte afbeelding om naar de nieuwe dierenfoto's. */
 function resolveAvatarUrl(value) {
   const stored = String(value || '').trim();
   const oldPreset = stored.match(/^preset:(\d+)$/);
-  if (oldPreset) return AVATAR_OPTIONS[Number(oldPreset[1]) % AVATAR_OPTIONS.length].url;
+  if (oldPreset) return CLASSIC_AVATAR_OPTIONS[Number(oldPreset[1]) % CLASSIC_AVATAR_OPTIONS.length].url;
   return stored;
 }
 
@@ -46,6 +56,7 @@ function profileFromUser(user, profile = null) {
     username,
     display_name: displayName,
     avatar_url: resolveAvatarUrl(profile?.avatar_url || metadata.avatar_url || ''),
+    birth_date: String(profile?.birth_date || metadata.birth_date || '').slice(0,10),
   };
 }
 
@@ -79,6 +90,20 @@ async function usernameExists(username) {
     .select('id')
     .eq('username', username.toLowerCase())
     .maybeSingle();
+  return !!data;
+}
+
+/** Controleer waar mogelijk of een e-mailadres al bij een profiel hoort. */
+async function emailExists(email) {
+  const { data, error } = await _sb
+    .from('profiles')
+    .select('id')
+    .eq('email', String(email || '').trim().toLowerCase())
+    .maybeSingle();
+  if (error) {
+    console.warn('E-mailbeschikbaarheid kon niet vooraf worden gecontroleerd:', error.message);
+    return null;
+  }
   return !!data;
 }
 
@@ -310,7 +335,7 @@ async function syncLocalSet(setObj) {
 window.VeliosAuth = {
   client: _sb,
   AVATAR_OPTIONS, resolveAvatarUrl, profileFromUser,
-  getSession, getProfile, usernameExists, emailFromUsername,
+  getSession, getProfile, usernameExists, emailExists, emailFromUsername,
   signOut, requireAuth, redirectIfLoggedIn,
   getSyncedSets, getSyncCount, syncSet, unsyncSet, uploadSet, updateSyncedSet, syncLocalSet,
 };

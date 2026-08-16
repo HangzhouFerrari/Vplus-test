@@ -15,7 +15,7 @@
   --glass2:rgba(255,255,255,0.80);
   --glass-border:rgba(200,195,230,0.6);
   --text:#0b0f2a;--text2:#3d3a55;--text3:#7c7899;
-  --accent:#0062ff;--accent2:#0075ff;--accent-light:rgba(0,98,255,0.12);
+  --accent:#ff9f0a;--accent2:#e47f00;--accent-light:rgba(255,159,10,0.14);
   --glass-shadow:0 2px 8px rgba(0,98,255,0.1),inset 1px 1px 0 rgba(255,255,255,1),inset -1px -1px 2px rgba(255,255,255,0.5);
   --glass-shadow-lg:0 8px 32px rgba(0,98,255,0.15),inset 1px 1px 0 rgba(255,255,255,1),inset -1px -1px 2px rgba(255,255,255,0.5);
   --r:30px;--r2:36px;--r3:34px;--r4:30px;
@@ -159,10 +159,10 @@ nav{
    zodat deze pagina er nooit los van uitziet. */
 (function(){
   try{
-    const saved=JSON.parse(localStorage.getItem('sd_theme')||'null');
-    if(!saved)return;
+    const saved=JSON.parse(localStorage.getItem('sd_theme')||'{}');
     const root=document.documentElement.style;
-    if(saved.darkMode){
+    const dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme: dark)').matches:!!saved.darkMode;
+    if(dark){
       document.body.classList.add('dark-mode');
       document.getElementById('theme-color-meta')?.setAttribute('content','#0a0812');
       root.setProperty('--bg-grad','linear-gradient(180deg, rgb(10,10,10) 0%, rgb(10,8,18) 100%)');
@@ -173,10 +173,11 @@ nav{
       root.setProperty('--text3','rgba(255,255,255,0.65)');
       root.setProperty('--glass-border','rgba(64,73,112,0.5)');
     }
-    if(saved.accentColor && saved.accentColor!=='#0062ff'){
-      const hex=saved.accentColor.replace('#','');
+    const accent=saved.accentColor==='#0062ff'&&!saved.accentWasChosen?'#ff9f0a':(saved.accentColor||'#ff9f0a');
+    if(accent){
+      const hex=accent.replace('#','');
       const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
-      root.setProperty('--accent',saved.accentColor);
+      root.setProperty('--accent',accent);
       root.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
       root.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
     }

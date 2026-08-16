@@ -14,23 +14,26 @@ let _currentProfile = null;
    THEME MANAGEMENT
 ══════════════════════════════════════════════════════ */
 const THEME_COLORS=[
-  {hex:'#0062ff',light:'#d8e7ff',dark:'#003b91',idx:0,label:'Blauw'},
-  {hex:'#ff6b6b',light:'#ffe0e0',dark:'#5b3030',idx:1,label:'Rood'},
-  {hex:'#10b981',light:'#d7f4eb',dark:'#0b4937',idx:2,label:'Groen'},
-  {hex:'#f59e0b',light:'#fff0d6',dark:'#65420b',idx:3,label:'Amber'},
+  {hex:'#ff9f0a',light:'#ffe4bd',dark:'#603d08',idx:0,label:'Oranjegeel'},
+  {hex:'#0062ff',light:'#d8e7ff',dark:'#003b91',idx:1,label:'Blauw'},
+  {hex:'#ff6b6b',light:'#ffe0e0',dark:'#5b3030',idx:2,label:'Rood'},
+  {hex:'#10b981',light:'#d7f4eb',dark:'#0b4937',idx:3,label:'Groen'},
   {hex:'#8b5cf6',light:'#e7ddff',dark:'#392765',idx:4,label:'Paars'}
 ];
+const DEFAULT_ACCENT='#ff9f0a';
 
 function getThemeSettings(){
   try{
     const saved=JSON.parse(localStorage.getItem('sd_theme')||'null')||{};
+    const accentColor=saved.accentColor&&!(saved.accentColor==='#0062ff'&&!saved.accentWasChosen)?saved.accentColor:DEFAULT_ACCENT;
     return {
       darkMode:!!saved.darkMode,
-      followSystem:!!saved.followSystem,
-      accentColor:saved.accentColor||'#0062ff'
+      followSystem:saved.followSystem!==false,
+      accentColor,
+      accentWasChosen:!!saved.accentWasChosen
     };
   }catch(e){
-    return {darkMode:false,followSystem:false,accentColor:'#0062ff'};
+    return {darkMode:false,followSystem:true,accentColor:DEFAULT_ACCENT};
   }
 }
 
@@ -86,6 +89,7 @@ function toggleSystemTheme(){
 function setAccentColor(hex,idx){
   const settings=getThemeSettings();
   settings.accentColor=hex;
+  settings.accentWasChosen=true;
   saveThemeSettings(settings);
   applyThemeSettings(effectiveDarkMode(settings),hex);
   updateAccentColorUI(hex);
@@ -122,7 +126,7 @@ function applyThemeSettings(darkMode,accentColor){
     root.setProperty('--text2','#3d3a55');
     root.setProperty('--text3','#7c7899');
   }
-  if(accentColor&&accentColor!=='#0062ff'){
+  if(accentColor){
     const hex=accentColor.replace('#','');
     const r=parseInt(hex.substr(0,2),16);
     const g=parseInt(hex.substr(2,2),16);
@@ -130,10 +134,7 @@ function applyThemeSettings(darkMode,accentColor){
     root.setProperty('--accent',accentColor);
     root.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
     root.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
-  }else{
-    root.setProperty('--accent','#0062ff');
-    root.setProperty('--accent2','#0075ff');
-    root.setProperty('--accent-light','rgba(0,98,255,0.12)');
+    root.setProperty('--accent-contrast','#fff');
   }
 }
 
@@ -385,7 +386,10 @@ function refreshSyncedSetsFromCloud() {
   if (!syncedLibraryReady || document.visibilityState === 'hidden' || !navigator.onLine) return Promise.resolve();
   if (syncedLibraryRefresh) return syncedLibraryRefresh;
   syncedLibraryRefresh = loadSyncedSetsIntoLibrary()
-    .then(renderCurrentDataPage)
+    .then(() => {
+      renderCurrentDataPage();
+      if (MenuOverlay.open && MenuOverlay.tab === 'account') updateAccountSyncCount();
+    })
     .catch(error => console.warn('Cloudsets vernieuwen is mislukt:', error.message))
     .finally(() => { syncedLibraryRefresh = null; });
   return syncedLibraryRefresh;
@@ -406,12 +410,12 @@ let librarySelectionMode = false;
 let currentSubject = '';
 
 const SUBJECT_FALLBACK = [
-  ['Biologie','biologie','#168a68'],['Duits','duits','#b94747'],['Geschiedenis','geschiedenis','#8a6238'],
-  ['Grieks','grieks','#5168b6'],['Latijn','latijn','#8a4f77'],['Nederlands','nederlands','#d06b32'],
-  ['Natuurkunde','natuurkunde','#316f9e'],['Scheikunde','scheikunde','#6a55a5'],
-  ['Aardrijkskunde','aardrijkskunde','#477b42'],['Economie','economie','#397e78'],
-  ['Engels','engels','#9b4452'],['Frans','frans','#3c5f9b'],['Overig','overig','#62636a']
-].map(([name,slug,color])=>({name,slug,color,image:'assets/subjects/placeholder.svg'}));
+  ['Biologie','biologie','#168a68','assets/subjects/biologie.webp'],['Duits','duits','#b94747','assets/subjects/duits.webp'],['Geschiedenis','geschiedenis','#8a6238','assets/subjects/geschiedenis.webp'],
+  ['Grieks','grieks','#5168b6','assets/subjects/grieks.webp'],['Latijn','latijn','#8a4f77','assets/subjects/latijn.webp'],['Nederlands','nederlands','#d06b32','assets/subjects/nederlands.webp'],
+  ['Natuurkunde','natuurkunde','#316f9e','assets/subjects/natuurkunde.webp'],['Scheikunde','scheikunde','#6a55a5','assets/subjects/scheikunde.webp'],
+  ['Aardrijkskunde','aardrijkskunde','#477b42','assets/subjects/aardrijkskunde.webp'],['Economie','economie','#397e78','assets/subjects/economie.webp'],
+  ['Engels','engels','#9b4452','assets/subjects/engels.webp'],['Frans','frans','#3c5f9b','assets/subjects/frans.webp'],['Overig','overig','#62636a','assets/subjects/overig.webp']
+].map(([name,slug,color,image])=>({name,slug,color,image}));
 let SUBJECTS = [...SUBJECT_FALLBACK];
 
 async function loadSubjectIndex(){
@@ -444,11 +448,47 @@ function getPageFromLocation() {
   return ['home', 'library', 'vakken', 'zoeken'].includes(queryPage) ? queryPage : 'home';
 }
 
+let pageNavigationReady=false;
+let pageTransitionTimer=null;
+const PAGE_NAV_POSITION={home:0,library:1,vakken:2,subject:2.5,zoeken:3};
+
+function clearPageTransition(activePage=null){
+  clearTimeout(pageTransitionTimer);
+  pageTransitionTimer=null;
+  const scrollContainer=document.getElementById('page-scroll-container');
+  document.querySelectorAll('.page').forEach(pageEl=>{
+    pageEl.classList.remove('page-mobile-in','page-mobile-out','page-mobile-reverse','page-mobile-first','page-desktop-in');
+    pageEl.style.removeProperty('--page-transition-top');
+    pageEl.style.removeProperty('--page-out-offset');
+    pageEl.classList.toggle('active',pageEl===activePage);
+  });
+  if(scrollContainer)scrollContainer.style.removeProperty('min-height');
+}
+
+function renderPageContent(page){
+  if (page === 'library') renderLibrary();
+  else if (page === 'vakken') renderVakken();
+  else if (page === 'subject') renderSubjectDetail();
+  else if (page === 'home') renderHome();
+  else if (page === 'zoeken') renderRecentSearchesList();
+}
+
 function showPage(page) {
   if (!['home', 'library', 'vakken', 'zoeken', 'subject'].includes(page)) page = 'home';
+  const targetPage=document.getElementById(page);
+  if(!targetPage)return;
+  const previousPage=document.getElementById(currentPage)||document.querySelector('.page.active');
+  const isFirstPage=!pageNavigationReady;
+  const isMobile=window.matchMedia('(max-width:750px)').matches;
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const isSamePage=previousPage===targetPage;
+  const reverseDirection=(PAGE_NAV_POSITION[page]??0)<(PAGE_NAV_POSITION[previousPage?.id]??0);
+
+  if(pageTransitionTimer)clearPageTransition(previousPage);
+  if(isMobile&&!isSamePage&&document.activeElement instanceof HTMLElement)document.activeElement.blur();
   currentPage = page;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(page).classList.add('active');
+  renderPageContent(page);
+
   document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
   const sidebarPage=page==='subject'?'vakken':page;
   const sidebarBtns = document.querySelectorAll('.sidebar-btn');
@@ -456,12 +496,6 @@ function showPage(page) {
     const onclick = b.getAttribute('onclick') || '';
     if (onclick.includes("'"+sidebarPage+"'")) b.classList.add('active');
   });
-  if (page === 'library') renderLibrary();
-  else if (page === 'vakken') renderVakken();
-  else if (page === 'subject') renderSubjectDetail();
-  else if (page === 'home') renderHome();
-  else if (page === 'zoeken') { renderRecentSearchesList(); setTimeout(()=>{ document.getElementById('mobile-search-box')?.focus(); }, 100); }
-  if (page === 'subject') resetPageScroll();
   updateRecentSidebar();
   const nextHash=page==='subject'
     ? `#subject/${encodeURIComponent(getSubjectConfig(currentSubject).slug)}`
@@ -469,6 +503,69 @@ function showPage(page) {
   if (window.location.hash !== nextHash) {
     window.history.replaceState(window.history.state, '', nextHash);
   }
+
+  if(reduceMotion){
+    clearPageTransition(targetPage);
+    if(page==='subject'&&!isFirstPage)resetPageScroll();
+    pageNavigationReady=true;
+    return;
+  }
+
+  if(isFirstPage){
+    clearPageTransition(targetPage);
+    if(isMobile&&page==='home'){
+      targetPage.classList.add('page-mobile-first');
+      pageTransitionTimer=setTimeout(()=>{
+        targetPage.classList.remove('page-mobile-first');
+        pageTransitionTimer=null;
+      },320);
+    }else if(!isMobile){
+      targetPage.classList.add('page-desktop-in');
+      pageTransitionTimer=setTimeout(()=>{
+        targetPage.classList.remove('page-desktop-in');
+        pageTransitionTimer=null;
+      },400);
+    }
+    pageNavigationReady=true;
+    return;
+  }
+
+  if(isSamePage){
+    clearPageTransition(targetPage);
+    pageNavigationReady=true;
+    return;
+  }
+
+  if(!isMobile){
+    clearPageTransition(targetPage);
+    resetPageScroll();
+    targetPage.classList.add('page-desktop-in');
+    pageTransitionTimer=setTimeout(()=>{
+      targetPage.classList.remove('page-desktop-in');
+      pageTransitionTimer=null;
+    },400);
+    return;
+  }
+
+  const scrollContainer=document.getElementById('page-scroll-container');
+  const previousScrollTop=Math.max(
+    scrollContainer?.scrollTop||0,
+    window.scrollY||0,
+    document.documentElement.scrollTop||0,
+    document.body.scrollTop||0
+  );
+  targetPage.classList.add('active');
+  previousPage?.style.setProperty('--page-out-offset',`${-previousScrollTop}px`);
+  previousPage?.classList.add('page-mobile-out');
+  targetPage.classList.add('page-mobile-in');
+  if(reverseDirection){
+    previousPage?.classList.add('page-mobile-reverse');
+    targetPage.classList.add('page-mobile-reverse');
+  }
+  pageTransitionTimer=setTimeout(()=>{
+    clearPageTransition(targetPage);
+    resetPageScroll();
+  },410);
 }
 
 function resetPageScroll(){
@@ -520,10 +617,7 @@ function renderHome(){
   renderRecentSidebar();
 
   const isOffline = !navigator.onLine;
-
-  // Zijbalk verbergen/tonen
-  const sidebar = document.querySelector('.sidebar');
-  if (sidebar) sidebar.style.display = isOffline ? 'none' : '';
+  updateConnectionState();
 
   // Secties
   const onlineSections = ['section-recent','section-recommended','section-newest'];
@@ -532,11 +626,9 @@ function renderHome(){
     if (el) el.style.display = isOffline ? 'none' : '';
   });
 
-  // Zoekbalk verbergen op desktop bij geen internet
-  const searchWrapper = document.querySelector('nav .search-wrapper');
-  if (searchWrapper) searchWrapper.style.display = isOffline ? 'none' : '';
-
-  document.getElementById('section-no-connection').style.display = isOffline ? 'block' : 'none';
+  // De globale verbindingsbalk houdt de melding op iedere pagina zichtbaar.
+  // De navigatie en lokale zoekfunctie blijven ook offline beschikbaar.
+  document.getElementById('section-no-connection').style.display = 'none';
 
   if (!isOffline) {
     const recentKey = 'sd_recent_sets';
@@ -572,6 +664,43 @@ function renderHome(){
     if (offlineSets.length) { offlineSect.style.display = 'block'; renderSetGrid('offline-grid', offlineSets); }
     else { offlineSect.style.display = 'none'; }
   }
+}
+
+function updateConnectionState(){
+  const offline=!navigator.onLine;
+  const notice=document.getElementById('offline-page-notice');
+  if(notice)notice.hidden=!offline;
+  document.body.classList.toggle('is-offline',offline);
+  return offline;
+}
+
+function showConnectionDialog(){
+  if(document.getElementById('connection-dialog'))return;
+  const dialog=document.createElement('div');
+  dialog.id='connection-dialog';
+  dialog.className='connection-dialog-backdrop';
+  dialog.innerHTML=`
+    <div class="connection-dialog" role="dialog" aria-modal="true" aria-labelledby="connection-dialog-title">
+      <span class="connection-dialog-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 8.8a15.7 15.7 0 0 1 3.1-2.1M8.5 5.3A15.4 15.4 0 0 1 22 8.8M5 12.4a10.8 10.8 0 0 1 3.1-1.8m3.9-.7a10.8 10.8 0 0 1 7 2.5M8.6 16a5.3 5.3 0 0 1 6.8 0M12 20h.01M3 3l18 18"/></svg></span>
+      <h3 id="connection-dialog-title">Geen verbinding</h3>
+      <p>Hiervoor heb je internet nodig. Controleer je verbinding en probeer het daarna opnieuw.</p>
+      <button class="btn btn-primary" onclick="closeConnectionDialog()">Begrepen</button>
+    </div>`;
+  dialog.addEventListener('click',event=>{if(event.target===dialog)closeConnectionDialog();});
+  document.body.appendChild(dialog);
+}
+
+function closeConnectionDialog(){
+  const dialog=document.getElementById('connection-dialog');
+  if(!dialog)return;
+  dialog.classList.add('closing');
+  setTimeout(()=>dialog.remove(),220);
+}
+
+function openOnlineAccountPage(path){
+  if(!navigator.onLine){showConnectionDialog();return false;}
+  window.location.href=path;
+  return false;
 }
 
 function updateDashboardWelcome(now=new Date()){
@@ -648,7 +777,6 @@ function renderSetGrid(elementId, sets, options={}) {
 }
 
 function renderLibrary() {
-  renderLibraryMenus();
   let sets = DB.sets.filter(set=>libraryMineOnly?isMySet(set):!isUserSet(set));
   const recentIds=new Set(getOpenedSetIds());
   if(libraryFilters.size==='small')sets=sets.filter(set=>(set.terms?.length||0)<=20);
@@ -666,6 +794,9 @@ function renderLibrary() {
       (s.vak && s.vak.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }
+  const canSortRecent=sets.some(set=>recentIds.has(set.id));
+  if(librarySort==='recent'&&!canSortRecent)librarySort='date';
+  renderLibraryMenus(canSortRecent);
   sortSets(sets,librarySort);
   const summary=document.getElementById('library-summary');
   if(summary)summary.textContent=libraryMineOnly
@@ -702,6 +833,9 @@ function renderSubjectDetail(){
   const subject=getSubjectConfig(currentSubject);
   currentSubject=subject.name;
   const sets=DB.sets.filter(set=>!isMySet(set)&&normalizeSubject(set.vak)===subject.name);
+  const recentIds=new Set(getRecentSetIds());
+  const canSortRecent=sets.some(set=>recentIds.has(set.id));
+  if(subjectSort==='recent'&&!canSortRecent)subjectSort='date';
   sortSets(sets,subjectSort);
   const hero=document.getElementById('subject-hero');
   if(hero){
@@ -712,7 +846,7 @@ function renderSubjectDetail(){
   const count=document.getElementById('subject-count');
   if(title)title.textContent=subject.name;
   if(count)count.textContent=`${sets.length} ${sets.length===1?'set':'sets'}`;
-  renderSortMenu('subject-sort-menu','subject-sort-btn',subjectSort,'setSubjectSort');
+  renderSortMenu('subject-sort-menu','subject-sort-btn',subjectSort,'setSubjectSort',canSortRecent);
   renderSetGrid('subject-sets-grid',sets);
 }
 
@@ -737,7 +871,10 @@ function setHasImages(set){
 
 function sortSets(sets,sort){
   const byTitle=(a,b)=>(a.title||'').localeCompare(b.title||'','nl',{sensitivity:'base'});
-  if(sort==='alpha')sets.sort(byTitle);
+  if(sort==='recent'){
+    const order=new Map(getRecentSetIds().map((id,index)=>[id,index]));
+    sets.sort((a,b)=>(order.get(a.id)??Number.MAX_SAFE_INTEGER)-(order.get(b.id)??Number.MAX_SAFE_INTEGER)||byTitle(a,b));
+  }else if(sort==='alpha')sets.sort(byTitle);
   else if(sort==='subject')sets.sort((a,b)=>normalizeSubject(a.vak).localeCompare(normalizeSubject(b.vak),'nl',{sensitivity:'base'})||byTitle(a,b));
   else if(sort==='size')sets.sort((a,b)=>(b.terms?.length||0)-(a.terms?.length||0)||byTitle(a,b));
   else sets.sort((a,b)=>(b.datum||b.id||'').localeCompare(a.datum||a.id||'')||byTitle(a,b));
@@ -772,10 +909,10 @@ function filterLibrary() {
 }
 
 const SORT_OPTIONS=[
-  ['date','Datum'],['alpha','Alfabet'],['subject','Vak'],['size','Grootte']
+  ['recent','Recent geopend'],['date','Datum'],['alpha','Alfabet'],['subject','Vak'],['size','Grootte']
 ];
 
-function renderLibraryMenus(){
+function renderLibraryMenus(canSortRecent=false){
   const filterMenu=document.getElementById('library-filter-menu');
   const activeCount=Object.values(libraryFilters).filter(value=>value!=='all').length;
   if(filterMenu){
@@ -802,7 +939,7 @@ function renderLibraryMenus(){
         ${group('Synchronisatie','sync',[['synced','Gesynchroniseerd'],['not-synced','Niet gesynchroniseerd']])}
       </div>`;
   }
-  renderSortMenu('library-sort-menu','library-sort-btn',librarySort,'setLibrarySort');
+  renderSortMenu('library-sort-menu','library-sort-btn',librarySort,'setLibrarySort',canSortRecent);
   const count=document.getElementById('library-filter-count');
   if(count){
     count.textContent=activeCount;
@@ -810,15 +947,17 @@ function renderLibraryMenus(){
   }
 }
 
-function renderSortMenu(menuId,buttonId,value,handler){
+function renderSortMenu(menuId,buttonId,value,handler,canSortRecent=false){
   const menu=document.getElementById(menuId);
   const button=document.getElementById(buttonId);
-  const selected=SORT_OPTIONS.find(option=>option[0]===value)||SORT_OPTIONS[0];
+  const availableOptions=canSortRecent?SORT_OPTIONS:SORT_OPTIONS.filter(option=>option[0]!=='recent');
+  if(!availableOptions.some(option=>option[0]===value))value='date';
+  const selected=availableOptions.find(option=>option[0]===value)||availableOptions[0];
   if(button){
     const svg=button.querySelector('svg')?.outerHTML||'';
     button.innerHTML=`Sorteren op: ${selected[1].toLowerCase()}${svg}`;
   }
-  if(menu)menu.innerHTML=SORT_OPTIONS.map(([sort,label])=>
+  if(menu)menu.innerHTML=availableOptions.map(([sort,label])=>
     `<button class="menu-option${sort===value?' active':''}" onclick="${handler}('${sort}')"><span>${label}</span><i></i></button>`
   ).join('');
 }
@@ -1455,11 +1594,11 @@ function buildPairRowHTML(i, p) {
   const defHtml  = p.defHtml  || esc(p.def  || '');
 
   return `
-    <div class="pair-row" id="pr-${i}">
-      <div class="pair-num">${i+1}</div>
+    <div class="pair-row" id="pr-${i}" data-pair-index="${i}">
+      <span class="pair-num" aria-label="Begrip ${i+1}">${i+1}</span>
 
       <!-- TERM column -->
-      <div class="pair-col">
+      <div class="pair-col" data-label="Begrip / term">
         <div
           class="rich-editor"
           id="${termEdId}"
@@ -1475,7 +1614,7 @@ function buildPairRowHTML(i, p) {
       </div>
 
       <!-- DEF column -->
-      <div class="pair-col">
+      <div class="pair-col" data-label="Definitie">
         <div
           class="rich-editor"
           id="${defEdId}"
@@ -1489,7 +1628,7 @@ function buildPairRowHTML(i, p) {
         ${buildToolbarHTML(defBarId, defEdId)}
       </div>
 
-      <button class="pair-del" onclick="ceRemove(${i})">×</button>
+      <button class="pair-del" type="button" onclick="ceRemove(${i})" aria-label="Begrip verwijderen"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg></button>
     </div>
   `;
 }
@@ -1684,7 +1823,42 @@ function showCreateModal(id) {
     </div>
   `);
 
+  /* De nieuwe editor gebruikt dezelfde invoer- en opslaglogica, met een
+     rustigere schaalbare lay-out voor desktop, tablet en telefoon. */
+  showModal(buildCreateEditorMarkup(s,id,editorSubject));
+  document.getElementById('modal-bg')?.classList.add('create-modal-bg');
+  document.getElementById('modal-panel')?.classList.add('create-modal-panel');
+  setupCreateModalSwipe();
+
   ceRenderPairs();
+}
+
+function buildCreateEditorMarkup(s,id,editorSubject){
+  return `<div class="create-editor-shell">
+    <div class="create-editor-drag-zone" aria-hidden="true"><span></span></div>
+    <header class="create-editor-header">
+      <div class="create-editor-heading"><h2>${id?'Set bewerken':'Nieuwe set'}</h2></div>
+      <div class="create-editor-header-actions"><button class="modal-header-btn create-editor-icon-btn create-editor-expand" type="button" onclick="toggleMaximize()" aria-label="Volledig scherm"><img src="assets/icons/icon_maximize.svg" alt=""></button><button class="create-editor-icon-btn" type="button" onclick="closeModal()" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+    </header>
+    <div class="create-editor-scroll modal-content">
+      <section class="create-editor-card create-editor-details">
+        <div class="create-editor-section-title"><div><span>Setgegevens</span><p>Deze informatie verschijnt op de setkaart.</p></div></div>
+        <div class="create-editor-grid">
+          <div class="input-group create-title-field"><label for="c-title">Titel <span>*</span></label><input id="c-title" type="text" placeholder="Bijv. Biologie H3" value="${esc(s?.title||'')}" oninput="ceSaveDraft()"></div>
+          <div class="input-group"><label>Vak</label><div class="subject-select"><input id="c-vak" type="hidden" value="${esc(editorSubject)}"><button type="button" class="subject-picker-btn" onclick="toggleSubjectPicker(this)"><span id="c-vak-label">${esc(editorSubject)}</span><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button></div></div>
+          <div class="input-group create-desc-field"><label for="c-desc">Omschrijving</label><textarea id="c-desc" placeholder="Waar gaat deze set over?" oninput="ceSaveDraft()">${esc(s?.description||'')}</textarea></div>
+          <div class="input-group"><label for="c-datum">Datum toetsafname</label><input id="c-datum" type="date" value="${esc(formatSetDate(s?.datum))}" oninput="ceSaveDraft()"></div>
+        </div>
+      </section>
+      <section class="create-editor-card create-editor-terms">
+        <div class="create-editor-section-title"><div><span>Begrippen</span><p>Voeg minimaal één begrip en definitie toe.</p></div><button class="btn btn-glass btn-sm" type="button" onclick="ceAdd()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Toevoegen</button></div>
+        <div class="create-editor-columns" aria-hidden="true"><span></span><span>Begrip / term</span><span>Definitie</span><span></span></div>
+        <div id="ce-pairs"></div>
+        <button class="btn btn-glass btn-add-term" type="button" onclick="ceAdd()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Begrip toevoegen</button>
+      </section>
+    </div>
+    <footer class="create-editor-footer modal-footer"><button class="btn create-editor-clear" type="button" onclick="ceClearDraft()">Concept verwijderen</button><div class="create-editor-save-actions"><button class="btn btn-primary" type="button" onclick="ceSave()"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>${id?'Opslaan':'Set aanmaken'}</button></div></footer>
+  </div>`;
 }
 
 function toggleSubjectPicker(button){
@@ -1722,11 +1896,20 @@ function selectEditorSubject(slug){
 
 function toggleMaximize() {
   if (window.innerWidth <= 750) return;
-  CE.viewMode = (CE.viewMode + 1) % 3;
+  CE.viewMode = CE.viewMode === 2 ? 0 : 2;
   const bg = document.getElementById('modal-bg');
-  const btn = document.querySelector('.modal-header-btn');
+  const panel = document.getElementById('modal-panel');
+  const btn = document.querySelector('.modal-header-btn,.create-editor-expand');
 
   bg.classList.remove('modal-maximized', 'modal-fullscreen');
+  if(CE.viewMode===2){
+    bg.classList.add('modal-fullscreen');
+    panel.style.setProperty('width','100%','important');panel.style.setProperty('max-width','none','important');panel.style.setProperty('height','100dvh','important');panel.style.setProperty('max-height','none','important');panel.style.setProperty('border-radius','0','important');
+  }else{
+    ['width','max-width','height','max-height','border-radius'].forEach(prop=>panel.style.removeProperty(prop));
+  }
+  if(btn){btn.innerHTML=`<img src="assets/icons/${CE.viewMode===2?'icon_minimize.svg':'icon_maximize.svg'}" alt="">`;btn.setAttribute('aria-label',CE.viewMode===2?'Volledig scherm verlaten':'Volledig scherm');}
+  return;
 
   const maxSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(255,255,255,0)" d="M2433 926h256v256h-256z" transform="translate(-2433 -926)"/><path data-name="Rectangle 20" d="M2504.766 936h112.468A61.766 61.766 0 0 1 2679 997.766v112.468a61.766 61.766 0 0 1-61.766 61.766h-112.468a61.766 61.766 0 0 1-61.766-61.766V997.766A61.766 61.766 0 0 1 2504.766 936" fill="var(--accent)" opacity=".4" transform="translate(-2433 -926)"/><path data-name="Rectangle 59" fill="var(--accent)" opacity=".6" d="m2634.186 960.308 20.506 20.506-166.877 166.877-20.506-20.506z" transform="translate(-2433 -926)"/><path data-name="Path 235" d="M2602.5 936h14.734A61.766 61.766 0 0 1 2679 997.766v14.734a14.5 14.5 0 0 1-14.5 14.5 14.5 14.5 0 0 1-14.5-14.5v-14.734A32.8 32.8 0 0 0 2617.234 965H2602.5a14.5 14.5 0 0 1-14.5-14.5 14.5 14.5 0 0 1 14.5-14.5" fill="var(--accent)" transform="translate(-2433 -926)"/><path data-name="Path 236" d="M2519.5 1172h-14.734a61.766 61.766 0 0 1-61.766-61.766V1095.5a14.5 14.5 0 0 1 14.5-14.5 14.5 14.5 0 0 1 14.5 14.5v14.734a32.8 32.8 0 0 0 32.766 32.766h14.734a14.5 14.5 0 0 1 14.5 14.5 14.5 14.5 0 0 1-14.5 14.5" fill="var(--accent)" transform="translate(-2433 -926)"/></svg>';
   const minSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(255,255,255,0)" d="M0 0h256v256H0z"/><path data-name="Rectangle 20" d="M71.766 10h112.468A61.766 61.766 0 0 1 246 71.766v112.468A61.766 61.766 0 0 1 184.234 246H71.766A61.766 61.766 0 0 1 10 184.234V71.766A61.766 61.766 0 0 1 71.766 10" fill="var(--accent)" opacity=".4"/><path data-name="Path 237" d="m19.047 216.442 76.775-76.775 20.506 20.506-76.775 76.775a62.1 62.1 0 0 1-20.506-20.506m122.9-122.9 74.488-74.489a62.1 62.1 0 0 1 20.507 20.506l-74.489 74.488Z" fill="var(--accent)" opacity=".6"/><path data-name="Path 235" d="M198.5 131h-14.734A61.766 61.766 0 0 1 122 69.234V54.5A14.5 14.5 0 0 1 136.5 40 14.5 14.5 0 0 1 151 54.5v14.734A32.8 32.8 0 0 0 183.766 102H198.5a14.5 14.5 0 0 1 14.5 14.5 14.5 14.5 0 0 1-14.5 14.5" fill="var(--accent)"/><path data-name="Path 236" d="M61.5 120h14.734A61.766 61.766 0 0 1 138 181.766V196.5a14.5 14.5 0 0 1-14.5 14.5 14.5 14.5 0 0 1-14.5-14.5v-14.734A32.8 32.8 0 0 0 76.234 149H61.5A14.5 14.5 0 0 1 47 134.5 14.5 14.5 0 0 1 61.5 120" fill="var(--accent)"/></svg>';
@@ -2009,8 +2192,11 @@ function doDelete(id) {
    MODAL
 ══════════════════════════════════════════════════════ */
 function showModal(html) {
-  document.getElementById('modal-panel').innerHTML = html;
+  const panel=document.getElementById('modal-panel');
+  panel.classList.remove('create-modal-panel');
+  panel.innerHTML = html;
   const bg = document.getElementById('modal-bg');
+  bg.classList.remove('create-modal-bg');
   bg.classList.remove('hidden');
   bg.classList.remove('modal-maximized', 'modal-fullscreen');
   if (CE.viewMode === 1) {
@@ -2019,13 +2205,47 @@ function showModal(html) {
     bg.classList.add('modal-fullscreen');
   }
 }
+function setupCreateModalSwipe(){
+  const bg=document.getElementById('modal-bg'),panel=document.getElementById('modal-panel');
+  if(!bg||!panel)return;
+  const content=panel.querySelector('.create-editor-shell');
+  const markReady=()=>panel.classList.add('is-ready');
+  panel.addEventListener('animationend',event=>{if(event.target===panel&&event.animationName==='accSheetIn')markReady();},{once:true});
+  setTimeout(()=>{if(panel.isConnected)markReady();},450);
+  let startY=0,currentY=0,renderedDistance=0,dragging=false,activeScroller=null;
+  panel.addEventListener('touchstart',event=>{
+    if(window.innerWidth>750||event.touches.length!==1)return;
+    activeScroller=null;let candidate=event.target;
+    while(candidate&&candidate!==panel){const css=getComputedStyle(candidate);if(candidate.scrollHeight>candidate.clientHeight+1&&/(auto|scroll)/.test(css.overflowY)){activeScroller=candidate;break;}candidate=candidate.parentElement;}
+    startY=currentY=event.touches[0].clientY;renderedDistance=0;dragging=true;panel.classList.add('is-dragging');
+  },{passive:true});
+  panel.addEventListener('touchmove',event=>{
+    if(!dragging||event.touches.length!==1)return;
+    currentY=event.touches[0].clientY;const distance=Math.max(0,currentY-startY);if(distance<=2)return;
+    if(activeScroller&&activeScroller.scrollTop>0){dragging=false;panel.classList.remove('is-dragging');panel.style.removeProperty('transform');content?.style.removeProperty('opacity');return;}
+    event.preventDefault();const maxDrag=panel.offsetHeight*.8;renderedDistance=Math.min(distance,maxDrag);const progress=maxDrag?renderedDistance/maxDrag:0;
+    panel.style.transform=`translateY(${renderedDistance}px)`;if(content)content.style.opacity=String(1-progress);
+  },{passive:false});
+  const finish=()=>{
+    if(!dragging)return;dragging=false;const distance=Math.max(0,currentY-startY);
+    if(distance>=panel.offsetHeight*.4){panel.classList.remove('is-dragging');panel.style.setProperty('--create-dismiss-start',`${renderedDistance}px`);panel.style.setProperty('--create-content-opacity',String(Math.max(0,1-renderedDistance/(panel.offsetHeight*.8))));panel.classList.add('swipe-dismiss');closeModal();return;}
+    panel.classList.add('is-returning');panel.classList.remove('is-dragging');panel.getBoundingClientRect();panel.style.transform='translateY(0)';if(content)content.style.opacity='1';
+    setTimeout(()=>{if(!panel.isConnected)return;panel.style.removeProperty('transform');content?.style.removeProperty('opacity');panel.classList.remove('is-returning');},340);
+  };
+  panel.addEventListener('touchend',finish,{passive:true});panel.addEventListener('touchcancel',finish,{passive:true});
+}
+function finishCloseModal(){
+  const bg=document.getElementById('modal-bg'),panel=document.getElementById('modal-panel');
+  document.documentElement.classList.remove('modal-open');document.body.classList.remove('modal-open');CE.viewMode=0;
+  bg.classList.add('hidden');bg.classList.remove('modal-maximized','modal-fullscreen','create-modal-bg','closing');
+  panel.classList.remove('create-modal-panel','closing','swipe-dismiss','is-dragging','is-returning','is-ready');
+  ['transform','width','max-width','height','max-height','border-radius','--create-dismiss-start','--create-content-opacity'].forEach(prop=>panel.style.removeProperty(prop));
+}
 function closeModal() {
   closeSubjectPicker();
-  document.documentElement.classList.remove("modal-open");
-  document.body.classList.remove("modal-open");
-  CE.viewMode = 0;
-  document.getElementById('modal-bg').classList.add('hidden');
-  document.getElementById('modal-bg').classList.remove('modal-maximized', 'modal-fullscreen');
+  const bg=document.getElementById('modal-bg'),panel=document.getElementById('modal-panel');
+  if(bg.classList.contains('create-modal-bg')&&!bg.classList.contains('closing')){bg.classList.add('closing');panel.classList.remove('is-dragging','is-returning');panel.classList.add('closing');setTimeout(finishCloseModal,380);return;}
+  finishCloseModal();
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); if (document.getElementById('account-overlay')) closeAccountOverlay(); } });
 
@@ -2104,11 +2324,11 @@ const ONBOARD_DEFS = {
 
 function showOnboarding(key, force = false) {
   const seen = JSON.parse(localStorage.getItem('sd_onboard') || '{}');
-  if (!force && seen[key]) return;
+  if (!force && seen[key]) return false;
   seen[key] = true;
   localStorage.setItem('sd_onboard', JSON.stringify(seen));
   const d = ONBOARD_DEFS[key];
-  if (!d) return;
+  if (!d) return false;
   const el = document.createElement('div');
   el.className = 'onboard-overlay';
   el.id = 'onboard-overlay';
@@ -2141,6 +2361,7 @@ function showOnboarding(key, force = false) {
   }
   body.addEventListener('scroll', updateOnboardButtonState);
   setTimeout(updateOnboardButtonState, 0);
+  return true;
 }
 
 function closeOnboarding() {
@@ -2163,8 +2384,17 @@ window.addEventListener('resize', initMobileSidebar);
 loadThemeSettings();
 initDB();
 loadSubjectIndex();
-window.addEventListener('online', () => { renderHome(); refreshSyncedSetsFromCloud(); });
-window.addEventListener('offline', () => renderHome());
+window.addEventListener('online', () => {
+  updateConnectionState();
+  renderPageContent(currentPage);
+  if(MenuOverlay.open&&MenuOverlay.tab==='notifications')renderOverlayTab('notifications');
+  refreshSyncedSetsFromCloud();
+});
+window.addEventListener('offline', () => {
+  updateConnectionState();
+  renderPageContent(currentPage);
+  if(MenuOverlay.open&&MenuOverlay.tab==='notifications')renderOverlayTab('notifications');
+});
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     loadAllNotifications();
@@ -2181,12 +2411,13 @@ window.debugDb = function(){
 };
 loadSetsFromDirectory().then(loadSyncedSetsIntoLibrary).then(() => {
   syncedLibraryReady = true;
+  updateConnectionState();
   showPage(getPageFromLocation());
   setupSearch();
   setupMobileSearch();
   initMobileSidebar();
   loadAllNotifications();
-  autoRequestNotifPermissionOnce();
+  scheduleNotificationOnboarding();
   const loadingScreen = document.getElementById('loading-screen');
   const appContent = document.getElementById('app-content');
   if (loadingScreen && appContent) {
@@ -2264,7 +2495,12 @@ function updateMenuTriggerButton() {
       ? `<img src="${esc(avatarUrl)}" alt="Profielfoto">`
       : `<span style="pointer-events:none">${initial}</span>`) + '<span class="menu-trigger-dot" id="menuTriggerDot"></span>';
   } else {
-    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="menu-trigger-dot" id="menuTriggerDot"></span>`;
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 217 256"><g data-name="Group 39" fill="var(--text)"><path data-name="Path 248" d="M0 207.99a85.24 85.24 0 0 1 21.968-34.917 108.7 108.7 0 0 1 35.72-23.837 107.1 107.1 0 0 1 40.918-8.393h20.124a109.58 109.58 0 0 1 76.47 32.231 88.5 88.5 0 0 1 21.8 34.917 146.4 146.4 0 0 1-49.135 35.756 145.3 145.3 0 0 1-59.2 12.254 145.6 145.6 0 0 1-60.036-12.422A148.4 148.4 0 0 1 0 207.99"/><path data-name="Path 249" d="M69.297 16.285Q85.716-.166 108.5.002q22.617.168 39.2 16.619 16.418 16.619 16.586 39.281.335 22.83-16.251 39.281-16.418 16.619-39.2 16.451-22.617-.336-39.2-16.787-16.421-16.451-16.589-39.281-.335-22.83 16.251-39.281" opacity=".6"/></g></svg>`;
+  }
+  // Het uitgelogde icoon wordt door de gebruiker als één SVG beheerd.
+  // Voeg de statusstip daarom los toe, zodat een SVG-wijziging hem niet kan verwijderen.
+  if (!btn.querySelector('#menuTriggerDot')) {
+    btn.insertAdjacentHTML('beforeend', '<span class="menu-trigger-dot" id="menuTriggerDot"></span>');
   }
   // herstel de unread-stip na het vervangen van innerHTML
   if (typeof updateNotifBadges === 'function') updateNotifBadges();
@@ -2286,10 +2522,15 @@ initAccountNav();
 let MenuOverlay = { open: false, tab: 'account' };
 
 const MENU_TABS = [
-  { key: 'account', label: 'Account', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
-  { key: 'settings', label: 'Instellingen', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008.6 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 110-4h.09A1.65 1.65 0 003.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8a1.65 1.65 0 001.51 1H22a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>' },
-  { key: 'notifications', label: 'Meldingen', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>' }
+  { key: 'account', label: 'Account', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M0 0h256v256H0z"/><path data-name="Path 250" d="M118.442 132.511q-24.929 0-49.413 12.423a112.1 112.1 0 0 0-40.065 33.867q-15.58 21.444-15.58 47.029a29 29 0 0 0 8.9 21.3 29.2 29.2 0 0 0 21.368 8.873h169.164a29.54 29.54 0 0 0 21.665-8.873 29 29 0 0 0 8.9-21.3q0-25.585-15.581-47.029a112.1 112.1 0 0 0-40.065-33.867q-24.484-12.423-49.413-12.423Z" fill="var(--text)"/><path data-name="Path 251" d="M128.384 0a58.41 58.41 0 0 0-58.761 58.565 58.1 58.1 0 0 0 7.865 29.578 59.3 59.3 0 0 0 21.368 21.444 58.59 58.59 0 0 0 59.058 0 59.3 59.3 0 0 0 21.368-21.444 58.1 58.1 0 0 0 7.865-29.578 57.3 57.3 0 0 0-7.865-29.43A58.58 58.58 0 0 0 128.384 0" fill="var(--text)" opacity=".6"/></svg>' },
+  { key: 'settings', label: 'Instellingen', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><defs><clipPath id="a"><path fill="none" d="M43 31h256v256H43z"/></clipPath></defs><path data-name="Path 168" d="M128.001 184.153a55.8 55.8 0 0 1-21.857-4.413 56 56 0 0 1-17.848-12.035 56 56 0 0 1-12.034-17.848A55.8 55.8 0 0 1 71.849 128a55.8 55.8 0 0 1 4.413-21.857 56 56 0 0 1 12.034-17.849 56 56 0 0 1 17.848-12.035 55.8 55.8 0 0 1 21.857-4.413 55.8 55.8 0 0 1 21.857 4.413 56 56 0 0 1 17.848 12.035 56 56 0 0 1 12.034 17.849A55.8 55.8 0 0 1 184.153 128a55.8 55.8 0 0 1-4.413 21.857 56 56 0 0 1-12.034 17.848 56 56 0 0 1-17.848 12.035 55.8 55.8 0 0 1-21.857 4.413m.448-98.379a42.724 42.724 0 0 0-42.675 42.675 42.724 42.724 0 0 0 42.675 42.675 42.724 42.724 0 0 0 42.677-42.675 42.724 42.724 0 0 0-42.678-42.675Z" fill="var(--text)" opacity=".6"/><path data-name="Path 167" d="M128.001 153.556a25.556 25.556 0 1 0-25.556-25.555 25.556 25.556 0 0 0 25.556 25.555m0-9.583a15.972 15.972 0 1 0-15.973-15.972 15.97 15.97 0 0 0 15.973 15.972" fill="var(--text)" fill-rule="evenodd"/><g data-name="Scroll Group 1" transform="translate(-43 -31)" clip-path="url(#a)" style="isolation:isolate"><path data-name="Path 169" d="M74.18 211.695c-1.346-2.324-2.642-4.56-3.748-6.883-1.164-2.442-2.026-4.702-2.944-7.113l-.199-.522-13.489-.721a7.305 7.305 0 0 1-6.878-5.323 6.955 6.955 0 0 1 3.159-7.925l11.317-7.23a145 145 0 0 1-1.63-16.162l-12.124-5.144a7.1 7.1 0 0 1 1.034-13.7l13.225-2.956a89 89 0 0 1 4.056-15.687l-9.917-8.84a6.916 6.916 0 0 1-1.657-8.678 7.05 7.05 0 0 1 7.506-4.028l13.418 1.61a95 95 0 0 1 9.536-13.035l-6.369-11.8a6.87 6.87 0 0 1 1.264-8.536 7.69 7.69 0 0 1 8.645-1.119l12.052 6.03a84.4 84.4 0 0 1 13.577-9.242l-1.8-13.143a6.9 6.9 0 0 1 4.111-7.506 7.21 7.21 0 0 1 8.526 1.755l9.139 9.805a87.5 87.5 0 0 1 15.976-4.208l3.032-12.895a7.15 7.15 0 0 1 6.334-5.697 7.3 7.3 0 0 1 7.501 4.548l5.249 12.311a96.6 96.6 0 0 1 16.5 1.311l7.325-11.174a6.95 6.95 0 0 1 7.782-2.929 7.214 7.214 0 0 1 5.732 6.825l.745 13.013a128 128 0 0 1 14.9 7.061l10.52-7.852a7.174 7.174 0 0 1 8.774-.323c2.872 2.122 3.91 5.08 2.722 8.314l-3.67 12.325a160 160 0 0 1 11.619 11.626l12.84-3.761a7.28 7.28 0 0 1 8.251 2.738 7.04 7.04 0 0 1-.155 8.522l-8.116 10.553c.478.912.949 1.764 1.406 2.608.836 1.53 1.646 3.013 2.446 4.699.755 1.582 1.42 3.202 2.096 4.85.359.871.72 1.75 1.098 2.635l13.592.675a7.31 7.31 0 0 1 6.676 5.41 7.2 7.2 0 0 1-3.164 7.933l-11.21 7.184a144 144 0 0 1 1.58 16.063l12.172 5.24a7.06 7.06 0 0 1 4.668 7.444 6.855 6.855 0 0 1-5.799 6.316l-13.02 2.863a121 121 0 0 1-4.057 15.687l9.714 8.932a7.13 7.13 0 0 1 1.656 8.677 6.906 6.906 0 0 1-7.302 3.935l-13.466-1.711a92.3 92.3 0 0 1-9.59 13.184l6.267 11.847a6.78 6.78 0 0 1-1.311 8.436 7.12 7.12 0 0 1-8.495 1.171l-12.053-6.03a96 96 0 0 1-13.53 9.342l1.753 13.045a6.9 6.9 0 0 1-4.112 7.505 7.21 7.21 0 0 1-8.525-1.754l-9.092-9.705a96 96 0 0 1-16.024 4.107l-3.032 12.895a7.1 7.1 0 0 1-6.486 5.647 6.945 6.945 0 0 1-7.452-4.449l-5.147-12.357a90.3 90.3 0 0 1-16.398-1.356l-7.324 11.171a7.25 7.25 0 0 1-7.986 3.022c-3.6-1.058-5.613-3.445-5.731-6.825l-.542-13.104a94 94 0 0 1-14.9-7.062l-10.724 7.943a7.46 7.46 0 0 1-8.778.32 7.155 7.155 0 0 1-2.722-8.314l3.726-12.482A140 140 0 0 1 87.16 230.03l-12.945 3.805a7.54 7.54 0 0 1-8.25-2.738 6.964 6.964 0 0 1 .257-8.568l8.116-10.553Zm113.142-39.271a21.1 21.1 0 0 1-15.699 7.654l29.749 62.41c-43.662 15.337-92.095-3.534-112.392-46.112a88 88 0 0 1-8.748-38.647l59.808 6.832 10.812.616a21.1 21.1 0 0 1 2.15-17.2l-11.285-.713-59.564-6.83c5.62-26.198 23.562-49.428 50.575-61.72a92.02 92.02 0 0 1 81.994 2.376l-40.749 56.953a21.18 21.18 0 0 1 14.796 9.427l40.583-56.5a89.3 89.3 0 0 1 23.909 30.644c20.2 42.376 3.92 90.698-35.994 113.638Z" fill="var(--text)" fill-rule="evenodd"/></g></svg>' },
+  { key: 'notifications', label: 'Meldingen', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 41" fill="var(--text)"><path data-name="Path 252" d="M105.508 247.202a31.7 31.7 0 0 1-10.7-21.709v-.232c.16-.781 66.543-.549 66.543 0a31.47 31.47 0 0 1-10.473 21.824 32.2 32.2 0 0 1-22.8 8.912 32.42 32.42 0 0 1-22.57-8.795" opacity=".6"/><path data-name="Path 253" d="M32.977 208.951a14.9 14.9 0 0 1-10.814-4.225 16.66 16.66 0 0 1-5.057-10.316 15.12 15.12 0 0 1 3.174-11.148l13.287-16.547a21.63 21.63 0 0 0 4.466-13.25v-49.863q0-29.807 17.636-52.678a90 90 0 0 1 45.839-31.443 25.63 25.63 0 0 1 9.753-13.959 27.8 27.8 0 0 1 16.814-5.523 27.66 27.66 0 0 1 16.693 5.406 24.15 24.15 0 0 1 9.522 13.729 87.4 87.4 0 0 1 34.2 18.3 85.5 85.5 0 0 1 21.869 29.568 86.9 86.9 0 0 1 7.405 35.191v51.275a21.25 21.25 0 0 0 4.583 13.25l13.158 16.547a14.52 14.52 0 0 1 3.421 11.033 16.2 16.2 0 0 1-4.939 10.432 14.92 14.92 0 0 1-10.814 4.225Z"/></g></svg>' }
 ];
+
+// Gebruik overal dezelfde bronbestanden voor instellingen en meldingen.
+// De CSS-maskers laten deze witte SVG-assets de kleur van hun omgeving volgen.
+MENU_TABS.find(tab=>tab.key==='settings').icon='<span class="ui-asset-icon ui-asset-icon-settings" aria-hidden="true"></span>';
+MENU_TABS.find(tab=>tab.key==='notifications').icon='<span class="ui-asset-icon ui-asset-icon-notification" aria-hidden="true"></span>';
 
 function openAccountOverlay(tab) {
   if (document.getElementById('account-overlay')) return; // al open
@@ -2321,6 +2562,7 @@ function openAccountOverlay(tab) {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
+          <div class="acc-ov-divider" aria-hidden="true"></div>
           <div class="acc-ov-content" id="accOvContent"></div>
         </section>
       </div>
@@ -2413,8 +2655,10 @@ function setupAccountOverlaySwipe(overlay){
   });
   setTimeout(()=>{if(panel.isConnected)markSheetReady();},450);
   let startY=0;
+  let startX=0;
   let currentY=0;
   let dragging=false;
+  let dragStarted=false;
   let renderedDistance=0;
   let activeScroller=null;
   panel.addEventListener('touchstart',e=>{
@@ -2430,22 +2674,29 @@ function setupAccountOverlaySwipe(overlay){
       scrollCandidate=scrollCandidate.parentElement;
     }
     startY=e.touches[0].clientY;
+    startX=e.touches[0].clientX;
     currentY=startY;
     renderedDistance=0;
     dragging=true;
-    panel.classList.add('is-dragging');
+    dragStarted=false;
   },{passive:true});
   panel.addEventListener('touchmove',e=>{
     if(!dragging||e.touches.length!==1)return;
     currentY=e.touches[0].clientY;
     const distance=Math.max(0,currentY-startY);
-    if(distance>2){
+    const horizontalDistance=Math.abs(e.touches[0].clientX-startX);
+    if(!dragStarted&&horizontalDistance>10&&horizontalDistance>distance){
+      dragging=false;
+      return;
+    }
+    if(distance>10){
       if(activeScroller&&activeScroller.scrollTop>0){
         dragging=false;
-        panel.classList.remove('is-dragging');
-        panel.style.removeProperty('transform');
-        if(panelContent)panelContent.style.removeProperty('opacity');
         return;
+      }
+      if(!dragStarted){
+        dragStarted=true;
+        panel.classList.add('is-dragging');
       }
       e.preventDefault();
       const maxDrag=panel.offsetHeight*.8;
@@ -2458,6 +2709,8 @@ function setupAccountOverlaySwipe(overlay){
   panel.addEventListener('touchend',()=>{
     if(!dragging)return;
     dragging=false;
+    if(!dragStarted)return;
+    dragStarted=false;
     const distance=Math.max(0,currentY-startY);
     const closeThreshold=panel.offsetHeight*.4;
     if(distance>=closeThreshold){
@@ -2482,6 +2735,7 @@ function setupAccountOverlaySwipe(overlay){
   },{passive:true});
   panel.addEventListener('touchcancel',()=>{
     dragging=false;
+    dragStarted=false;
     panel.classList.remove('is-dragging');
     panel.style.removeProperty('transform');
     if(panelContent)panelContent.style.removeProperty('opacity');
@@ -2498,11 +2752,39 @@ function renderOverlayTab(tab) {
   else if (tab === 'notifications') html = renderNotificationsTabContent();
   content.innerHTML = `<div class="acc-ov-content-inner">${html}</div>`;
   if (tab === 'settings') syncThemeUIControls();
+  if (tab === 'account' && _currentSession) updateAccountSyncCount();
   renderOverlaySidebar();
   updateAccountOverlayPageState();
 }
 
 /* ── Account-tabblad ── */
+function getKnownSyncCount() {
+  const cloudIds = new Set(DB.sets
+    .filter(set => isSyncedSet(set))
+    .map(set => getCloudSetId(set))
+    .filter(Boolean)
+    .map(String));
+  return Math.min(5, cloudIds.size);
+}
+
+let accountSyncCountRequest = 0;
+async function updateAccountSyncCount() {
+  const request = ++accountSyncCountRequest;
+  const initialElement = document.getElementById('accOvSyncCount');
+  if (!initialElement || !_currentSession) return;
+  initialElement.textContent = String(getKnownSyncCount());
+  if (!navigator.onLine) return;
+  try {
+    const count = await VeliosAuth.getSyncCount();
+    const currentElement = document.getElementById('accOvSyncCount');
+    if (request === accountSyncCountRequest && currentElement) {
+      currentElement.textContent = String(Math.min(5, Math.max(0, Number(count) || 0)));
+    }
+  } catch (error) {
+    console.warn('Synchronisatieteller kon niet worden geladen:', error.message);
+  }
+}
+
 function renderAccountTabContent() {
   if (_currentSession) {
     const p = _currentProfile || VeliosAuth.profileFromUser(_currentSession.user);
@@ -2518,20 +2800,20 @@ function renderAccountTabContent() {
         </div>
         <div class="acc-sync-badge" style="margin-top:10px">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-          <span id="accOvSyncCount">0</span>/5 gesynchroniseerd
+          <span id="accOvSyncCount">${getKnownSyncCount()}</span>/5 gesynchroniseerd
         </div>
       </div>
-      <a href="account-options.html" class="acc-dd-item" style="border-radius:var(--r4)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <a href="account-options.html" class="acc-dd-item account-manage-link" style="border-radius:var(--r4)" onclick="return openOnlineAccountPage('account-options.html')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><defs><clipPath id="a"><path fill="none" d="M43 31h256v256H43z"/></clipPath></defs><path data-name="Path 167" d="M128.001 153.556a25.556 25.556 0 1 0-25.556-25.555 25.556 25.556 0 0 0 25.556 25.555m0-9.583a15.972 15.972 0 1 0-15.973-15.972 15.97 15.97 0 0 0 15.973 15.972" fill="#(var(--text)" fill-rule="evenodd"/><g data-name="Scroll Group 1" transform="translate(-43 -31)" clip-path="url(#a)" style="isolation:isolate"><path data-name="Path 169" d="M74.18 211.695c-1.346-2.324-2.642-4.56-3.748-6.883-1.164-2.442-2.026-4.702-2.944-7.113l-.199-.522-13.489-.721a7.305 7.305 0 0 1-6.878-5.323 6.955 6.955 0 0 1 3.159-7.925l11.317-7.23a145 145 0 0 1-1.63-16.162l-12.124-5.144a7.1 7.1 0 0 1 1.034-13.7l13.225-2.956a89 89 0 0 1 4.056-15.687l-9.917-8.84a6.916 6.916 0 0 1-1.657-8.678 7.05 7.05 0 0 1 7.506-4.028l13.418 1.61a95 95 0 0 1 9.536-13.035l-6.369-11.8a6.87 6.87 0 0 1 1.264-8.536 7.69 7.69 0 0 1 8.645-1.119l12.052 6.03a84.4 84.4 0 0 1 13.577-9.242l-1.8-13.143a6.9 6.9 0 0 1 4.111-7.506 7.21 7.21 0 0 1 8.526 1.755l9.139 9.805a87.5 87.5 0 0 1 15.976-4.208l3.032-12.895a7.15 7.15 0 0 1 6.334-5.697 7.3 7.3 0 0 1 7.501 4.548l5.249 12.311a96.6 96.6 0 0 1 16.5 1.311l7.325-11.174a6.95 6.95 0 0 1 7.782-2.929 7.214 7.214 0 0 1 5.732 6.825l.745 13.013a128 128 0 0 1 14.9 7.061l10.52-7.852a7.174 7.174 0 0 1 8.774-.323c2.872 2.122 3.91 5.08 2.722 8.314l-3.67 12.325a160 160 0 0 1 11.619 11.626l12.84-3.761a7.28 7.28 0 0 1 8.251 2.738 7.04 7.04 0 0 1-.155 8.522l-8.116 10.553c.478.912.949 1.764 1.406 2.608.836 1.53 1.646 3.013 2.446 4.699.755 1.582 1.42 3.202 2.096 4.85.359.871.72 1.75 1.098 2.635l13.592.675a7.31 7.31 0 0 1 6.676 5.41 7.2 7.2 0 0 1-3.164 7.933l-11.21 7.184a144 144 0 0 1 1.58 16.063l12.172 5.24a7.06 7.06 0 0 1 4.668 7.444 6.855 6.855 0 0 1-5.799 6.316l-13.02 2.863a121 121 0 0 1-4.057 15.687l9.714 8.932a7.13 7.13 0 0 1 1.656 8.677 6.906 6.906 0 0 1-7.302 3.935l-13.466-1.711a92.3 92.3 0 0 1-9.59 13.184l6.267 11.847a6.78 6.78 0 0 1-1.311 8.436 7.12 7.12 0 0 1-8.495 1.171l-12.053-6.03a96 96 0 0 1-13.53 9.342l1.753 13.045a6.9 6.9 0 0 1-4.112 7.505 7.21 7.21 0 0 1-8.525-1.754l-9.092-9.705a96 96 0 0 1-16.024 4.107l-3.032 12.895a7.1 7.1 0 0 1-6.486 5.647 6.945 6.945 0 0 1-7.452-4.449l-5.147-12.357a90.3 90.3 0 0 1-16.398-1.356l-7.324 11.171a7.25 7.25 0 0 1-7.986 3.022c-3.6-1.058-5.613-3.445-5.731-6.825l-.542-13.104a94 94 0 0 1-14.9-7.062l-10.724 7.943a7.46 7.46 0 0 1-8.778.32 7.155 7.155 0 0 1-2.722-8.314l3.726-12.482A140 140 0 0 1 87.16 230.03l-12.945 3.805a7.54 7.54 0 0 1-8.25-2.738 6.964 6.964 0 0 1 .257-8.568l8.116-10.553Zm113.142-39.271a21.1 21.1 0 0 1-15.699 7.654l29.749 62.41c-43.662 15.337-92.095-3.534-112.392-46.112a88 88 0 0 1-8.748-38.647l59.808 6.832 10.812.616a21.1 21.1 0 0 1 2.15-17.2l-11.285-.713-59.564-6.83c5.62-26.198 23.562-49.428 50.575-61.72a92.02 92.02 0 0 1 81.994 2.376l-40.749 56.953a21.18 21.18 0 0 1 14.796 9.427l40.583-56.5a89.3 89.3 0 0 1 23.909 30.644c20.2 42.376 3.92 90.698-35.994 113.638Z" fill="var(--text)" fill-rule="evenodd"/></g></svg>
         Account beheren
       </a>
-      <a href="my-account.html" class="acc-dd-item" style="border-radius:var(--r4)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+      <a href="my-account.html" class="acc-dd-item" style="border-radius:var(--r4)" onclick="return openOnlineAccountPage('my-account.html')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 42" fill="var(--text)"><path data-name="Path 259" d="M197.5 214h-139a58 58 0 0 1-24.732-5.47 58.6 58.6 0 0 1-10.565-6.375 59 59 0 0 1-8.818-8.234c.773.816 2.548 1.231 5.277 1.231 8.052 0 24.673-3.611 48.067-10.439 20.916-6.1 46.667-14.627 72.509-24 25.61-9.286 49.458-18.728 67.15-26.587 19.53-8.675 30.592-14.972 31.99-18.209a1.23 1.23 0 0 0-.165-1.435A58.3 58.3 0 0 1 251.5 132.96a58.2 58.2 0 0 1 4.5 22.54 58.1 58.1 0 0 1-4.6 22.771 58.3 58.3 0 0 1-12.537 18.595 58.3 58.3 0 0 1-18.595 12.537A58.1 58.1 0 0 1 197.5 214M.154 151.235a58 58 0 0 1 4.445-18.505 58.3 58.3 0 0 1 12.537-18.595 58.3 58.3 0 0 1 18.595-12.537 58 58 0 0 1 18.506-4.445A58.775 58.775 0 0 0 .154 151.235m238.666-37.143a58.7 58.7 0 0 0-38.545-17.027 58.32 58.32 0 0 1 38.547 17.026Z" opacity=".6"/><path data-name="Path 258" d="M58.5 97h139a58.48 58.48 0 0 1 41.685 17.456c10.315 10.382-213.969 91.822-224.844 79.415A58.5 58.5 0 0 1 58.5 97"/><path data-name="Path 256" d="M212.829 99.029A58.7 58.7 0 0 0 197.5 97h-22.178a64.4 64.4 0 0 0-12.469-29.867c1.2-.088 2.431-.132 3.647-.132a49.2 49.2 0 0 1 19.268 3.89A49.3 49.3 0 0 1 201.5 81.5a49.3 49.3 0 0 1 10.608 15.734c.249.588.491 1.192.719 1.8Z"/><path data-name="Path 255" d="M45.49 98.452a65.4 65.4 0 0 1 21.449-40.868 65.3 65.3 0 0 1 19.85-12.16A65.2 65.2 0 0 1 110.5 41a65.2 65.2 0 0 1 23.381 4.3 65.3 65.3 0 0 1 19.657 11.827 65.6 65.6 0 0 1 14.342 17.765A64.9 64.9 0 0 1 175.316 97H58.5a58.8 58.8 0 0 0-13.009 1.452Z"/></g></svg>
         Gesynchroniseerde sets
       </a>
       <div class="acc-dd-sep"></div>
       <button class="acc-dd-item danger" style="border-radius:var(--r4)" onclick="doSignOut()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M256 0v256H0V0z"/><path data-name="Path 261" d="M20 227V29a9.01 9.01 0 0 1 9-9h77a9.01 9.01 0 0 1 9 9v198a9.01 9.01 0 0 1-9 9H29a9.01 9.01 0 0 1-9-9" fill="var(--red)" opacity=".4"/><path data-name="Rectangle 72" d="M115 29a9.01 9.01 0 0 0-9-9H29a9.01 9.01 0 0 0-9 9v198a9.01 9.01 0 0 0 9 9h77a9.01 9.01 0 0 0 9-9zm20 0v198a29 29 0 0 1-29 29H29a29 29 0 0 1-29-29V29A29 29 0 0 1 29 0h77a29 29 0 0 1 29 29" fill="var(--red)" opacity=".6"/><path data-name="Path 260" d="m239.613 121.9-38.751-41.98a9 9 0 0 0-15.614 6.1V113h-125a15 15 0 0 0-15 15 15 15 0 0 0 15 15h125v26.981a9 9 0 0 0 15.614 6.1l38.751-41.981A8.98 8.98 0 0 0 242 128a8.98 8.98 0 0 0-2.387-6.1" fill="var(--red)"/></svg>
         Uitloggen
       </button>`;
   }
@@ -2571,7 +2853,7 @@ function renderSettingsTabContent() {
         ${notifPerm === 'granted'
           ? `<span style="font-size:12px;color:var(--green);font-weight:700">✓ Ingeschakeld</span>`
           : notifPerm === 'denied'
-            ? `<span style="font-size:12px;color:var(--red);font-weight:700">Geblokkeerd door browser</span>`
+            ? `<button class="btn btn-glass btn-sm" onclick="requestNotifPermission()">Opnieuw toestaan</button>`
             : `<button class="btn btn-glass btn-sm" onclick="requestNotifPermission()">Inschakelen</button>`}
       </div>
     </div>
@@ -2594,7 +2876,7 @@ let NotifSelectedIds = [];
 
 function normalizeNotif(raw, id) {
   return {
-    id,
+    id: String(raw.id || raw.Id || id),
     titel: raw.titel || raw.Titel || 'Melding',
     datum: raw.datum || raw.Datum || '',
     tijd: raw.tijd || raw.Tijd || '',
@@ -2623,6 +2905,17 @@ async function loadFileNotifications() {
   return out;
 }
 
+const AUTO_NOTIFS_KEY='sd_auto_set_notifications';
+function getStoredAutoNotifications(){
+  try{
+    const stored=JSON.parse(localStorage.getItem(AUTO_NOTIFS_KEY)||'[]');
+    return Array.isArray(stored)?stored:[];
+  }catch(e){return []}
+}
+function saveStoredAutoNotifications(notifications){
+  try{localStorage.setItem(AUTO_NOTIFS_KEY,JSON.stringify(notifications))}catch(e){}
+}
+
 /* Vergelijkt sets/index.json met de vorige bekende lijst. Nieuwe bestanden
    leveren een automatische "Een nieuwe set toegevoegd"-notificatie op.
    De tijd komt van de Last-Modified header van sets/index.json (de beste
@@ -2639,7 +2932,7 @@ async function checkForNewSetNotification() {
     if (storedRaw === null) {
       // eerste keer: alleen de huidige stand opslaan, nog niets melden
       localStorage.setItem('sd_known_set_files', JSON.stringify(fileList));
-      return [];
+      return getStoredAutoNotifications();
     }
     let known = [];
     try { known = JSON.parse(storedRaw || '[]'); } catch (e) {}
@@ -2663,8 +2956,15 @@ async function checkForNewSetNotification() {
     });
 
     localStorage.setItem('sd_known_set_files', JSON.stringify(fileList));
-    return synthetic;
-  } catch (e) { console.warn('Kon nieuwe sets niet controleren:', e.message); return []; }
+    const merged=[...synthetic,...getStoredAutoNotifications()].filter((notification,index,list)=>
+      list.findIndex(item=>item.id===notification.id)===index
+    );
+    saveStoredAutoNotifications(merged);
+    return merged;
+  } catch (e) {
+    console.warn('Kon nieuwe sets niet controleren:', e.message);
+    return getStoredAutoNotifications();
+  }
 }
 
 async function loadAllNotifications() {
@@ -2737,7 +3037,7 @@ function handleNotifClick(id) {
   const n = AllNotifs.find(x => x.id === id);
   if (!n) return;
   markNotifRead(id);
-  if (n.blog) { NotifDetailId = id; renderOverlayTab('notifications'); }
+  if (n.blog || n.inhoud) { NotifDetailId = id; renderOverlayTab('notifications'); }
   else { renderOverlayTab('notifications'); }
 }
 function closeNotifDetail() { NotifDetailId = null; renderOverlayTab('notifications'); }
@@ -2789,10 +3089,15 @@ function sanitizeNotifHtml(html) {
 }
 
 function renderNotificationsTabContent() {
+  const offlineNotice=!navigator.onLine?`
+    <div class="notifications-offline-notice" role="status">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.8a15.7 15.7 0 0 1 3.1-2.1M8.5 5.3A15.4 15.4 0 0 1 22 8.8M5 12.4a10.8 10.8 0 0 1 3.1-1.8m3.9-.7a10.8 10.8 0 0 1 7 2.5M8.6 16a5.3 5.3 0 0 1 6.8 0M12 20h.01M3 3l18 18"/></svg>
+      <div><strong>Geen verbinding</strong><span>Meldingen zijn mogelijk niet up-to-date.</span></div>
+    </div>`:'';
   if (NotifDetailId) {
     const n = AllNotifs.find(x => x.id === NotifDetailId);
     if (n) {
-      return `
+      return offlineNotice+`
         <button class="notif-detail-back" onclick="closeNotifDetail()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           Terug
@@ -2842,7 +3147,7 @@ function renderNotificationsTabContent() {
       </div>
     </div>` : '';
 
-  if (!AllNotifs.length) return toolbar + selectBar + `<div class="notif-empty">Geen notificaties</div>`;
+  if (!AllNotifs.length) return offlineNotice + toolbar + selectBar + `<div class="notif-empty">Geen notificaties</div>`;
 
   const list = AllNotifs.map(n => {
     const isUnread = !read.includes(n.id);
@@ -2865,25 +3170,117 @@ function renderNotificationsTabContent() {
       </div>`;
   }).join('');
 
-  return toolbar + selectBar + `<div class="notif-list">${list}</div>`;
+  return offlineNotice + toolbar + selectBar + `<div class="notif-list">${list}</div>`;
 }
 
 /* ── Systeemmeldingen (browser Notification API) ── */
-function requestNotifPermission() {
-  if (!('Notification' in window)) { showToast('Meldingen worden niet ondersteund in deze browser'); return; }
-  if (Notification.permission === 'granted') { showToast('Meldingen staan al aan'); return; }
-  Notification.requestPermission().then(perm => {
-    showToast(perm === 'granted' ? '✓ Systeemmeldingen ingeschakeld' : 'Meldingen geweigerd');
-    if (MenuOverlay.open && MenuOverlay.tab === 'settings') renderOverlayTab('settings');
-  });
+function isIosNotificationDevice(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 }
-function autoRequestNotifPermissionOnce() {
-  if (!('Notification' in window)) return;
-  if (localStorage.getItem('sd_notif_permission_asked')) return;
-  localStorage.setItem('sd_notif_permission_asked', '1');
-  if (Notification.permission === 'default') {
-    Notification.requestPermission().catch(() => {});
+function isStandaloneWebApp(){
+  return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+}
+function showNotificationPermissionHelp(reason='blocked'){
+  if(document.getElementById('notification-permission-help'))return;
+  const ios=isIosNotificationDevice();
+  const iosInstall=reason==='ios-install';
+  const unsupported=reason==='unsupported';
+  const insecure=reason==='insecure';
+  const title=iosInstall?'Installeer Velios+ eerst':unsupported?'Meldingen niet ondersteund':insecure?'Beveiligde verbinding nodig':'Meldingen zijn geblokkeerd';
+  const copy=iosInstall
+    ? 'Op iPhone en iPad kan de toestemmingsmelding alleen vanuit de geïnstalleerde Velios+-webapp worden geopend.'
+    : unsupported
+      ? 'Deze browser ondersteunt geen systeemmeldingen voor Velios+.'
+      : insecure
+        ? 'De browser toont de toestemmingsmelding alleen via HTTPS of localhost.'
+        : 'Je browser heeft meldingen voor Velios+ eerder geblokkeerd. Een website mag die systeemmelding daarna niet zelf opnieuw forceren.';
+  const steps=iosInstall
+    ? '<ol class="notification-permission-steps"><li>Open Velios+ in Safari.</li><li>Tik op Delen en kies ‘Zet op beginscherm’.</li><li>Open Velios+ vanaf je beginscherm en probeer het opnieuw.</li></ol>'
+    : reason==='blocked'
+      ? ios
+        ? '<ol class="notification-permission-steps"><li>Open Instellingen op je iPhone of iPad.</li><li>Ga naar Meldingen en kies Velios+.</li><li>Zet ‘Sta meldingen toe’ aan en open Velios+ opnieuw.</li></ol>'
+        : '<ol class="notification-permission-steps"><li>Open de site-informatie van deze pagina.</li><li>Zet Meldingen op Toestaan of Vragen.</li><li>Klik daarna opnieuw op Meldingen aanzetten.</li></ol>'
+      : '';
+  const dialog=document.createElement('div');
+  dialog.id='notification-permission-help';
+  dialog.className='connection-dialog-backdrop notification-permission-help';
+  dialog.innerHTML=`<div class="connection-dialog" role="dialog" aria-modal="true" aria-labelledby="notification-permission-title">
+    <span class="connection-dialog-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg></span>
+    <h3 id="notification-permission-title">${title}</h3><p>${copy}</p>${steps}
+    <div class="notification-permission-actions"><button class="btn btn-primary" type="button" onclick="closeNotificationPermissionHelp()">Begrepen</button></div>
+  </div>`;
+  dialog.addEventListener('click',event=>{if(event.target===dialog)closeNotificationPermissionHelp();});
+  document.body.appendChild(dialog);
+}
+function closeNotificationPermissionHelp(){
+  const dialog=document.getElementById('notification-permission-help');
+  if(!dialog)return;
+  dialog.classList.add('closing');
+  setTimeout(()=>dialog.remove(),220);
+}
+async function requestNotifPermission(){
+  if(isIosNotificationDevice()&&!isStandaloneWebApp()){showNotificationPermissionHelp('ios-install');return false;}
+  if(!window.isSecureContext){showNotificationPermissionHelp('insecure');return false;}
+  if(!('Notification' in window)){showNotificationPermissionHelp('unsupported');return false;}
+  if(Notification.permission==='granted'){showToast('Meldingen staan al aan');return true;}
+  if(Notification.permission==='denied'){showNotificationPermissionHelp('blocked');return false;}
+  let perm='default';
+  try{
+    // Deze aanroep gebeurt direct binnen de klik, zodat Safari en andere
+    // browsers hun eigen toestemmingsvenster daadwerkelijk mogen tonen.
+    perm=await Notification.requestPermission();
+  }catch(error){
+    console.warn('Meldingentoestemming aanvragen mislukt:',error);
+    showNotificationPermissionHelp('unsupported');
+    return false;
   }
+  if(perm==='granted'){
+    localStorage.setItem('sd_notif_onboard_enabled','1');
+    showToast('Systeemmeldingen ingeschakeld');
+  }else{
+    showToast(perm==='denied'?'Meldingen zijn geweigerd':'Geen keuze gemaakt');
+  }
+  if(MenuOverlay.open&&MenuOverlay.tab==='settings')renderOverlayTab('settings');
+  return perm==='granted';
+}
+function scheduleNotificationOnboarding(){
+  if(!('Notification' in window)||Notification.permission==='granted')return;
+  const visit=(parseInt(localStorage.getItem('sd_visit_count')||'0',10)||0)+1;
+  localStorage.setItem('sd_visit_count',String(visit));
+  const last=parseInt(localStorage.getItem('sd_notif_onboard_last')||'0',10)||0;
+  if(last&&visit-last<5)return;
+  const waitForWelcome=()=>{
+    if(document.getElementById('onboard-overlay')){setTimeout(waitForWelcome,300);return;}
+    showNotificationOnboarding(visit);
+  };
+  setTimeout(waitForWelcome,420);
+}
+function showNotificationOnboarding(visit){
+  if(document.getElementById('notification-onboard'))return;
+  localStorage.setItem('sd_notif_onboard_last',String(visit));
+  const el=document.createElement('div');
+  el.className='onboard-overlay notification-onboard';el.id='notification-onboard';
+  el.innerHTML=`<div class="onboard-panel notification-onboard-panel">
+    <div class="onboard-body">
+      <span class="onboard-icon notification-onboard-icon"><svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 41" fill="var(--accent)"><path data-name="Path 252" d="M105.508 247.202a31.7 31.7 0 0 1-10.7-21.709v-.232c.16-.781 66.543-.549 66.543 0a31.47 31.47 0 0 1-10.473 21.824 32.2 32.2 0 0 1-22.8 8.912 32.42 32.42 0 0 1-22.57-8.795" opacity=".6"/><path data-name="Path 253" d="M32.977 208.951a14.9 14.9 0 0 1-10.814-4.225 16.66 16.66 0 0 1-5.057-10.316 15.12 15.12 0 0 1 3.174-11.148l13.287-16.547a21.63 21.63 0 0 0 4.466-13.25v-49.863q0-29.807 17.636-52.678a90 90 0 0 1 45.839-31.443 25.63 25.63 0 0 1 9.753-13.959 27.8 27.8 0 0 1 16.814-5.523 27.66 27.66 0 0 1 16.693 5.406 24.15 24.15 0 0 1 9.522 13.729 87.4 87.4 0 0 1 34.2 18.3 85.5 85.5 0 0 1 21.869 29.568 86.9 86.9 0 0 1 7.405 35.191v51.275a21.25 21.25 0 0 0 4.583 13.25l13.158 16.547a14.52 14.52 0 0 1 3.421 11.033 16.2 16.2 0 0 1-4.939 10.432 14.92 14.92 0 0 1-10.814 4.225Z"/></g></svg></span>
+      <div class="onboard-title">Blijf op de hoogte</div>
+      <div class="onboard-desc">Zet meldingen aan voor belangrijke updates en nieuwe berichten in Velios+.</div>
+      <div class="onboard-feature"><div class="onboard-feature-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></div><div class="onboard-feature-text"><strong>Jij houdt de controle</strong><span>Je kunt meldingen later altijd weer uitschakelen via Instellingen.</span></div></div>
+    </div>
+    <div class="onboard-footer onboard-footer-dual"><button class="onboard-btn onboard-btn-secondary" type="button" onclick="closeNotificationOnboarding()">Niet nu</button><button class="onboard-btn" type="button" onclick="enableNotificationOnboarding()">Meldingen aanzetten</button></div>
+  </div>`;
+  document.body.appendChild(el);
+}
+function enableNotificationOnboarding(){
+  // Eerst aanvragen: requestPermission moet rechtstreeks uit de gebruikersklik
+  // voortkomen. Daarna mag de eigen uitleg-overlay sluiten.
+  requestNotifPermission();
+  closeNotificationOnboarding();
+}
+function closeNotificationOnboarding(){
+  const el=document.getElementById('notification-onboard');if(!el)return;
+  el.style.pointerEvents='none';el.classList.add('closing');el.querySelector('.onboard-panel')?.classList.add('closing');
+  setTimeout(()=>el.remove(),420);
 }
 function maybeSendSystemNotification(newCount) {
   if (newCount <= 0) return;

@@ -1,10 +1,79 @@
-const CACHE = 'velios-20260812-6';
+const CACHE = 'velios-20260816-47';
 const ASSETS = [
   './',
   './index.html',
+  './welcome.html',
   './set.html',
-  'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+  './login.html',
+  './account-options.html',
+  './my-account.html',
+  './manifest.json',
+  './style.css',
+  './app.js',
+  './set-app.js',
+  './supabase-client.js',
+  './favicon.svg',
+  './favicon-dark.svg',
+  './appicon-192.png',
+  './appicon-512.png',
+  './apple-touch-icon.png',
+  './appicon-monochrome.svg',
+  './assets/branding/logo_full-svg.svg',
+  './assets/icons/icon_notification.svg',
+  './assets/icons/icon_settings.svg',
+  './assets/icons/icon_settings-config.svg',
+  './assets/icons/icon_sets.svg',
+  './assets/icons/icon_learn.svg',
+  './assets/icons/icon_cloud.svg',
+  './assets/welcome/study-hero.webp',
+  './assets/subjects/index.json',
+  './assets/subjects/placeholder.svg',
+  './assets/subjects/biologie.webp',
+  './assets/subjects/duits.webp',
+  './assets/subjects/geschiedenis.webp',
+  './assets/subjects/grieks.webp',
+  './assets/subjects/latijn.webp',
+  './assets/subjects/nederlands.webp',
+  './assets/subjects/natuurkunde.webp',
+  './assets/subjects/scheikunde.webp',
+  './assets/subjects/aardrijkskunde.webp',
+  './assets/subjects/economie.webp',
+  './assets/subjects/engels.webp',
+  './assets/subjects/frans.webp',
+  './assets/subjects/overig.webp',
+  './assets/share/whatsapp.png',
+  './assets/share/messages.png',
+  './assets/share/messenger.png',
+  './assets/share/mail.png',
+  './assets/share/telegram.png',
+  './assets/avatars/cat.jpg',
+  './assets/avatars/dog.jpg',
+  './assets/avatars/fox.jpg',
+  './assets/avatars/owl.jpg',
+  './assets/avatars/rabbit.jpg',
+  './assets/avatars/red-panda.jpg',
+  './assets/avatars/study-red-panda.webp',
+  './assets/avatars/study-dog.webp',
+  './assets/avatars/study-eagle.webp',
+  './assets/avatars/study-giraffe.webp',
+  './assets/avatars/study-rabbit.webp',
+  './assets/avatars/study-cat.webp',
+  './notifications/index.json',
+  './notifications/demo-welkom.json',
+  './sets/index.json',
+  './sets/010000033.vset',
+  './sets/020600533.vset',
+  './sets/020601533.vset',
+  './sets/020601733.vset',
+  './sets/03051t233.vset',
+  './sets/040401033.vset',
+  './sets/040402033.vset',
+  './sets/23051t233.vset',
+  './sets/a2nb01033.vset',
+  './SFX/checkpoint.wav',
+  './SFX/correct.wav',
+  './SFX/finish.wav',
+  './SFX/incorrect.wav'
 ];
 
 self.addEventListener('install', e => {
@@ -27,12 +96,12 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return resp;
-      }).catch(() => caches.match(e.request) || caches.match('./index.html'))
+      }).catch(() => caches.match(e.request, { ignoreSearch: true }) || caches.match('./index.html'))
     );
     return;
   }
-  // Code, styles, .vset en index.json network-first zodat updates direct zichtbaar zijn.
-  if (e.request.url.includes('.vset') || e.request.url.includes('index.json') ||
+  // Code, styles, .vset en JSON network-first zodat updates direct zichtbaar zijn.
+  if (e.request.url.includes('.vset') || e.request.url.endsWith('.json') || e.request.url.includes('.json?') ||
       e.request.url.endsWith('.js') || e.request.url.includes('.js?') ||
       e.request.url.endsWith('.css') || e.request.url.includes('.css?')) {
     e.respondWith(
@@ -42,13 +111,13 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return resp;
-      }).catch(() => caches.match(e.request))
+      }).catch(() => caches.match(e.request, { ignoreSearch: true }))
     );
     return;
   }
   // Favicon en andere assets cache-first maar met fallback
   e.respondWith(
-    caches.match(e.request).then(cached => {
+    caches.match(e.request, { ignoreSearch: true }).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(resp => {
         if (resp && resp.status === 200) {
@@ -56,7 +125,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return resp;
-      }).catch(() => caches.match('./index.html'));
+      }).catch(() => Response.error());
     })
   );
 });

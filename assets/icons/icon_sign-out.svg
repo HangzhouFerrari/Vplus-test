@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <g id="icon_sign-out" transform="translate(256) rotate(90)">
+    <rect id="Rectangle_20" data-name="Rectangle 20" width="256" height="256" fill="rgba(0,0,0,0)"/>
+    <path id="Path_261" data-name="Path 261" d="M-3546-1652h-198a9.01,9.01,0,0,1-9-9v-77a9.01,9.01,0,0,1,9-9h198a9.01,9.01,0,0,1,9,9v77A9.01,9.01,0,0,1-3546-1652Z" transform="translate(3773 1888)" fill="rgba(255,255,255,0.4)"/>
+    <path id="Rectangle_72" data-name="Rectangle 72" d="M29,20a9.01,9.01,0,0,0-9,9v77a9.01,9.01,0,0,0,9,9H227a9.01,9.01,0,0,0,9-9V29a9.01,9.01,0,0,0-9-9H29M29,0H227a29,29,0,0,1,29,29v77a29,29,0,0,1-29,29H29A29,29,0,0,1,0,106V29A29,29,0,0,1,29,0Z" transform="translate(0 121)" fill="rgba(255,255,255,0.6)"/>
+    <path id="Path_260" data-name="Path 260" d="M-3714.1-1885.613l-41.98,38.751a9,9,0,0,0,6.1,15.614H-3723v125a15,15,0,0,0,15,15,15,15,0,0,0,15-15v-125h26.981a9,9,0,0,0,6.1-15.614l-41.981-38.751A8.975,8.975,0,0,0-3708-1888,8.978,8.978,0,0,0-3714.1-1885.613Z" transform="translate(3836 1902)" fill="#fff"/>
+  </g>
+</svg>

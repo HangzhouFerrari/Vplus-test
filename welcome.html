@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<script src="sw-register.js?v=20260816-47"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" id="themeMeta" content="#ffad2f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Welkom bij Velios+</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.svg" media="(prefers-color-scheme:light)">
+<link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme:dark)">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--welcome-bg:#ffad2f;--welcome-bg-deep:#f58912;--ink:#171109;--soft:rgba(23,17,9,.7);--surface:rgba(255,255,255,1);--line:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;color-scheme:light}
+body.dark-mode{--welcome-bg:#351d05;--welcome-bg-deep:#1d1004;--ink:#fff;--soft:rgba(255,255,255,.72);--surface:#fff;--line:rgba(255,255,255,.18);color-scheme:dark}
+html,body{width:100%;min-height:100%;background:var(--welcome-bg)}
+body{min-height:100dvh;color:var(--ink);overflow:hidden}
+.welcome{position:relative;isolation:isolate;min-height:100dvh;padding:max(28px,env(safe-area-inset-top)) max(34px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(34px,env(safe-area-inset-left));display:flex;flex-direction:column;background:radial-gradient(circle at 13% 16%,rgba(255,255,255,.28),transparent 31%),linear-gradient(135deg,var(--welcome-bg),var(--welcome-bg-deep))}
+.hero-art{position:absolute;z-index:-2;inset:0 0 0 30%;width:70%;height:100%;object-fit:cover;object-position:center;filter:saturate(.94) contrast(1.02);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 20%),linear-gradient(0deg,transparent 0,#000 10%);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent 0,#000 20%),linear-gradient(0deg,transparent 0,#000 10%);mask-composite:intersect}
+.art-tint{position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,var(--welcome-bg) 0%,color-mix(in srgb,var(--welcome-bg) 86%,transparent) 29%,transparent 59%),linear-gradient(0deg,color-mix(in srgb,var(--welcome-bg-deep) 55%,transparent),transparent 42%);pointer-events:none}
+.brand{width:132px;position:relative;z-index:1}.brand img{display:block;width:100%;height:auto}.dark-mode .brand img{filter:brightness(0) invert(1)}
+.copy{width:min(530px,45vw);margin:auto 0;padding:56px 0 118px}
+.eyebrow{font-size:13px;line-height:1;text-transform:uppercase;letter-spacing:1.7px;font-weight:900;margin-bottom:18px}
+h1{font-size:clamp(48px,6.5vw,96px);line-height:1.02;letter-spacing:normal;font-weight:900;max-width:740px;margin-left:0}
+.intro{font-size:clamp(17px,1.55vw,23px);line-height:1.5;font-weight:650;color:var(--soft);margin-top:25px;max-width:510px}
+.features{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}.feature{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.16);font-size:13px;font-weight:800;backdrop-filter:blur(12px)}.feature svg{display:none}.feature::before{content:'';width:18px;height:18px;flex:0 0 18px;background:currentColor;-webkit-mask-position:center;-webkit-mask-repeat:no-repeat;-webkit-mask-size:contain;mask-position:center;mask-repeat:no-repeat;mask-size:contain}.feature:nth-child(1)::before{-webkit-mask-image:url('assets/icons/icon_sets.svg');mask-image:url('assets/icons/icon_sets.svg')}.feature:nth-child(2)::before{-webkit-mask-image:url('assets/icons/icon_learn.svg');mask-image:url('assets/icons/icon_learn.svg')}.feature:nth-child(3)::before{-webkit-mask-image:url('assets/icons/icon_cloud.svg');mask-image:url('assets/icons/icon_cloud.svg')}
+.actions{position:absolute;right:max(34px,env(safe-area-inset-right));bottom:max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2}.login-btn{min-width:270px;height:64px;padding:0 38px;border:0;border-radius:999px;background:var(--surface);color:#171109;font:850 17px 'DM Sans',sans-serif;box-shadow:0 13px 34px rgba(68,31,0,.2);cursor:pointer;text-decoration:none;display:grid;place-items:center;transition:transform .18s ease,box-shadow .18s ease}.login-btn:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(68,31,0,.26)}.login-btn:active{transform:scale(.98)}.skip{border:0;background:none;color:var(--ink);opacity:.62;font:750 15px 'DM Sans',sans-serif;cursor:pointer;padding:7px 12px}.skip:hover{opacity:1}
+@media(max-width:760px){body{overflow:auto}.welcome{min-height:100svh;padding:calc(20px + env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom));justify-content:flex-end}.brand{width:105px;position:absolute;left:22px;top:calc(20px + env(safe-area-inset-top))}.hero-art{inset:0 0 auto 0;width:100%;height:49%;object-position:65% center;-webkit-mask-image:linear-gradient(0deg,transparent 0,#000 28%);mask-image:linear-gradient(0deg,transparent 0,#000 28%)}.art-tint{background:linear-gradient(0deg,var(--welcome-bg) 50%,transparent 75%)}.copy{width:100%;margin:0;padding:44vh 0 126px}.eyebrow{margin-bottom:12px}h1{font-size:clamp(42px,13.5vw,64px);max-width:480px}.intro{font-size:16px;margin-top:17px;max-width:460px}.features{margin-top:18px;gap:7px}.feature{padding:8px 11px;font-size:12px}.actions{position:absolute;left:22px;right:22px;bottom:calc(20px + env(safe-area-inset-bottom))}.login-btn{width:100%;height:52px}.skip{font-size:12px}}
+@media(max-height:690px) and (max-width:760px){.hero-art{height:42%}.copy{padding-top:35vh}.intro{line-height:1.35}.features{display:none}}
+@media(prefers-reduced-motion:no-preference){.brand,.copy>*{animation:welcomeIn .65s cubic-bezier(.22,1,.36,1) both}.copy>*:nth-child(2){animation-delay:.06s}.copy>*:nth-child(3){animation-delay:.12s}.copy>*:nth-child(4){animation-delay:.18s}.hero-art{animation:artIn .85s cubic-bezier(.22,1,.36,1) both}@keyframes welcomeIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}@keyframes artIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<main class="welcome">
+  <img class="hero-art" src="assets/welcome/study-hero.webp" alt="Een tablet met het Velios+ dashboard en kleurrijke schoolboeken">
+  <div class="art-tint" aria-hidden="true"></div>
+  <div class="brand"><img src="assets/branding/logo_full-svg.svg" alt="Velios+"></div>
+  <section class="copy">
+    <h1>Welkom bij Velios+</h1>
+    <p class="intro">Maak en oefen sets, houd je voortgang bij en leer verder waar je ook bent, ook zonder verbinding. En dat helemaal gratis.</p>
+    <div class="features" aria-label="Functies">
+      <span class="feature"><svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 30" fill="rgba(149,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 20" transform="translate(-3613 1432)" fill="var(--text)"><path data-name="Path 188" d="M3815.387-1215.553a33.3 33.3 0 0 1-5.766-.507l-105.483-18.6 93.315-16.454a32.78 32.78 0 0 0 21.3-13.57 32.78 32.78 0 0 0 5.467-24.658l-12.621-71.574 22.852 4.029a32.8 32.8 0 0 1 12.2 4.784 32.9 32.9 0 0 1 9.1 8.786 32.9 32.9 0 0 1 5.143 11.558 32.8 32.8 0 0 1 .324 13.1l-13.371 75.83a32.9 32.9 0 0 1-4.053 11.016 32.9 32.9 0 0 1-7.343 8.625 33.04 33.04 0 0 1-21.064 7.635m-120.77-162.634a33 33 0 0 1 6.686-1.177Z"/><rect data-name="Rectangle 33" width="193" height="143" rx="33" transform="rotate(-10.02 -5974.64 -21305.009)" opacity=".6"/></g></svg>Eigen sets</span>
+      <span class="feature"><svg viewBox="0 0 24 24"><path d="m13 2-9 12h8l-1 8 9-12h-8z"/></svg>Slim oefenen</span>
+      <span class="feature"><svg viewBox="0 0 24 24"><path d="M6.5 19a4.5 4.5 0 0 1-.4-9A6 6 0 0 1 17.7 8a4 4 0 1 1-.2 8H9"/><path d="m12 13-3 3 3 3"/></svg>Synchroniseren</span>
+    </div>
+  </section>
+  <div class="actions">
+    <a class="login-btn" href="login.html" onclick="markSeen()">Inloggen</a>
+    <button class="skip" type="button" onclick="skipLogin()">Inloggen overslaan</button>
+  </div>
+</main>
+<script>
+function applyTheme(){let s={};try{s=JSON.parse(localStorage.getItem('sd_theme')||'{}')}catch(e){}const dark=s.followSystem!==false?matchMedia('(prefers-color-scheme:dark)').matches:!!s.darkMode;document.body.classList.toggle('dark-mode',dark);document.getElementById('themeMeta').content=dark?'#351d05':'#ffad2f'}
+function markSeen(){try{localStorage.setItem('sd_welcome_seen','1')}catch(e){}}
+function skipLogin(){markSeen();location.href='index.html?skipWelcome=1'}
+applyTheme();matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',applyTheme);
+</script>
+</body>
+</html>

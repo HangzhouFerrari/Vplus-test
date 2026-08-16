@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl" class="set-page">
 <head>
-<script src="sw-register.js?v=20260812-6"></script>
+<script src="sw-register.js?v=20260816-47"></script>
 <script>
 if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
   window.location.href = 'unsupported.html';
@@ -18,12 +18,13 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <meta id="theme-color-meta" name="theme-color" content="#f2f2f7">
 <title>Velios+ - Laden…</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="appicon-png512x512.png">
-<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260812-6">
+<link rel="stylesheet" href="style.css?v=20260816-47">
 
 </head>
 <body>
@@ -35,11 +36,15 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
   <div id="nav-set-title" class="nav-set-title" style="font-weight:800;font-size:16px;color:var(--text)"></div>
   <div class="set-menu-trigger-wrap" id="setMenuTriggerWrap">
     <button class="set-menu-trigger-btn" id="setMenuTriggerBtn" onclick="openIndexMenu()" title="Menu">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 217 256"><g data-name="Group 39" fill="var(--text)"><path data-name="Path 248" d="M0 207.99a85.24 85.24 0 0 1 21.968-34.917 108.7 108.7 0 0 1 35.72-23.837 107.1 107.1 0 0 1 40.918-8.393h20.124a109.58 109.58 0 0 1 76.47 32.231 88.5 88.5 0 0 1 21.8 34.917 146.4 146.4 0 0 1-49.135 35.756 145.3 145.3 0 0 1-59.2 12.254 145.6 145.6 0 0 1-60.036-12.422A148.4 148.4 0 0 1 0 207.99"/><path data-name="Path 249" d="M69.297 16.285Q85.716-.166 108.5.002q22.617.168 39.2 16.619 16.418 16.619 16.586 39.281.335 22.83-16.251 39.281-16.418 16.619-39.2 16.451-22.617-.336-39.2-16.787-16.421-16.451-16.589-39.281-.335-22.83 16.251-39.281" opacity=".6"/></g></svg>
       <span class="set-menu-trigger-dot" id="setMenuTriggerDot"></span>
     </button>
   </div>
 </nav>
+<div class="offline-page-notice" id="set-offline-page-notice" role="status" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.8a15.7 15.7 0 0 1 3.1-2.1M8.5 5.3A15.4 15.4 0 0 1 22 8.8M5 12.4a10.8 10.8 0 0 1 3.1-1.8m3.9-.7a10.8 10.8 0 0 1 7 2.5M8.6 16a5.3 5.3 0 0 1 6.8 0M12 20h.01M3 3l18 18"/></svg>
+  <div><strong>Geen verbinding</strong><span>Deze set gebruikt de gegevens die op dit apparaat beschikbaar zijn.</span></div>
+</div>
 <div class="set-sidebar" id="setSidebar">
   <button class="set-sidebar-btn" onclick="openIndexPage('home')" title="Home">
     <svg width="24" height="24" viewBox="0 0 256 200"><path d="M0 32.218C0 14.424 14.014-.001 31.3-.001h193.4c17.288 0 31.3 14.425 31.3 32.219V167.78c0 17.794-14.014 32.219-31.3 32.219H31.301c-17.287 0-31.3-14.425-31.3-32.219Z" opacity=".4" fill="var(--text)"/><g transform="translate(-2032 1444.819)" fill="var(--text)"><rect width="137" height="174" rx="21" transform="translate(2045 -1433)"/><rect width="81" height="71" rx="21" transform="translate(2194 -1433)"/><rect width="81" height="33" rx="16.5" transform="translate(2194 -1292)"/><rect width="41" height="47" rx="10" transform="translate(2194 -1351)"/><rect width="29" height="47" rx="10" transform="translate(2246 -1351)"/></g></svg>
@@ -64,7 +69,15 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
   <div class="set-recent-sidebar" id="setRecentSidebar"></div>
   <div class="set-sidebar-spacer"></div>
 </div>
-<div id="searchBox"><input type="text" class="search-input" id="termsSearchInput" placeholder="Zoeken..." onkeyup="filterTerms()" onkeydown="handleSearchKeydown(event)"><div class="search-info"><span class="search-counter" id="searchCounter">0/0</span><button class="search-nav-btn" id="searchPrev" onclick="prevTermResult()" disabled title="Vorige"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button><button class="search-nav-btn" id="searchNext" onclick="nextTermResult()" disabled title="Volgende"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button><button class="search-close-btn" id="searchCloseBtn" onclick="closeTermsSearch()" title="Sluiten"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div></div>
+<div id="searchBox">
+  <input type="text" class="search-input" id="termsSearchInput" placeholder="Zoeken..." oninput="filterTerms()" onkeydown="handleSearchKeydown(event)">
+  <div class="search-info">
+    <span class="search-counter" id="searchCounter">0/0</span>
+    <button class="search-nav-btn" id="searchPrev" onclick="prevTermResult()" disabled title="Vorige"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+    <button class="search-nav-btn" id="searchNext" onclick="nextTermResult()" disabled title="Volgende"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+    <button class="search-close-btn" id="searchCloseBtn" onclick="closeTermsSearch()" title="Sluiten"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  </div>
+</div>
 <div class="screen" id="main-screen">
   <div class="loading-screen" id="loading">
     <div class="loading-spinner"></div>
@@ -80,7 +93,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <div id="checkpoint-layer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260812-6"></script>
-<script src="set-app.js?v=20260812-6"></script>
+<script src="supabase-client.js?v=20260816-47"></script>
+<script src="set-app.js?v=20260816-47"></script>
 </body>
 </html>
