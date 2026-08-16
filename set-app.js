@@ -133,7 +133,10 @@ async function updateSetNotificationDot(){
   }
 }
 
+let setHeaderAccountRefresh=null;
 async function initSetHeaderAccount(){
+  if(setHeaderAccountRefresh)return setHeaderAccountRefresh;
+  setHeaderAccountRefresh=(async()=>{
   const btn=document.getElementById('setMenuTriggerBtn');
   if(!btn)return;
   btn.innerHTML=setHeaderFallbackMarkup()+'<span class="set-menu-trigger-dot" id="setMenuTriggerDot"></span>';
@@ -171,6 +174,9 @@ async function initSetHeaderAccount(){
     }catch(e){console.warn('Accountstatus kon niet worden geladen:',e.message);}
   }
   updateSetNotificationDot();
+  })();
+  try{await setHeaderAccountRefresh;}
+  finally{setHeaderAccountRefresh=null;}
 }
 function openRecentSet(slug){
   window.location.href=`set.html?set=${encodeURIComponent(slug)}`;
@@ -2545,9 +2551,14 @@ document.addEventListener('visibilitychange',async()=>{
   }
 });
 setInterval(async()=>{
-  if(document.visibilityState==='visible'&&currentMode==='home'&&await refreshOpenSyncedSet())renderSetView();
+  if(document.visibilityState!=='visible')return;
+  initSetHeaderAccount();
+  if(currentMode==='home'&&await refreshOpenSyncedSet())renderSetView();
 },12000);
 window.addEventListener('storage',event=>{
   if(event.key==='sd_theme')loadThemeSettings();
   if(['sd_notif_read','sd_notif_deleted'].includes(event.key))updateSetNotificationDot();
+  if(event.key==='sd_profile_updated_at')initSetHeaderAccount();
 });
+window.addEventListener('focus',initSetHeaderAccount);
+window.addEventListener('pageshow',event=>{if(event.persisted)initSetHeaderAccount();});

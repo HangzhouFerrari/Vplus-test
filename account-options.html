@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="sw-register.js?v=20260816-47"></script>
+<script src="sw-register.js?v=20260816-50"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -419,7 +419,7 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260816-47"></script>
+<script src="supabase-client.js?v=20260816-50"></script>
 <script>
 const AVATARS = VeliosAuth.AVATAR_OPTIONS;
 
@@ -539,13 +539,29 @@ async function saveAvatar() {
 
   try {
     const newUrl = avatarDataUrl(selectedAvatarIdx);
-    const { error } = await VeliosAuth.client.from('profiles')
+    const { data: savedProfile, error } = await VeliosAuth.client.from('profiles')
       .update({ avatar_url: newUrl })
-      .eq('id', currentUser.id);
+      .eq('id', currentUser.id)
+      .select('avatar_url')
+      .maybeSingle();
     if (error) throw error;
+    if (!savedProfile) throw new Error('Je profiel kon niet worden gevonden.');
+    if (VeliosAuth.resolveAvatarUrl(savedProfile?.avatar_url) !== newUrl) {
+      throw new Error('De nieuwe profielfoto is niet bevestigd door de server.');
+    }
+
+    const metadata = { ...(currentUser.user_metadata || {}), avatar_url: newUrl };
+    const { error: metadataError } = await VeliosAuth.client.auth.updateUser({ data: metadata });
+    if (metadataError) console.warn('Profielfoto is opgeslagen, maar de accountmetadata kon niet worden bijgewerkt:', metadataError.message);
+
+    currentUser.user_metadata = metadata;
     profile.avatar_url = newUrl;
+    selectedAvatarIdx = null;
+    renderCurrentAvatar();
+    renderAvatarGrid();
+    localStorage.setItem('sd_profile_updated_at', String(Date.now()));
     showToast('Profielfoto bijgewerkt', 'ok');
-    btn.disabled = true; // keep disabled until a different one is chosen
+    btn.disabled = true;
   } catch (e) {
     showToast('Opslaan mislukt: ' + e.message, 'err');
     btn.disabled = false;

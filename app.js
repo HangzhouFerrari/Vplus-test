@@ -2389,6 +2389,7 @@ window.addEventListener('online', () => {
   renderPageContent(currentPage);
   if(MenuOverlay.open&&MenuOverlay.tab==='notifications')renderOverlayTab('notifications');
   refreshSyncedSetsFromCloud();
+  initAccountNav();
 });
 window.addEventListener('offline', () => {
   updateConnectionState();
@@ -2399,9 +2400,19 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     loadAllNotifications();
     refreshSyncedSetsFromCloud();
+    initAccountNav();
   }
 });
-window.addEventListener('focus', refreshSyncedSetsFromCloud);
+window.addEventListener('focus', () => {
+  refreshSyncedSetsFromCloud();
+  initAccountNav();
+});
+window.addEventListener('pageshow', event => {
+  if (event.persisted) initAccountNav();
+});
+window.addEventListener('storage', event => {
+  if (event.key === 'sd_profile_updated_at') initAccountNav();
+});
 showOnboarding('home');
 syncLocalWithServer();
 
@@ -2461,25 +2472,37 @@ loadSetsFromDirectory().then(loadSyncedSetsIntoLibrary).then(() => {
   }
 });
 setInterval(refreshSyncedSetsFromCloud, 12000);
+setInterval(() => {
+  if (document.visibilityState === 'visible' && navigator.onLine && _currentSession) initAccountNav();
+}, 15000);
 
 /* ── ACCOUNT NAV (gekoppeld aan het samengevoegde menu-overlay) ── */
 
+let accountNavRefreshPromise = null;
 async function initAccountNav() {
+  if (accountNavRefreshPromise) return accountNavRefreshPromise;
+  accountNavRefreshPromise = (async () => {
+    try {
+      const session = await VeliosAuth.getSession();
+      _currentSession = session;
+      _currentProfile = session ? await VeliosAuth.getProfile() : null;
+    } catch (e) {
+      console.warn('Kon accountstatus niet laden:', e.message);
+    }
+    if (_currentSession && !_currentProfile) {
+      _currentProfile = VeliosAuth.profileFromUser(_currentSession.user);
+    }
+    updateMenuTriggerButton();
+    updateDashboardWelcome();
+    // Als het menu open staat op het Account-tabblad, herteken het met de nieuwe info
+    if (typeof MenuOverlay !== 'undefined' && MenuOverlay.open && MenuOverlay.tab === 'account') {
+      renderOverlayTab('account');
+    }
+  })();
   try {
-    const session = await VeliosAuth.getSession();
-    _currentSession = session;
-    _currentProfile = session ? await VeliosAuth.getProfile() : null;
-  } catch (e) {
-    console.warn('Kon accountstatus niet laden:', e.message);
-  }
-  if (_currentSession && !_currentProfile) {
-    _currentProfile = VeliosAuth.profileFromUser(_currentSession.user);
-  }
-  updateMenuTriggerButton();
-  updateDashboardWelcome();
-  // Als het menu open staat op het Account-tabblad, herteken het met de nieuwe info
-  if (typeof MenuOverlay !== 'undefined' && MenuOverlay.open && MenuOverlay.tab === 'account') {
-    renderOverlayTab('account');
+    await accountNavRefreshPromise;
+  } finally {
+    accountNavRefreshPromise = null;
   }
 }
 
@@ -2574,6 +2597,7 @@ function openAccountOverlay(tab) {
   renderOverlaySidebar();
   renderOverlayTab(MenuOverlay.tab);
   loadAllNotifications();
+  initAccountNav();
 }
 
 function closeAccountOverlay() {
