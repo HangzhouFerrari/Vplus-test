@@ -1,4 +1,4 @@
-const CACHE = 'velios-20260817-51';
+const CACHE = 'velios-20260817-53';
 const ASSETS = [
   './',
   './index.html',
@@ -87,6 +87,13 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  const requestUrl = new URL(e.request.url);
+
+  // Cache uitsluitend leesverzoeken naar bestanden van Velios+ zelf.
+  // Supabase- en andere externe API-responses bevatten gebruikersgegevens en
+  // mogen nooit door de offlinecache worden teruggegeven.
+  if (e.request.method !== 'GET' || requestUrl.origin !== self.location.origin) return;
+
   // HTML network-first (altijd nieuwste versie ophalen)
   if (e.request.url.endsWith('.html') || e.request.url.endsWith('/')) {
     e.respondWith(

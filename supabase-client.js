@@ -3,9 +3,15 @@
 // <script src="supabase-client.js"></script>
 
 const SUPABASE_URL = 'https://ibsdobifxfvwxxtagphj.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlic2RvYmlmeGZ2d3h4dGFncGhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxODEwODgsImV4cCI6MjA5NDc1NzA4OH0.wkay8tnyREzuIs0P038pAgsoxvEj1gi7Rg1QUVifTc0';
+const SUPABASE_ANON = 'sb_publishable_TzaxAnx3zhfI96D_gXZYww_fltOsn8i';
 
-const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  global: {
+    // Profielen en andere accountgegevens moeten altijd rechtstreeks van
+    // Supabase komen; een oude browserrespons mag nooit de actuele rij winnen.
+    fetch: (input, init = {}) => fetch(input, { ...init, cache: 'no-store' }),
+  },
+});
 
 /* De avatarbestanden horen bij de app. In Supabase bewaren we alleen dit pad. */
 const CLASSIC_AVATAR_OPTIONS = [
