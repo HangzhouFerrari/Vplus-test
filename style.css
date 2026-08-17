@@ -582,7 +582,7 @@ html.index-page .badge{display:inline-flex;align-items:center;padding:3px 11px;b
 html.index-page .badge-purple{background:var(--accent-light);color:var(--accent)}
 html.index-page .badge-orange{background:linear-gradient(135deg,rgba(240,123,32,0.15) 0%,rgba(240,123,32,0.1) 100%);color:var(--orange)}
 html.index-page .badge-cloud{width:25px;height:25px;padding:0;justify-content:center;background:var(--accent-light);color:var(--accent)}
-html.index-page .badge-cloud svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+html.index-page .badge-cloud-icon{display:block;width:15px;height:15px;background:currentColor;-webkit-mask:url('./assets/icons/icon_cloud.svg') center/contain no-repeat;mask:url('./assets/icons/icon_cloud.svg') center/contain no-repeat}
 html.index-page .set-card-date{font-size:11px;color:var(--text3)}
 html.index-page .set-icon-btn{width:40px;height:40px;aspect-ratio:1;padding:6px 10px!important;align-items:center;display:flex;justify-content:center;border:0;border-radius:var(--r4);background:#e5e5ea;color:var(--text);box-shadow:none}
 html.index-page .set-icon-btn:hover{background:#dadae0;transform:scale(.9);filter:none;box-shadow:none}

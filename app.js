@@ -764,7 +764,7 @@ function renderSetGrid(elementId, sets, options={}) {
       <div class="set-card-meta">
         <span class="badge badge-purple">${s.terms.length} begrippen</span>
         ${s.vak?`<span class="badge badge-orange">${esc(s.vak)}</span>`:''}
-        ${synced?'<span class="badge badge-cloud" title="Gesynchroniseerd" aria-label="Gesynchroniseerd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 18.5h10a4.5 4.5 0 0 0 .58-8.96A6 6 0 0 0 5.56 8.1 4.25 4.25 0 0 0 6.5 18.5Z"/></svg></span>':''}
+        ${synced?'<span class="badge badge-cloud" title="Gesynchroniseerd" aria-label="Gesynchroniseerd"><span class="badge-cloud-icon" aria-hidden="true"></span></span>':''}
         ${formatSetDate(s.datum)?`<span class="set-card-date">${formatSetDate(s.datum)}</span>`:''}
       </div>
       <div class="set-card-actions" onclick="event.stopPropagation()">
@@ -2940,6 +2940,22 @@ function saveStoredAutoNotifications(notifications){
   try{localStorage.setItem(AUTO_NOTIFS_KEY,JSON.stringify(notifications))}catch(e){}
 }
 
+async function readNotificationSetTitle(filename){
+  let set=null;
+  try{
+    const setResponse=await fetch('./sets/'+filename,{cache:'no-store'});
+    if(setResponse.ok){
+      const content=(await setResponse.text()).trim();
+      try{set=decodeVset(content)}
+      catch(decodeError){try{set=JSON.parse(content)}catch(jsonError){}}
+    }
+  }catch(error){
+    console.warn('Kon nieuwe set niet lezen voor notificatie:',filename,error.message);
+  }
+  const loadedSet=set||DB.sets.find(item=>item._serverFile===filename);
+  return String(loadedSet?.title||loadedSet?.naam||filename.replace(/\.vset$/i,'')).trim();
+}
+
 /* Vergelijkt sets/index.json met de vorige bekende lijst. Nieuwe bestanden
    leveren een automatische "Een nieuwe set toegevoegd"-notificatie op.
    De tijd komt van de Last-Modified header van sets/index.json (de beste
@@ -2962,14 +2978,12 @@ async function checkForNewSetNotification() {
     try { known = JSON.parse(storedRaw || '[]'); } catch (e) {}
     const newFiles = fileList.filter(f => !known.includes(f));
 
-    const synthetic = newFiles.map(filename => {
-      const set = DB.sets.find(s => s._serverFile === filename);
-      const title = set ? set.title : filename.replace('.vset', '');
-      const vak = set ? set.vak : '';
+    const synthetic = await Promise.all(newFiles.map(async filename => {
+      const title = await readNotificationSetTitle(filename);
       return {
         id: 'autoset_' + filename,
         titel: 'Een nieuwe set toegevoegd',
-        subtitel: vak ? `${title} - ${vak}` : title,
+        subtitel: title,
         datum: lastModified ? new Date(lastModified).toLocaleDateString('nl-NL') : '',
         tijd: lastModified ? new Date(lastModified).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) + ' uur' : '',
         subtitel_present: true,
@@ -2977,10 +2991,19 @@ async function checkForNewSetNotification() {
         inhoud: '',
         _auto: true
       };
-    });
+    }));
+
+    // Werk ook eerder opgeslagen automatische meldingen bij, zodat bestaande
+    // bestandsnamen na deze update door de echte settitel worden vervangen.
+    const storedNotifications=await Promise.all(getStoredAutoNotifications().map(async notification=>{
+      const filename=notification?._auto&&String(notification.id||'').startsWith('autoset_')
+        ? String(notification.id).slice('autoset_'.length)
+        : '';
+      return filename?{...notification,subtitel:await readNotificationSetTitle(filename)}:notification;
+    }));
 
     localStorage.setItem('sd_known_set_files', JSON.stringify(fileList));
-    const merged=[...synthetic,...getStoredAutoNotifications()].filter((notification,index,list)=>
+    const merged=[...synthetic,...storedNotifications].filter((notification,index,list)=>
       list.findIndex(item=>item.id===notification.id)===index
     );
     saveStoredAutoNotifications(merged);

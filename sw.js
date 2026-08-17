@@ -1,4 +1,4 @@
-const CACHE = 'velios-20260817-53';
+const CACHE = 'velios-20260817-54';
 const ASSETS = [
   './',
   './index.html',
