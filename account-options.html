@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="sw-register.js?v=20260816-50"></script>
+<script src="sw-register.js?v=20260817-51"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -419,7 +419,7 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260816-50"></script>
+<script src="supabase-client.js?v=20260817-51"></script>
 <script>
 const AVATARS = VeliosAuth.AVATAR_OPTIONS;
 
@@ -539,6 +539,16 @@ async function saveAvatar() {
 
   try {
     const newUrl = avatarDataUrl(selectedAvatarIdx);
+
+    // Werk eerst auth-metadata bij. Sommige Supabase-projecten synchroniseren
+    // auth.users via een trigger terug naar public.profiles; als dit ná de
+    // profielupdate gebeurt kan zo'n trigger de gekozen avatar weer vervangen.
+    const metadata = { ...(currentUser.user_metadata || {}), avatar_url: newUrl };
+    const { data: authResult, error: metadataError } = await VeliosAuth.client.auth.updateUser({ data: metadata });
+    if (metadataError) console.warn('Accountmetadata kon niet worden bijgewerkt:', metadataError.message);
+    if (authResult?.user) currentUser = authResult.user;
+
+    // Schrijf de profielwaarde als laatste, zodat dit altijd de definitieve bron is.
     const { data: savedProfile, error } = await VeliosAuth.client.from('profiles')
       .update({ avatar_url: newUrl })
       .eq('id', currentUser.id)
@@ -550,12 +560,15 @@ async function saveAvatar() {
       throw new Error('De nieuwe profielfoto is niet bevestigd door de server.');
     }
 
-    const metadata = { ...(currentUser.user_metadata || {}), avatar_url: newUrl };
-    const { error: metadataError } = await VeliosAuth.client.auth.updateUser({ data: metadata });
-    if (metadataError) console.warn('Profielfoto is opgeslagen, maar de accountmetadata kon niet worden bijgewerkt:', metadataError.message);
+    // Lees na beide updates opnieuw terug. Hierdoor tonen we nooit ten onrechte
+    // een succesmelding wanneer een trigger of policy de waarde heeft veranderd.
+    const refreshedProfile = await VeliosAuth.getProfile();
+    if (VeliosAuth.resolveAvatarUrl(refreshedProfile?.avatar_url) !== newUrl) {
+      throw new Error('Supabase geeft na het opslaan nog de vorige profielfoto terug.');
+    }
 
-    currentUser.user_metadata = metadata;
-    profile.avatar_url = newUrl;
+    currentUser.user_metadata = { ...(currentUser.user_metadata || {}), avatar_url: newUrl };
+    profile = refreshedProfile;
     selectedAvatarIdx = null;
     renderCurrentAvatar();
     renderAvatarGrid();

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="sw-register.js?v=20260816-50"></script>
+<script src="sw-register.js?v=20260817-51"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -242,7 +242,7 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260816-50"></script>
+<script src="supabase-client.js?v=20260817-51"></script>
 <script>
 let profile = null;
 let syncedSets = [];
@@ -291,6 +291,35 @@ function renderHeader() {
   document.getElementById('headerName').textContent = profile.display_name || profile.username || '—';
   document.getElementById('headerUsername').textContent = '@' + (profile.username || '—');
 }
+
+let profileHeaderRefresh = null;
+async function refreshProfileHeader() {
+  if (!profile || profileHeaderRefresh || !navigator.onLine) return profileHeaderRefresh;
+  profileHeaderRefresh = (async () => {
+    try {
+      const latestProfile = await VeliosAuth.getProfile();
+      if (latestProfile) {
+        profile = latestProfile;
+        renderHeader();
+      }
+    } catch (error) {
+      console.warn('Profielkop kon niet worden vernieuwd:', error.message);
+    }
+  })();
+  try { await profileHeaderRefresh; }
+  finally { profileHeaderRefresh = null; }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshProfileHeader();
+});
+window.addEventListener('focus', refreshProfileHeader);
+window.addEventListener('storage', event => {
+  if (event.key === 'sd_profile_updated_at') refreshProfileHeader();
+});
+setInterval(() => {
+  if (document.visibilityState === 'visible') refreshProfileHeader();
+}, 15000);
 
 /* ── LOAD ALL DATA ── */
 async function loadData() {
