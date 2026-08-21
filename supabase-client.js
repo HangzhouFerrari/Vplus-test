@@ -67,6 +67,7 @@ function profileFromUser(user, profile = null) {
     school_profile: profile?.school_profile || metadata.school_profile || '',
     gymnasium: profile?.gymnasium ?? metadata.gymnasium ?? false,
     extra_subjects: profile?.extra_subjects || metadata.extra_subjects || [],
+    excluded_subjects: profile?.excluded_subjects || metadata.excluded_subjects || [],
     hide_irrelevant_subjects: profile?.hide_irrelevant_subjects ?? metadata.hide_irrelevant_subjects ?? true,
   };
 }

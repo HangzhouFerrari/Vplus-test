@@ -2665,7 +2665,7 @@ html.set-page .set-sidebar-create{
 }
 html.set-page .set-sidebar-create:hover{filter:brightness(1.15)}
 html.set-page .set-sidebar-create:active{transform:scale(.9)}
-html.set-page .set-sidebar-create svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+html.set-page .set-sidebar-create svg{width:20px!important;height:20px!important;display:block;flex:0 0 28px}
 html.set-page .set-sidebar-search{display:none}
 html.set-page .set-sidebar-divider{width:60%;height:1px;background:rgba(200,195,230,.3);margin:12px 0;flex-shrink:0}
 html.set-page .set-recent-sidebar{display:flex;flex-direction:column;gap:8px;width:100%;align-items:center}

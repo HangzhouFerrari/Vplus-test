@@ -2922,7 +2922,7 @@ function renderSettingsTabContent() {
 
 /* ── Klas- en vakkeninstellingen ── */
 let schoolPreferencesSaveTimer=null;
-function getSchoolPreferences(){return window.VeliosSchool?VeliosSchool.fromProfile(_currentProfile):{schoolClass:'',schoolProfile:'',gymnasium:false,extraSubjects:[],hideIrrelevant:true}}
+function getSchoolPreferences(){return window.VeliosSchool?VeliosSchool.fromProfile(_currentProfile):{schoolClass:'',schoolProfile:'',gymnasium:false,extraSubjects:[],excludedSubjects:[],hideIrrelevant:true}}
 function schoolSelect(values,current,handler,labeler=value=>value,placeholder='Maak een keuze'){return VeliosSelect.markup({value:current,onChange:handler,placeholder,ariaLabel:placeholder,options:values.map(value=>({value,label:labeler(value)}))})}
 function queueSchoolPreferencesSave(preferences){
   const next=VeliosSchool.saveLocal(preferences);
@@ -2949,8 +2949,21 @@ function toggleSchoolSetting(key){const current=getSchoolPreferences();const nex
 function toggleExtraSchoolSubject(subject){
   const current=getSchoolPreferences(),required=new Set(VeliosSchool.requiredSubjects(current));
   if(required.has(subject))return;
+  const classical=VeliosSchool.CLASSICAL_SUBJECTS||['Latijn','Grieks'];
+  if(VeliosSchool.isUpper(current)&&current.gymnasium&&classical.includes(subject)){
+    const selected=new Set(VeliosSchool.selectedSubjects(current));
+    const other=classical.find(value=>value!==subject);
+    if(selected.has(subject)&&!selected.has(other)){showToast('Kies minimaal Latijn of Grieks');return;}
+    const excluded=new Set(current.excludedSubjects||[]);
+    selected.has(subject)?excluded.add(subject):excluded.delete(subject);
+    const extras=new Set(current.extraSubjects||[]);extras.delete(subject);
+    queueSchoolPreferencesSave({...current,extraSubjects:[...extras],excludedSubjects:[...excluded]});
+    if(MenuOverlay.open&&MenuOverlay.tab==='subjects')renderOverlayTab('subjects');
+    return;
+  }
   const extra=new Set(current.extraSubjects);extra.has(subject)?extra.delete(subject):extra.add(subject);
-  queueSchoolPreferencesSave({...current,extraSubjects:[...extra]});
+  const excluded=new Set(current.excludedSubjects||[]);excluded.delete(subject);
+  queueSchoolPreferencesSave({...current,extraSubjects:[...extra],excludedSubjects:[...excluded]});
   if(MenuOverlay.open&&MenuOverlay.tab==='subjects')renderOverlayTab('subjects');
 }
 function renderSubjectPills(preferences,editable){
@@ -2967,7 +2980,7 @@ function renderSchoolSubjectsTabContent(){
   return `<div class="school-settings">
     <div class="settings-row school-hide-row"><span class="settings-row-copy"><strong>Niet-relevante vakken verbergen</strong><small>Vakken die niet bij je klas of profielkeuze horen, worden verborgen.</small></span><label class="toggle"><input type="checkbox" ${p.hideIrrelevant?'checked':''} onchange="toggleSchoolSetting('hideIrrelevant')"><span class="toggle-slider"></span></label></div>
     <div class="settings-section"><div class="settings-section-title">Klas</div>${schoolSelect(['1','2','3','4','5','6','overig'],p.schoolClass,'setSchoolClass',value=>value==='overig'?'Overig':`Klas ${value}`,'Selecteer je klas')}</div>
-    ${p.schoolClass&&p.schoolClass!=='overig'?`<div class="settings-row"><span class="settings-row-copy"><strong>Gymnasium</strong><small>Voeg Latijn en Grieks toe als vaste vakken.</small></span><label class="toggle"><input type="checkbox" ${p.gymnasium?'checked':''} onchange="toggleSchoolSetting('gymnasium')"><span class="toggle-slider"></span></label></div>`:''}
+    ${p.schoolClass&&p.schoolClass!=='overig'?`<div class="settings-row"><span class="settings-row-copy"><strong>Gymnasium</strong><small>${upper?'Kies in de bovenbouw Latijn, Grieks of beide.':'Voeg Latijn en Grieks toe als vaste vakken.'}</small></span><label class="toggle"><input type="checkbox" ${p.gymnasium?'checked':''} onchange="toggleSchoolSetting('gymnasium')"><span class="toggle-slider"></span></label></div>`:''}
     ${upper?`<div class="settings-section"><div class="settings-section-title">Profiel</div>${schoolSelect(['NT','NG','EM','CM'],p.schoolProfile,'setSchoolProfile',value=>value,'Selecteer je profiel')}</div>`:''}
     ${p.schoolClass?`<div class="settings-section"><div class="settings-section-title">${upper?'Jouw vakken':'Zichtbare vakken'}</div><p class="school-section-help">${upper?'Profielvakken staan vast. Andere vakken kun je zelf toevoegen.':'Deze vakken horen bij de gekozen klas.'}</p>${renderSubjectPills(p,upper)}</div>`:'<div class="school-empty"><strong>Selecteer je klas</strong><span>Daarna stellen we de juiste vakken voor je in.</span></div>'}
   </div>`;

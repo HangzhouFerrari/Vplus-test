@@ -13,7 +13,8 @@
     EM:['Wiskunde','Nederlands','Engels','Economie','Geschiedenis'],
     CM:['Wiskunde','Nederlands','Engels','Geschiedenis']
   };
-  const defaults={schoolClass:'',schoolProfile:'',gymnasium:false,extraSubjects:[],hideIrrelevant:true};
+  const CLASSICAL_SUBJECTS=['Latijn','Grieks'];
+  const defaults={schoolClass:'',schoolProfile:'',gymnasium:false,extraSubjects:[],excludedSubjects:[],hideIrrelevant:true};
   const cleanList=value=>[...new Set((Array.isArray(value)?value:[]).map(String).filter(subject=>ALL_SUBJECTS.includes(subject)))];
   function normalize(value={}){
     const schoolClass=String(value.schoolClass||value.school_class||value.klas||'').toLowerCase();
@@ -23,6 +24,7 @@
       schoolProfile:Object.prototype.hasOwnProperty.call(PROFILES,schoolProfile)?schoolProfile:'',
       gymnasium:value.gymnasium===true||value.gymnasium==='true',
       extraSubjects:cleanList(value.extraSubjects||value.extra_subjects),
+      excludedSubjects:cleanList(value.excludedSubjects||value.excluded_subjects),
       hideIrrelevant:value.hideIrrelevant!==undefined?value.hideIrrelevant!==false:value.hide_irrelevant_subjects!==false
     };
   }
@@ -40,20 +42,23 @@
     const p=normalize(value);
     if(p.schoolClass==='overig')return [...ALL_SUBJECTS];
     if(LOWER[p.schoolClass])return [...LOWER[p.schoolClass],...(p.gymnasium?['Latijn','Grieks']:[])];
-    if(isUpper(p))return [...(PROFILES[p.schoolProfile]||[]),...(p.gymnasium?['Grieks','Latijn']:[])];
+    if(isUpper(p))return [...(PROFILES[p.schoolProfile]||[])];
     return [...ALL_SUBJECTS];
   }
   function selectedSubjects(value){
     const p=normalize(value);
     if(p.schoolClass==='overig')return [...ALL_SUBJECTS,'Overig'];
     const selected=[...requiredSubjects(p)];
-    if(isUpper(p))selected.push(...p.extraSubjects);
+    if(isUpper(p)){
+      if(p.gymnasium)selected.push(...CLASSICAL_SUBJECTS.filter(subject=>!p.excludedSubjects.includes(subject)));
+      selected.push(...p.extraSubjects.filter(subject=>!p.excludedSubjects.includes(subject)));
+    }
     selected.push('Overig');
     return [...new Set(selected)];
   }
   function visibleSubjects(value){const p=normalize(value);return !isComplete(p)||!p.hideIrrelevant?[...ALL_SUBJECTS,'Overig']:selectedSubjects(p)}
   function inferClassFromFilename(filename){const match=String(filename||'').match(/([1-6])\.vset(?:$|[?#])/i);return match?match[1]:''}
   function setClass(set){return String(set?.klas||set?.schoolClass||inferClassFromFilename(set?._serverFile||set?.filename||'')).toLowerCase()}
-  function metadata(value){const p=normalize(value);return {school_class:p.schoolClass,school_profile:p.schoolProfile,gymnasium:p.gymnasium,extra_subjects:p.extraSubjects,hide_irrelevant_subjects:p.hideIrrelevant}}
-  window.VeliosSchool={STORAGE_KEY,ALL_SUBJECTS,LOWER,PROFILES,defaults,normalize,readLocal,saveLocal,fromProfile,isUpper,isComplete,requiredSubjects,selectedSubjects,visibleSubjects,inferClassFromFilename,setClass,metadata};
+  function metadata(value){const p=normalize(value);return {school_class:p.schoolClass,school_profile:p.schoolProfile,gymnasium:p.gymnasium,extra_subjects:p.extraSubjects,excluded_subjects:p.excludedSubjects,hide_irrelevant_subjects:p.hideIrrelevant}}
+  window.VeliosSchool={STORAGE_KEY,ALL_SUBJECTS,CLASSICAL_SUBJECTS,LOWER,PROFILES,defaults,normalize,readLocal,saveLocal,fromProfile,isUpper,isComplete,requiredSubjects,selectedSubjects,visibleSubjects,inferClassFromFilename,setClass,metadata};
 })();
