@@ -3084,7 +3084,7 @@ async function readNotificationSetTitle(filename){
 async function checkForNewSetNotification() {
   try {
     const resp = await fetch('./sets/index.json', { cache: 'no-store' });
-    if (!resp.ok) return [];
+    if (!resp.ok) return { notifications: getStoredAutoNotifications(), fresh: [] };
     const lastModified = resp.headers.get('Last-Modified');
     const fileList = await resp.json();
 
@@ -3092,7 +3092,7 @@ async function checkForNewSetNotification() {
     if (storedRaw === null) {
       // eerste keer: alleen de huidige stand opslaan, nog niets melden
       localStorage.setItem('sd_known_set_files', JSON.stringify(fileList));
-      return getStoredAutoNotifications();
+      return { notifications: getStoredAutoNotifications(), fresh: [] };
     }
     let known = [];
     try { known = JSON.parse(storedRaw || '[]'); } catch (e) {}
@@ -3127,20 +3127,21 @@ async function checkForNewSetNotification() {
       list.findIndex(item=>item.id===notification.id)===index
     );
     saveStoredAutoNotifications(merged);
-    return merged;
+    return { notifications: merged, fresh: synthetic };
   } catch (e) {
     console.warn('Kon nieuwe sets niet controleren:', e.message);
-    return getStoredAutoNotifications();
+    return { notifications: getStoredAutoNotifications(), fresh: [] };
   }
 }
 
 async function loadAllNotifications() {
   const fileNotifs = await loadFileNotifications();
-  const autoNotifs = await checkForNewSetNotification();
+  const autoResult = await checkForNewSetNotification();
+  const autoNotifs = autoResult.notifications;
   const deleted = getNotifDeletedIds();
   AllNotifs = [...autoNotifs, ...fileNotifs].filter(n => !deleted.includes(n.id));
   updateNotifBadges();
-  maybeSendSystemNotification(autoNotifs.length);
+  maybeSendSystemNotification(autoResult.fresh);
   if (MenuOverlay.open && MenuOverlay.tab === 'notifications') renderOverlayTab('notifications');
   else renderOverlaySidebar();
 }
@@ -3450,10 +3451,23 @@ function closeNotificationOnboarding(){
   el.style.pointerEvents='none';el.classList.add('closing');el.querySelector('.onboard-panel')?.classList.add('closing');
   setTimeout(()=>el.remove(),420);
 }
-function maybeSendSystemNotification(newCount) {
-  if (newCount <= 0) return;
+const SYSTEM_NOTIFS_SENT_KEY='sd_system_notif_sent';
+function getSentSystemNotificationIds(){
+  try{
+    const stored=JSON.parse(localStorage.getItem(SYSTEM_NOTIFS_SENT_KEY)||'[]');
+    return Array.isArray(stored)?stored.map(String):[];
+  }catch(e){return []}
+}
+function maybeSendSystemNotification(notifications) {
+  const fresh=Array.isArray(notifications)?notifications.filter(notification=>notification?.id):[];
+  if (!fresh.length) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const sentIds=new Set(getSentSystemNotificationIds());
+  const unsent=fresh.filter(notification=>!sentIds.has(String(notification.id)));
+  if (!unsent.length) return;
   try {
-    new Notification('Velios+', { body: newCount === 1 ? '1 nieuwe melding' : `${newCount} nieuwe meldingen`, icon: 'favicon.png' });
+    new Notification('Velios+', { body: unsent.length === 1 ? '1 nieuwe melding' : `${unsent.length} nieuwe meldingen`, icon: 'favicon.png' });
+    unsent.forEach(notification=>sentIds.add(String(notification.id)));
+    localStorage.setItem(SYSTEM_NOTIFS_SENT_KEY,JSON.stringify([...sentIds]));
   } catch (e) {}
 }
