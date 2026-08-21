@@ -1,188 +1,33 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#f0eef9" id="theme-color-meta">
-<title>Pagina niet gevonden — Velios+</title>
-<link rel="icon" href="favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg-grad:linear-gradient(160deg,#f0eef9 0%,#ddd8f0 50%,#cfc8e8 100%);
-  --glass:rgba(255,255,255,0.90);
-  --glass2:rgba(255,255,255,0.80);
-  --glass-border:rgba(200,195,230,0.6);
-  --text:#0b0f2a;--text2:#3d3a55;--text3:#7c7899;
-  --accent:#ff9f0a;--accent2:#e47f00;--accent-light:rgba(255,159,10,0.14);
-  --glass-shadow:0 2px 8px rgba(0,98,255,0.1),inset 1px 1px 0 rgba(255,255,255,1),inset -1px -1px 2px rgba(255,255,255,0.5);
-  --glass-shadow-lg:0 8px 32px rgba(0,98,255,0.15),inset 1px 1px 0 rgba(255,255,255,1),inset -1px -1px 2px rgba(255,255,255,0.5);
-  --r:30px;--r2:36px;--r3:34px;--r4:30px;
-  --font:'DM Sans',sans-serif;
-  --ease:cubic-bezier(0,0,.47,1.15);
-  --ease2:cubic-bezier(0.34,1.56,0.64,1);
-}
-html{min-height:100vh;font-family:var(--font);color:var(--text);font-size:16px;overflow-x:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent;scrollbar-gutter:stable;}
-body{min-height:100vh;background:var(--bg-grad);background-attachment:fixed;display:flex;flex-direction:column;}
-
-/* ── DARK MODE (volgt de voorkeur uit de app) ── */
-body.dark-mode{}
-body.dark-mode nav{background:var(--glass) !important;border-color:var(--glass-border) !important}
-body.dark-mode .sidebar{background:rgba(20,18,28,1) !important;border-right-color:var(--glass-border) !important}
-body.dark-mode .nf-card{background:var(--glass2) !important;border-color:var(--glass-border) !important}
-body.dark-mode .nf-icon-wrap{background:rgba(0,98,255,0.12) !important}
-
-nav{
-  position:sticky;top:0;z-index:200;
-  background:rgb(250, 248, 255);
-  border-bottom:2px solid rgba(200,195,230,0.5);
-  padding: env(safe-area-inset-top, 0px) 28px 0;
-  height: calc(72px + env(safe-area-inset-top, 0px));
-  display:flex;align-items:center;justify-content:space-between;
-}
-.nav-logo{max-height:50px;height:100%;width:auto;display:flex;align-items:center;gap:8px}
-.nav-logo-svg{height:80%;width:auto;display:block}
-.nav-actions{display:flex;gap:8px;align-items:center}
-.menu-trigger-btn{
-  width:40px;height:40px;padding:0;border-radius:var(--r3);
-  background:var(--glass);border:1.5px solid var(--glass-border);
-  box-shadow:var(--glass-shadow);cursor:pointer;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s var(--ease);color:var(--accent);
-  text-decoration:none;flex-shrink:0;
-}
-.menu-trigger-btn:hover{transform:scale(1.08);box-shadow:var(--glass-shadow-lg)}
-
-.sidebar{
-  position:fixed;left:0;top:64px;z-index:180;
-  width:80px;height:calc(100vh - 64px);
-  background:linear-gradient(180deg,rgba(240,238,249,1) 0%,rgba(230,225,245,1) 100%);
-  border-right:2px solid rgba(200,195,230,0.5);
-  display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;
-}
-.sidebar-btn{
-  width:56px;height:56px;border-radius:16px;background:transparent;border:none;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .2s;font-size:24px;color:var(--text2);font-weight:700;
-  text-decoration:none;
-}
-.sidebar-btn:hover{color:var(--accent)}
-@media(min-width:750px){.sidebar-btn:hover{transform:scale(1.1)}}
-.sidebar-label{font-size:9px;color:var(--text2);font-weight:700;margin-top:4px;text-align:center;letter-spacing:-0.5px;max-width:60px}
-
-.screen{padding:28px 32px;max-width:1200px;margin:0 auto;width:100%;margin-left:80px;flex:1;display:flex;align-items:center;justify-content:center}
-@keyframes pageIn{from{opacity:0;transform:scale(0.94) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.page-enter{animation:pageIn .4s var(--ease2) both}
-
-.nf-card{
-  background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r2);
-  box-shadow:var(--glass-shadow);
-  padding:56px 48px;max-width:480px;width:100%;text-align:center;
-}
-.nf-icon-wrap{
-  width:84px;height:84px;border-radius:24px;background:var(--accent-light);
-  display:flex;align-items:center;justify-content:center;margin:0 auto 28px;
-}
-.nf-eyebrow{
-  font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--accent);margin-bottom:10px;
-}
-.nf-title{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:12px;line-height:1.2}
-.nf-desc{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:32px}
-.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;padding:13px 26px;transition:all .2s var(--ease);outline:none;white-space:nowrap;text-decoration:none}
-.btn-primary{background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);color:#fff}
-.btn-primary:hover{filter:brightness(1.15);transform:scale(1.04) translateY(-1px)}
-.btn-glass{background:var(--glass2);color:var(--text);border:2px solid var(--glass-border)}
-.btn-glass:hover{background:rgba(255,255,255,0.95)}
-.nf-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-
-@media(max-width:750px){
-  nav{padding:env(safe-area-inset-top, 0px) 16px 0}
-  .screen{padding:16px;margin-left:0}
-  .sidebar{
-    position:fixed;left:24px;right:24px;bottom:22px;top:auto;width:auto;max-width:500px;
-    margin:0 auto;height:64px;display:flex;flex-direction:row;justify-content:space-around;
-    align-items:center;background:rgba(255,255,255,1);border:2px solid var(--glass-border);
-    border-radius:32px;box-shadow:0 8px 32px 0 rgba(0,0,0,0.2);padding:0 16px;box-sizing:border-box;
-  }
-  .sidebar .sidebar-btn{width:auto;height:100%;border-radius:0;flex:1}
-  .nf-card{padding:40px 28px}
-  .nf-title{font-size:23px}
-}
-</style>
+  <script src="sw-register.js?v=20260821-8"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta id="theme-color-meta" name="theme-color" content="#f2f2f7">
+  <title>Pagina niet gevonden | Velios+</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..950&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#f2f2f7;--surface:#fff;--text:#0b0f2a;--text2:#666777;--line:#dedee7;--accent:#ff9f0a;--accent-light:rgba(255,159,10,.13);font-family:'DM Sans',sans-serif;color:var(--text)}
+    body.dark-mode{--bg:#000;--surface:#171719;--text:#fff;--text2:#b3b3bd;--line:#343439;color-scheme:dark}
+    body{min-height:100dvh;background:var(--bg);overflow:hidden;color:var(--text)}
+    header{height:calc(78px + env(safe-area-inset-top));padding:env(safe-area-inset-top) max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left));display:flex;align-items:center;border-bottom:1px solid var(--line)}
+    .brand{position:relative;width:116px;display:block}.brand img{display:block;width:100%}.dark-mode .brand img{filter:invert(1)}.brand-plus{position:absolute;top:0;right:0;width:16.6%;aspect-ratio:1;background:var(--accent);-webkit-mask:url('assets/branding/logo_plus-mask.svg') center/contain no-repeat;mask:url('assets/branding/logo_plus-mask.svg') center/contain no-repeat}
+    main{position:relative;min-height:calc(100dvh - 78px - env(safe-area-inset-top));display:grid;place-items:center;padding:32px max(24px,env(safe-area-inset-right)) max(40px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));isolation:isolate}
+    main::before,main::after{content:'';position:absolute;width:min(55vw,620px);aspect-ratio:1;border-radius:50%;filter:blur(80px);opacity:.18;z-index:-1}main::before{background:var(--accent);left:-14%;bottom:-50%}main::after{background:#ff5a76;right:-16%;top:-58%}
+    .error{width:min(720px,100%);text-align:center}.code{font-size:clamp(105px,24vw,230px);font-weight:950;line-height:.82;letter-spacing:normal;color:var(--accent);opacity:.14;user-select:none;margin-bottom:28px}
+    h1{font-size:clamp(34px,6vw,58px);letter-spacing:normal;line-height:1.08;margin-bottom:14px}p{max-width:550px;margin:auto;color:var(--text2);font-size:clamp(15px,2vw,17px);line-height:1.55}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:30px}.btn{min-height:48px;padding:0 24px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:14px;font-weight:800}.primary{background:var(--accent);color:#fff}.secondary{background:var(--surface);border:1px solid var(--line);color:var(--text)}
+    @media(max-width:560px){header{height:calc(70px + env(safe-area-inset-top))}.brand{width:104px}.actions{flex-direction:column}.btn{width:100%}.code{line-height:.9}}
+    @media(prefers-reduced-motion:no-preference){.error{animation:enter .48s cubic-bezier(.22,1,.36,1) both}@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}}
+  </style>
 </head>
 <body>
-<nav>
-  <div class="nav-logo">
-    <svg class="nav-logo-svg" xmlns="http://www.w3.org/2000/svg" width="168.627" height="92.13" viewBox="0 0 168.627 92.13"><path data-name="Path 1" d="m.639 8.708 11.353.5 14.757 64.485 14.3-63.192 9.362.415-18.282 79.461-11.281 1.209Zm61.44 79.3a9.5 9.5 0 0 1-2.132-.5 10.5 10.5 0 0 1-2.043-1.008 13.3 13.3 0 0 1-1.95-1.52 18 18 0 0 1-1.811-1.966 22 22 0 0 1-1.623-2.344 27 27 0 0 1-1.431-2.722q-.667-1.457-1.235-3.1t-1-3.411q-.415-1.772-.705-3.656t-.429-3.888q-.143-2-.143-4.118t.137-4.132q.138-2.016.412-3.931t.685-3.723q.41-1.809.957-3.512t1.185-3.226a31 31 0 0 1 1.374-2.868 25 25 0 0 1 1.56-2.509 21 21 0 0 1 1.741-2.151 15 15 0 0 1 1.877-1.721 11.4 11.4 0 0 1 1.966-1.217 9.6 9.6 0 0 1 2.054-.719 9.4 9.4 0 0 1 2.139-.228 8.8 8.8 0 0 1 4.081 1.021 10.3 10.3 0 0 1 1.834 1.242 13.6 13.6 0 0 1 1.7 1.724 20 20 0 0 1 1.544 2.129 25 25 0 0 1 1.363 2.462q.637 1.312 1.186 2.792t1.012 3.124.808 3.4.575 3.618q.231 1.864.345 3.843t.115 4.071v3.769l-22.118 1.345q.134.841.312 1.636t.4 1.546q.22.751.483 1.455t.568 1.365q.305.659.646 1.239a11 11 0 0 0 .719 1.082 9 9 0 0 0 .79.923 8 8 0 0 0 .861.765 7 7 0 0 0 .912.59 5.5 5.5 0 0 0 .941.394 5 5 0 0 0 .97.2 5.3 5.3 0 0 0 1 .01 7 7 0 0 0 .992-.157 6.6 6.6 0 0 0 .948-.3 7 7 0 0 0 .905-.444 8 8 0 0 0 .863-.586 9 9 0 0 0 .809-.713 10 10 0 0 0 .747-.825q.358-.441.685-.938t.623-1.051l5.023 8.241q-.663 1.087-1.338 2.041t-1.363 1.777-1.388 1.511a16 16 0 0 1-1.414 1.242 13 13 0 0 1-1.475 1 12.4 12.4 0 0 1-3.247 1.314 13 13 0 0 1-1.775.314 10 10 0 0 1-1.122.062 10 10 0 0 1-1.1-.066Zm1.407-45.977a5 5 0 0 0-.911.1 4.6 4.6 0 0 0-.87.279 5 5 0 0 0-.83.455 6 6 0 0 0-.788.632 8 8 0 0 0-.737.793 10 10 0 0 0-.675.937 12 12 0 0 0-.615 1.081q-.292.578-.553 1.226t-.487 1.355q-.225.707-.416 1.471t-.347 1.589q-.155.823-.275 1.7l14.729-.583q-.1-.821-.239-1.589t-.32-1.489-.4-1.388-.484-1.289q-.263-.618-.552-1.172t-.6-1.04a11 11 0 0 0-.654-.908 9 9 0 0 0-.706-.775 5.7 5.7 0 0 0-.753-.619 4.6 4.6 0 0 0-.795-.438 4 4 0 0 0-.838-.258 4 4 0 0 0-.8-.076Zm19.3 42.918V12.354l7.256-2.027v73.838Zm12.771-1.368V30.989l6.877.039v51.814Zm22.31-1.646a6.8 6.8 0 0 1-1.678-.469 8 8 0 0 1-1.6-.917 11 11 0 0 1-1.525-1.37 16 16 0 0 1-1.414-1.763 20 20 0 0 1-1.268-2.094 26 26 0 0 1-1.119-2.425q-.522-1.3-.968-2.757t-.781-3.029q-.336-1.567-.56-3.239t-.337-3.445q-.112-1.773-.112-3.646t.111-3.661.332-3.488.553-3.312q.331-1.609.77-3.129t.959-2.877q.518-1.357 1.116-2.554a22 22 0 0 1 1.272-2.232 18 18 0 0 1 1.423-1.91 12.7 12.7 0 0 1 1.536-1.526 9.2 9.2 0 0 1 1.609-1.079 7.4 7.4 0 0 1 1.682-.639 7.2 7.2 0 0 1 3.491.025 7.3 7.3 0 0 1 1.643.653 9 9 0 0 1 1.55 1.074 12 12 0 0 1 1.459 1.491 18 18 0 0 1 1.334 1.843 22 22 0 0 1 1.177 2.131q.549 1.138 1.023 2.421t.871 2.71q.4 1.427.695 2.938t.5 3.1q.2 1.593.3 3.273t.1 3.447q0 1.769-.1 3.454t-.3 3.295-.5 3.139-.695 2.987q-.4 1.458-.87 2.778t-1.019 2.51a25 25 0 0 1-1.17 2.242 21 21 0 0 1-1.323 1.98 14 14 0 0 1-1.451 1.638 10.3 10.3 0 0 1-1.551 1.231 8.2 8.2 0 0 1-1.653.821 7.6 7.6 0 0 1-1.757.407 7 7 0 0 1-.789.044 7 7 0 0 1-.962-.073Zm-4.892-23.49q.057.972.168 1.895t.28 1.794q.167.872.392 1.694t.487 1.551q.265.729.569 1.365a11 11 0 0 0 .649 1.181 9 9 0 0 0 .728 1 6 6 0 0 0 .787.78 4.3 4.3 0 0 0 .823.534 3.4 3.4 0 0 0 .862.289 3.4 3.4 0 0 0 .9.045 3.7 3.7 0 0 0 .913-.2 4 4 0 0 0 .861-.429 5 5 0 0 0 .809-.661 7 7 0 0 0 .759-.893 11 11 0 0 0 .7-1.09 14 14 0 0 0 .621-1.252q.292-.667.545-1.416t.473-1.578q.217-.83.381-1.7t.272-1.777q.108-.909.162-1.858t.055-1.939q0-1.014-.055-1.972t-.162-1.862q-.109-.9-.272-1.753t-.381-1.645q-.217-.8-.473-1.512t-.545-1.354a13 13 0 0 0-.621-1.2 10 10 0 0 0-.7-1.037 6.3 6.3 0 0 0-.759-.837 4.5 4.5 0 0 0-.809-.594 3.6 3.6 0 0 0-.861-.351 3.4 3.4 0 0 0-.913-.106 3.3 3.3 0 0 0-.9.14 3.7 3.7 0 0 0-.862.385 5 5 0 0 0-.823.633 7 7 0 0 0-.787.881 11 11 0 0 0-.728 1.088 13 13 0 0 0-.649 1.253q-.305.667-.569 1.417t-.487 1.581q-.224.833-.392 1.718t-.28 1.826-.168 1.932-.056 2.038q.004 1.023.06 1.994Zm29.321 20.929a9 9 0 0 1-1.4-.163 9 9 0 0 1-1.356-.382 9 9 0 0 1-1.307-.6 10.4 10.4 0 0 1-1.244-.814 12 12 0 0 1-1.166-1.018 14 14 0 0 1-1.087-1.223 17 17 0 0 1-1.007-1.428l2.9-8.648q.477.655.942 1.222t.919 1.046.9.871a10 10 0 0 0 .875.7 7 7 0 0 0 .861.526 5.4 5.4 0 0 0 .855.354 4.6 4.6 0 0 0 .849.182 4 4 0 0 0 .842.012 4.6 4.6 0 0 0 .894-.166 3.9 3.9 0 0 0 1.494-.827 4.5 4.5 0 0 0 .6-.661 5 5 0 0 0 .485-.79 5.4 5.4 0 0 0 .346-.883 6.5 6.5 0 0 0 .208-.977 8 8 0 0 0 .068-1.073q0-.448-.039-.849a6 6 0 0 0-.117-.753 5 5 0 0 0-.194-.66 3.6 3.6 0 0 0-.274-.564 2.8 2.8 0 0 0-.359-.475 3 3 0 0 0-.453-.392 3.4 3.4 0 0 0-.548-.307 4 4 0 0 0-.644-.223l-4.109-1.1a7.4 7.4 0 0 1-1.525-.607 7 7 0 0 1-1.336-.927 8 8 0 0 1-1.144-1.248 10 10 0 0 1-.949-1.571 13.4 13.4 0 0 1-.744-1.881 18 18 0 0 1-.534-2.18q-.213-1.165-.32-2.476t-.107-2.77q0-1.18.071-2.277t.212-2.111q.142-1.014.354-1.944t.494-1.775a17 17 0 0 1 .622-1.6 14 14 0 0 1 .737-1.407 11 11 0 0 1 .85-1.219 9.6 9.6 0 0 1 .962-1.03 7.4 7.4 0 0 1 1.066-.823 6.6 6.6 0 0 1 2.4-.919 7.4 7.4 0 0 1 1.331-.106 7.5 7.5 0 0 1 1.159.1 8 8 0 0 1 1.14.278 9 9 0 0 1 1.12.457 10 10 0 0 1 1.1.633 11 11 0 0 1 1.075.814 13 13 0 0 1 1.036 1q.509.545 1 1.183t.962 1.366l-2.613 7.962q-.429-.593-.849-1.1t-.833-.939q-.412-.428-.814-.774a8 8 0 0 0-.8-.609 7 7 0 0 0-.794-.46 6 6 0 0 0-.8-.326 5 5 0 0 0-.809-.191 5 5 0 0 0-.819-.057 3.3 3.3 0 0 0-.725.091 2.8 2.8 0 0 0-.652.248 3 3 0 0 0-.58.408 3.6 3.6 0 0 0-.5.567 4.3 4.3 0 0 0-.41.7 5 5 0 0 0-.293.8 6 6 0 0 0-.176.9 8 8 0 0 0-.059 1q0 .479.041.907a7 7 0 0 0 .125.8 5 5 0 0 0 .209.7 3.6 3.6 0 0 0 .292.59 2.7 2.7 0 0 0 .393.494 3 3 0 0 0 .511.41 4 4 0 0 0 .629.325 5 5 0 0 0 .745.24l4.04 1.2a7 7 0 0 1 1.478.588 6.8 6.8 0 0 1 1.283.9 7.7 7.7 0 0 1 1.092 1.208 10 10 0 0 1 .9 1.516 13 13 0 0 1 .707 1.8 17 17 0 0 1 .5 2.052q.2 1.089.3 2.309t.1 2.569q0 1.107-.073 2.156t-.22 2.041-.369 1.928-.517 1.818q-.3.883-.644 1.682t-.75 1.519a15 15 0 0 1-.858 1.356 13 13 0 0 1-.967 1.194 9 9 0 0 1-1.061.995 7.7 7.7 0 0 1-1.142.754 7 7 0 0 1-1.225.513 7 7 0 0 1-1.31.27 10 10 0 0 1-1.083.06q-.179-.005-.362-.013ZM98.999 24.796a2.2 2.2 0 0 1-.776-.159 2.7 2.7 0 0 1-.723-.447 4.2 4.2 0 0 1-.667-.737 7 7 0 0 1-.612-1.028 10 10 0 0 1-.512-1.229 11 11 0 0 1-.365-1.341 13 13 0 0 1-.22-1.453q-.073-.755-.073-1.562 0-.834.073-1.6a13 13 0 0 1 .22-1.459 11 11 0 0 1 .365-1.319 9 9 0 0 1 .512-1.176 6.4 6.4 0 0 1 .612-.962 3.8 3.8 0 0 1 .667-.673 2.4 2.4 0 0 1 .723-.386 2.1 2.1 0 0 1 .776-.1 2.3 2.3 0 0 1 .794.183 2.8 2.8 0 0 1 .725.459 4.2 4.2 0 0 1 .659.735 7 7 0 0 1 .591 1.01 10 10 0 0 1 .488 1.208 12 12 0 0 1 .347 1.33 14 14 0 0 1 .209 1.453q.069.757.069 1.577 0 .8-.069 1.532a13 13 0 0 1-.209 1.417 11 11 0 0 1-.347 1.3 10 10 0 0 1-.488 1.188 6.6 6.6 0 0 1-.591.99 3.8 3.8 0 0 1-.659.7 2.5 2.5 0 0 1-.725.417 2.2 2.2 0 0 1-.748.129Z" stroke="rgba(0,0,0,0)" fill="var(--text)"/><path data-name="Path 233" d="M161.234 39.943a2.4 2.4 0 0 1-.049.494 1.8 1.8 0 0 1-.134.407.9.9 0 0 1-.2.278.4.4 0 0 1-.244.108l-3.8.129a.37.37 0 0 1-.249-.092.8.8 0 0 1-.2-.267 1.7 1.7 0 0 1-.137-.4 2.4 2.4 0 0 1-.05-.5V26.279l-7.15.009a.4.4 0 0 1-.257-.1.9.9 0 0 1-.21-.279 1.7 1.7 0 0 1-.142-.414 2.4 2.4 0 0 1-.054-.508v-7.808a2.4 2.4 0 0 1 .052-.506 1.7 1.7 0 0 1 .142-.411.9.9 0 0 1 .21-.274.4.4 0 0 1 .257-.1l7.15.149V1.707a2.4 2.4 0 0 1 .05-.5 1.6 1.6 0 0 1 .139-.395.8.8 0 0 1 .2-.263.37.37 0 0 1 .251-.087l3.8.208a.4.4 0 0 1 .244.113.9.9 0 0 1 .2.282 1.8 1.8 0 0 1 .134.41 2.5 2.5 0 0 1 .049.5v12.906a2.4 2.4 0 0 0 .049.494 1.7 1.7 0 0 0 .134.405.9.9 0 0 0 .2.275.38.38 0 0 0 .243.1l6.16.129a.37.37 0 0 1 .236.1.9.9 0 0 1 .193.271 1.7 1.7 0 0 1 .13.4 2.4 2.4 0 0 1 .048.486v7.472a2.4 2.4 0 0 1-.048.485 1.7 1.7 0 0 1-.13.4.8.8 0 0 1-.193.267.36.36 0 0 1-.236.1l-6.786.009Zm-5.065-13.664 5.065-.006-5.065-10.232Z" fill="var(--accent)"/></svg>
-  </div>
-  <div class="nav-actions">
-    <a class="menu-trigger-btn" href="index.html" title="Naar dashboard">
-      <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" width="256" height="200" viewBox="0 0 256 200"><path data-name="Path 151" d="M0 32.218C0 14.424 14.014-.001 31.3-.001h193.4c17.288 0 31.3 14.425 31.3 32.219V167.78c0 17.794-14.014 32.219-31.3 32.219H31.301c-17.287 0-31.3-14.425-31.3-32.219Z" opacity="0.4" fill="var(--text)"/><g data-name="Group 4" transform="translate(-2032 1444.819)" fill="var(--text)"><rect data-name="Rectangle 5" width="137" height="174" rx="21" transform="translate(2045 -1433)"/><rect data-name="Rectangle 6" width="81" height="71" rx="21" transform="translate(2194 -1433)"/><rect data-name="Rectangle 9" width="81" height="33" rx="16.5" transform="translate(2194 -1292)"/><rect data-name="Rectangle 7" width="41" height="47" rx="10" transform="translate(2194 -1351)"/><rect data-name="Rectangle 8" width="29" height="47" rx="10" transform="translate(2246 -1351)"/></g></svg>
-    </a>
-  </div>
-</nav>
-
-<div class="sidebar">
-  <a class="sidebar-btn" href="index.html?page=home" title="Home">
-    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="200" viewBox="0 0 256 200"><path data-name="Path 151" d="M0 32.218C0 14.424 14.014-.001 31.3-.001h193.4c17.288 0 31.3 14.425 31.3 32.219V167.78c0 17.794-14.014 32.219-31.3 32.219H31.301c-17.287 0-31.3-14.425-31.3-32.219Z" opacity="0.4" fill="var(--text)"/><g data-name="Group 4" transform="translate(-2032 1444.819)" fill="var(--text)"><rect data-name="Rectangle 5" width="137" height="174" rx="21" transform="translate(2045 -1433)"/><rect data-name="Rectangle 6" width="81" height="71" rx="21" transform="translate(2194 -1433)"/><rect data-name="Rectangle 9" width="81" height="33" rx="16.5" transform="translate(2194 -1292)"/><rect data-name="Rectangle 7" width="41" height="47" rx="10" transform="translate(2194 -1351)"/><rect data-name="Rectangle 8" width="29" height="47" rx="10" transform="translate(2246 -1351)"/></g></svg>
-    <div class="sidebar-label">Dashboard</div>
-  </a>
-  <a class="sidebar-btn" href="index.html?page=library" title="Bibliotheek">
-    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="191.999" viewBox="0 0 256 191.999"><g fill="var(--text)"><path data-name="Path 148" d="M0 38.631C0 22.366 14.014 9.18 31.3 9.18h193.4c17.288 0 31.3 13.186 31.3 29.451v123.917c0 16.265-14.014 29.451-31.3 29.451H31.301c-17.287 0-31.3-13.186-31.3-29.451Z" opacity=".4"/><rect data-name="Rectangle 4" width="216" height="141" rx="14" transform="translate(22 34)" opacity=".4"/><path data-name="Path 150" d="M0 25.239C0 11.3 11.051 0 24.683 0h60.792a55.17 55.17 0 0 1 45.235 23.844l2.625 3.768a55.17 55.17 0 0 0 45.235 23.844h52.747c13.632 0 24.684 11.3 24.684 25.239v90.066C256 180.7 244.949 192 231.316 192H24.683C11.051 192 0 180.7 0 166.761Z"/></g></svg>
-    <div class="sidebar-label">Bestanden</div>
-  </a>
-  <a class="sidebar-btn" href="index.html?page=vakken" title="Vakken">
-    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path fill="rgba(255,255,255,0)" d="M0 0h256v256H0z"/><g data-name="Group 15" transform="translate(-2019 818)" fill="var(--text)"><rect data-name="Rectangle 26" width="104" height="104" rx="30" transform="translate(2032 -805)"/><rect data-name="Rectangle 27" width="104" height="104" rx="30" transform="translate(2158 -805)"/><rect data-name="Rectangle 28" width="104" height="104" rx="30" transform="translate(2158 -679)" opacity=".4"/><rect data-name="Rectangle 29" width="104" height="104" rx="30" transform="translate(2032 -679)"/></g></svg>
-    <div class="sidebar-label">Vakken</div>
-  </a>
-</div>
-
-<div class="screen page-enter">
-  <div class="nf-card">
-    <div class="nf-icon-wrap">
-      <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><rect data-name="Rectangle 28" width="170" height="170" rx="85" transform="translate(2460 953)" fill="var(--accent)" opacity=".4"/><path data-name="Rectangle 26" d="M2545 978a60 60 0 1 0 60 60 60.07 60.07 0 0 0-60-60m0-25a85 85 0 1 1-85 85 85 85 0 0 1 85-85" fill="var(--accent)"/><rect data-name="Rectangle 27" width="30" height="94" rx="15" transform="rotate(-45 2612.226 -2568.255)" fill="var(--accent)" opacity=".6"/></g></svg>
-    </div>
-    <div class="nf-eyebrow">Foutcode 404</div>
-    <div class="nf-title">Deze pagina bestaat niet</div>
-    <div class="nf-desc">We konden niets vinden op dit adres. Controleer de link, of ga terug naar het dashboard om verder te oefenen.</div>
-    <div class="nf-actions">
-      <a class="btn btn-primary" href="index.html?page=home">Naar dashboard</a>
-      <a class="btn btn-glass" href="index.html?page=library">Bibliotheek</a>
-    </div>
-  </div>
-</div>
-
-<script>
-/* Past dezelfde donkere-modus-voorkeur toe als de rest van Velios+,
-   zodat deze pagina er nooit los van uitziet. */
-(function(){
-  try{
-    const saved=JSON.parse(localStorage.getItem('sd_theme')||'{}');
-    const root=document.documentElement.style;
-    const dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme: dark)').matches:!!saved.darkMode;
-    if(dark){
-      document.body.classList.add('dark-mode');
-      document.getElementById('theme-color-meta')?.setAttribute('content','#0a0812');
-      root.setProperty('--bg-grad','linear-gradient(180deg, rgb(10,10,10) 0%, rgb(10,8,18) 100%)');
-      root.setProperty('--glass','rgb(34,33,41)');
-      root.setProperty('--glass2','rgba(34,33,41,0.90)');
-      root.setProperty('--text','#ffffff');
-      root.setProperty('--text2','#e9e9e9');
-      root.setProperty('--text3','rgba(255,255,255,0.65)');
-      root.setProperty('--glass-border','rgba(64,73,112,0.5)');
-    }
-    const accent=saved.accentColor==='#0062ff'&&!saved.accentWasChosen?'#ff9f0a':(saved.accentColor||'#ff9f0a');
-    if(accent){
-      const hex=accent.replace('#','');
-      const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
-      root.setProperty('--accent',accent);
-      root.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
-      root.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
-    }
-  }catch(e){}
-})();
-</script>
+  <header><a class="brand" href="index.html#home" aria-label="Velios+ dashboard"><img src="assets/branding/logo_full-svg.svg" alt="Velios+"><span class="brand-plus"></span></a></header>
+  <main><section class="error"><div class="code" aria-hidden="true">404</div><h1>Deze pagina bestaat niet</h1><p>De link klopt misschien niet meer. Ga terug naar je dashboard of open de bestanden om verder te leren.</p><div class="actions"><a class="btn primary" href="index.html#home">Naar dashboard</a><a class="btn secondary" href="index.html#library">Naar bestanden</a></div></section></main>
+  <script>(function(){try{const saved=JSON.parse(localStorage.getItem('sd_theme')||'{}');const dark=saved.followSystem!==false?matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;document.body.classList.toggle('dark-mode',dark);document.getElementById('theme-color-meta').content=dark?'#000000':'#f2f2f7';const accent=saved.accentColor==='#0062ff'&&!saved.accentWasChosen?'#ff9f0a':(saved.accentColor||'#ff9f0a');document.documentElement.style.setProperty('--accent',accent);document.documentElement.style.setProperty('--accent-light',`color-mix(in srgb,${accent} 13%,transparent)`)}catch(e){}})();</script>
 </body>
 </html>

@@ -63,6 +63,11 @@ function profileFromUser(user, profile = null) {
     display_name: displayName,
     avatar_url: resolveAvatarUrl(profile?.avatar_url || metadata.avatar_url || ''),
     birth_date: String(profile?.birth_date || metadata.birth_date || '').slice(0,10),
+    school_class: profile?.school_class || metadata.school_class || '',
+    school_profile: profile?.school_profile || metadata.school_profile || '',
+    gymnasium: profile?.gymnasium ?? metadata.gymnasium ?? false,
+    extra_subjects: profile?.extra_subjects || metadata.extra_subjects || [],
+    hide_irrelevant_subjects: profile?.hide_irrelevant_subjects ?? metadata.hide_irrelevant_subjects ?? true,
   };
 }
 
@@ -232,6 +237,7 @@ function cloudSetPayload(setObj) {
     data: {
       terms: setObj.terms || setObj.pairs || setObj.data?.terms || setObj.data || [],
       datum: String(setObj.datum || setObj.data?.datum || '').slice(0, 10),
+      klas: String(setObj.klas || setObj.schoolClass || setObj.data?.klas || ''),
     },
     is_public: false,
   };

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl" class="set-page">
 <head>
-<script src="sw-register.js?v=20260817-54"></script>
+<script src="sw-register.js?v=20260821-8"></script>
 <script>
 if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
   window.location.href = 'unsupported.html';
@@ -16,7 +16,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Velios+">
 <meta id="theme-color-meta" name="theme-color" content="#f2f2f7">
-<title>Velios+ - Laden…</title>
+<title>Set laden | Velios+</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
@@ -24,7 +24,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260817-54">
+<link rel="stylesheet" href="style.css?v=20260821-8">
 
 </head>
 <body>
@@ -80,8 +80,14 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 </div>
 <div class="screen" id="main-screen">
   <div class="loading-screen" id="loading">
-    <div class="loading-spinner"></div>
-    <div style="font-size:16px;font-weight:700;color:var(--text2)">Set laden…</div>
+    <div class="set-loading-skeleton" aria-label="Set laden">
+      <span class="skeleton-line skeleton-set-back"></span>
+      <div class="skeleton-set-heading"><span class="skeleton-line skeleton-set-title"></span><span class="skeleton-line skeleton-set-description"></span><div class="skeleton-set-badges"><i></i><i></i><i></i></div></div>
+      <div class="skeleton-set-info"><div class="skeleton-set-info-nav"><span><i></i><i></i></span><i></i></div><div class="skeleton-set-info-footer"><i></i></div></div>
+      <div class="skeleton-set-modes"><div><i></i><span></span><b></b></div><div><i></i><span></span><b></b></div><div><i></i><span></span><b></b></div></div>
+      <div class="skeleton-set-section-title"><i></i><i></i></div>
+      <div class="skeleton-set-terms"><div><section><span><i></i><b></b></span><em></em><span><i></i><b></b></span></section><strong></strong></div><div><section><span><i></i><b></b></span><em></em><span><i></i><b></b></span></section><strong></strong></div></div>
+    </div>
   </div>
 </div>
 </div>
@@ -93,7 +99,8 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <div id="checkpoint-layer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260817-54"></script>
-<script src="set-app.js?v=20260817-54"></script>
+<script src="school-profile.js?v=20260821-2"></script>
+<script src="supabase-client.js?v=20260821-2"></script>
+<script src="set-app.js?v=20260821-8"></script>
 </body>
 </html>

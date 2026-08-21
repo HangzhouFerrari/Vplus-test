@@ -443,6 +443,8 @@ async function loadServerSets(){
             try{set=decodeVset(content.trim());}catch{try{set=JSON.parse(content.trim());}catch(e){}}
             if(set&&set.title){
               set.slug=set.slug||toSlug(set.title);
+              set._serverFile=filename;set.fromServer=true;
+              set.klas=set.klas||(window.VeliosSchool?VeliosSchool.inferClassFromFilename(filename):'');
               serverSets[set.slug.toLowerCase()]=set;
             }
           }
@@ -578,8 +580,27 @@ async function boot(){
   initSetHeaderAccount();
   const params=new URLSearchParams(window.location.search);
   const slug=params.get('set');
-  if(!slug){showError('Geen set opgegeven. Ga terug naar de <a href="index.html">startpagina</a>.');return;}
+  if(!slug){showError('Er staat geen set in deze link.');return;}
   const slugLower=slug.toLowerCase();
+  const requestedCloudId=String(params.get('cloud')||'');
+
+  /* De cloud-id blijft op elk apparaat gelijk. Een titel-slug kan alleen in
+     lokale opslag bestaan en was daarom niet genoeg om een syncset te openen. */
+  if(requestedCloudId&&window.VeliosAuth){
+    try{
+      const rows=await VeliosAuth.getSyncedSets();
+      const item=rows.find(row=>String(row.set_id)===requestedCloudId);
+      if(item?.sets){
+        const cloud=item.sets;let cloudData=cloud.data;
+        if(typeof cloudData==='string'){try{cloudData=JSON.parse(cloudData)}catch(e){cloudData={}}}
+        SET={id:`cloud_${requestedCloudId}`,slug,title:cloud.naam||cloud.title||'Naamloze set',description:cloud.beschrijving||cloud.description||'',vak:cloud.vak||'',klas:String(cloudData?.klas||cloud.klas||''),datum:formatSetDate(cloudData?.datum||cloud.updated_at||item.synced_at),terms:normalizeOpenCloudTerms(cloud.data),_cloud:true,_cloudSetId:requestedCloudId,_syncedAt:item.synced_at};
+        const saved=JSON.parse(localStorage.getItem('sd_sets')||'[]');
+        const savedIndex=saved.findIndex(set=>String(set._cloudSetId||'')===requestedCloudId);
+        if(savedIndex>=0)saved[savedIndex]=SET;else saved.push(SET);
+        localStorage.setItem('sd_sets',JSON.stringify(saved));renderSetView();return;
+      }
+    }catch(error){console.warn('Cloudset direct openen is mislukt:',error.message)}
+  }
 
   const stored=JSON.parse(localStorage.getItem('sd_sets')||'[]');
   for(let s of stored){
@@ -602,15 +623,20 @@ async function boot(){
     if(resp.ok){
       const raw=await resp.text();
       try{SET=decodeVset(raw);}catch{SET=JSON.parse(raw);}
-      SET.slug=slug;renderSetView();return;
+      SET.slug=slug;SET.klas=SET.klas||(window.VeliosSchool?VeliosSchool.inferClassFromFilename(`${slug}.vset`):'');renderSetView();return;
     }
   }catch(e){}
 
   const serverSets=await loadServerSets();
   if(serverSets[slugLower]){SET=serverSets[slugLower];renderSetView();return;}
-  showError(`Set "<strong>${esc(slug)}</strong>" niet gevonden.<br><a href="index.html">← Terug naar home</a>`);
+  showError(`We konden <strong>${esc(slug)}</strong> niet op dit apparaat of in je gesynchroniseerde sets vinden.`);
 }
-function showError(msg){document.getElementById('loading').innerHTML=`<div style="font-size:48px;margin-bottom:16px">😕</div><div style="font-size:20px;font-weight:800;margin-bottom:12px">Set niet gevonden</div><p style="color:var(--text2);max-width:400px;line-height:1.6">${msg}</p><a href="index.html" class="btn btn-primary" style="margin-top:24px;text-decoration:none">← Terug naar home</a>`;}
+function showError(msg){
+  setNavigationChromeVisible(true);
+  const loading=document.getElementById('loading');if(!loading)return;
+  loading.innerHTML=`<section class="set-error-state"><div class="set-error-code">404</div><h1>Set niet gevonden</h1><p>${msg}</p><div class="set-error-actions"><a href="index.html#library" class="btn btn-primary">Naar bestanden</a><a href="index.html#home" class="btn btn-glass">Dashboard</a></div></section>`;
+  document.title='Set niet gevonden | Velios+';
+}
 function toSlug(str){return str.toLowerCase().replace(/[àáâäãåā]/g,'a').replace(/[èéêëē]/g,'e').replace(/[ìíîïī]/g,'i').replace(/[òóôöõøō]/g,'o').replace(/[ùúûüū]/g,'u').replace(/[ñ]/g,'n').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').slice(0,60)||'set';}
 
 function isLocalSet(s){
@@ -654,6 +680,7 @@ async function refreshOpenSyncedSet(){
       title:cloud.naam||cloud.title||SET.title||'Naamloze set',
       description:cloud.beschrijving||cloud.description||'',
       vak:cloud.vak||'',
+      klas:String(cloudData?.klas||cloud.klas||SET.klas||''),
       datum:formatSetDate(cloudData?.datum||cloud.datum||cloud.updated_at||cloud.created_at||item.synced_at),
       terms:normalizeOpenCloudTerms(cloud.data),
       _cloudSetId:cloudSetId,
@@ -683,7 +710,7 @@ function renderSetView(){
       localStorage.setItem('sd_opened_sets',JSON.stringify(opened));
     }
   }catch(e){}
-  document.title=`${SET.title} — Velios+`;
+  document.title=`${SET.title} | Velios+`;
   document.getElementById('nav-set-title').textContent=SET.title;
 const navRight = document.getElementById('nav-right-btns');
 if (navRight) navRight.style.display = 'flex';
@@ -1060,11 +1087,14 @@ function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/<
 function escA(s){return esc(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
 function formatSetDate(value){const match=String(value||'').match(/^\d{4}-\d{2}-\d{2}/);return match?match[0]:'';}
 function renderTerm(t,type='term'){
-  const html=type==='term'?t.termHtml:t.defHtml;if(html)return html;
+  const html=type==='term'?t.termHtml:t.defHtml;if(html)return `<span class="term-rich-output">${html}</span>`;
   const segments=type==='term'?t.termSegments:t.defSegments;
   const text=type==='term'?t.term:t.def;
-  if(segments&&segments.length){return segments.map(s=>{if(!s.text)return'';const style=`${s.color?`color:${s.color};`:''}${s.bold?'font-weight:700;':''}${s.italic?'font-style:italic;':''}`;return style?`<span style="${style}">${esc(s.text)}</span>`:esc(s.text);}).join('');}
+  if(segments&&segments.length){return `<span class="term-rich-output">${segments.map(s=>{if(!s.text)return'';const style=`${s.color?`color:${s.color};`:''}${s.italic?'font-style:italic;':''}`;const classes=s.bold?' class="term-rich-bold"':'';return style||classes?`<span${classes}${style?` style="${style}"`:''}>${esc(s.text)}</span>`:esc(s.text);}).join('')}</span>`;}
   return esc(text);
+}
+function renderAnswerForDirection(t,direction){
+  return renderTerm(t,direction==='term'?'def':'term');
 }
 function renderImages(t){
   if(!t.images||!t.images.length)return'';
@@ -1489,8 +1519,12 @@ function stRenderQ(){
   let body='';
   if(useType==='mc'){
     const allTermsForDistractors=SET.terms;
-    const opts=shuffle([a,...shuffle(allTermsForDistractors.filter(x=>x!==t)).slice(0,3).map(x=>ST._dir==='term'?x.def:x.term)]);
-    body=`<div class="mc-options" id="st-mc-opts">${opts.map((o,i)=>`<button class="mc-option" id="st-opt-${i}" onclick="stPickMC(${i},'${escA(o)}','${escA(a)}')">${'ABCD'[i]}. ${esc(o)}</button>`).join('')}</div>
+    const answerField=ST._dir==='term'?'def':'term';
+    const opts=shuffle([
+      {value:a,term:t},
+      ...shuffle(allTermsForDistractors.filter(x=>x!==t)).slice(0,3).map(term=>({value:answerField==='def'?term.def:term.term,term}))
+    ]);
+    body=`<div class="mc-options" id="st-mc-opts">${opts.map((option,i)=>`<button class="mc-option" id="st-opt-${i}" onclick="stPickMC(${i},'${escA(option.value)}','${escA(a)}')"><span class="mc-option-letter">${'ABCD'[i]}.</span><span>${renderTerm(option.term,answerField)}</span></button>`).join('')}</div>
     <div style="display:flex;justify-content:center;margin-top:8px"><button class="btn btn-glass btn-sm" id="st-skip-btn" onclick="stSkip()"><span>Vraag overslaan</span></button></div>
     <div id="st-fb" style="display:none;margin-top:12px"></div>
     <div id="st-next-area" style="display:none;text-align:center;margin-top:10px"><button class="btn btn-glass btn-sm" onclick="stNext()">Volgende →</button></div>`;
@@ -1579,7 +1613,7 @@ function stPickMC(idx,chosen,answer){
     if(!ST._isRetry){ST.wrong++;ST.wrongItems.push({q:ST._currentQ,a:ST._currentA,given:chosen,t:ST._currentT});ST._pendingRetry.push(ST._currentT);ST._queue.shift();}
     else{ST._wrongRetry.shift();ST._pendingRetry.push(ST._currentT);}
     stUpdateStats();saveSTProgress();
-    const fb=document.getElementById('st-fb');if(fb){fb.style.display='block';fb.className='st-feedback fb-wrong';fb.innerHTML=`✗ Fout. Juist: <strong>${esc(answer)}</strong>`;}
+    const fb=document.getElementById('st-fb');if(fb){fb.style.display='block';fb.className='st-feedback fb-wrong';fb.innerHTML=`✗ Fout. Juist: <span class="st-correct-answer">${renderAnswerForDirection(ST._currentT,ST._dir)}</span>`;}
     const na=document.getElementById('st-next-area');if(na)na.style.display='block';
   }
 }
@@ -1601,7 +1635,7 @@ function stCheckOpen(){
     if(fb){
       fb.style.display='block';fb.className='st-feedback fb-correct';
       const fullAnsNote = ST.allowSingle && hasMultipleAlternatives(ST._currentA)
-        ? `<div style="font-size:12px;margin-top:6px;opacity:0.8">Volledig: <em>${esc(ST._currentA)}</em></div>` : '';
+        ? `<div style="font-size:12px;margin-top:6px;opacity:0.8">Volledig: <em>${renderAnswerForDirection(ST._currentT,ST._dir)}</em></div>` : '';
       fb.innerHTML='✓ Correct! 🎉'+fullAnsNote;
     }
     const na=document.getElementById('st-next-area');if(na)na.style.display='block';
@@ -1615,7 +1649,7 @@ function stCheckOpen(){
     const fb=document.getElementById('st-fb');
     if(fb){
       fb.style.display='block';fb.className='st-feedback fb-wrong';
-      fb.innerHTML=`✗ Fout. Juist: <strong>${esc(ST._currentA)}</strong><br><button class="fb-override-btn" onclick="stOverride()">✓ Ik had het toch goed</button>`;
+      fb.innerHTML=`✗ Fout. Juist: <span class="st-correct-answer">${renderAnswerForDirection(ST._currentT,ST._dir)}</span><br><button class="fb-override-btn" onclick="stOverride()">✓ Ik had het toch goed</button>`;
     }
     if(ST.copyCorrect){stShowCopyInput();}
     else{const na=document.getElementById('st-next-area');if(na)na.style.display='block';}
@@ -1814,9 +1848,17 @@ function ohBuild(){
     let d=OH.qmode==='mix'?(Math.random()>.5?'term':'def'):OH.qmode;
     const q=d==='term'?t.term:t.def,a=d==='term'?t.def:t.term;
     let type=OH.itype==='mix'?(Math.random()>.5?'mc':'open'):OH.itype;
-    let opts=null;
-    if(type==='mc'){const others=shuffle(SET.terms.filter(x=>x!==t)).slice(0,OH.numOpts-1).map(x=>d==='term'?x.def:x.term);opts=shuffle([a,...others]);}
-    return{i,t,q,a,type,opts,dir:d};
+    let opts=null,optMarkup=null;
+    if(type==='mc'){
+      const answerField=d==='term'?'def':'term';
+      const entries=shuffle([
+        {value:a,term:t},
+        ...shuffle(SET.terms.filter(x=>x!==t)).slice(0,OH.numOpts-1).map(term=>({value:answerField==='def'?term.def:term.term,term}))
+      ]);
+      opts=entries.map(entry=>entry.value);
+      optMarkup=entries.map(entry=>renderTerm(entry.term,answerField));
+    }
+    return{i,t,q,a,type,opts,optMarkup,dir:d};
   });
   OH.answers={};
   document.getElementById('oh-questions').innerHTML=OH.questions.map((qq,i)=>`
@@ -1826,7 +1868,7 @@ function ohBuild(){
         <div style="font-size:15px;font-weight:700">${qq.dir==='term'?renderTerm(qq.t,'term')+renderImages(qq.t):renderTerm(qq.t,'def')}</div>
       </div>
       ${OH.allowSingle && hasMultipleAlternatives(qq.a) ? `<div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:8px;opacity:0.8">Eén antwoord volstaat</div>` : ''}
-      ${qq.type==='mc'?`<div class="mc-options" id="oh-opts-${i}">${qq.opts.map((o,j)=>`<button type="button" class="mc-option" id="oh-opt-${i}-${j}" aria-pressed="false" onclick="ohPickMC(${i},${j})">${'ABCDEF'[j]}. ${esc(o)}</button>`).join('')}</div>`
+      ${qq.type==='mc'?`<div class="mc-options" id="oh-opts-${i}">${qq.opts.map((o,j)=>`<button type="button" class="mc-option" id="oh-opt-${i}-${j}" aria-pressed="false" onclick="ohPickMC(${i},${j})"><span class="mc-option-letter">${'ABCDEF'[j]}.</span><span>${qq.optMarkup?.[j]||esc(o)}</span></button>`).join('')}</div>`
       :`<input type="text" id="oh-open-${i}" placeholder="Jouw antwoord..." oninput="ohOpenInput(${i},this.value)" autocomplete="off">`}
     </div>`).join('');
 }
@@ -2132,7 +2174,7 @@ function makeCopyOfSet(){
   if(!SET)return;
   const newTitle=`Copy of ${SET.title}`;
   const newSlug=toSlug(newTitle);
-  const newSet={id:'set_copy_'+Date.now(),slug:newSlug,title:newTitle,description:SET.description||'',vak:SET.vak||'',datum:SET.datum||'',terms:SET.terms.map(t=>({...t}))};
+  const newSet={id:'set_copy_'+Date.now(),slug:newSlug,title:newTitle,description:SET.description||'',vak:SET.vak||'',klas:SET.klas||'',datum:SET.datum||'',terms:SET.terms.map(t=>({...t}))};
   try{
     const sets=JSON.parse(localStorage.getItem('sd_sets')||'[]');
     sets.push(newSet);localStorage.setItem('sd_sets',JSON.stringify(sets));

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="sw-register.js?v=20260817-54"></script>
+<script src="sw-register.js?v=20260821-8"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Velios+">
 <meta id="theme-meta" name="theme-color" content="#f0eef9">
-<title>Velios+ — Gesynchroniseerde sets</title>
+<title>Gesynchroniseerde sets | Velios+</title>
 <link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
 <link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
@@ -133,6 +133,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 
 /* SKELETON */
 .skeleton{background:linear-gradient(90deg,rgba(200,195,230,0.3) 25%,rgba(200,195,230,0.5) 50%,rgba(200,195,230,0.3) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--r);}
+.sync-card-skeleton{min-height:82px;padding:14px 18px;border:1px solid var(--glass-border);border-radius:var(--r);background:var(--glass);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.sync-skeleton-copy{display:flex;min-width:0;flex-direction:column;gap:6px}.sync-skeleton-copy i:first-child{width:min(235px,68%);height:15px;border-radius:8px}.sync-skeleton-copy i:nth-child(2){width:min(170px,48%);height:15px;border-radius:999px}.sync-card-skeleton:not(.local-card-skeleton) .sync-skeleton-copy i:nth-child(3){width:88px;height:10px;border-radius:6px}.sync-skeleton-actions{display:flex;gap:7px}.sync-skeleton-actions i{height:34px;border-radius:999px}.sync-skeleton-actions i:first-child{width:86px}.sync-skeleton-actions i:last-child{width:98px}.local-card-skeleton{min-height:60px;padding-block:13px}.local-card-skeleton .sync-skeleton-copy i:nth-child(2){height:11px;border-radius:6px}.local-card-skeleton .sync-skeleton-actions i{width:92px;height:32px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* SPINNER */
@@ -159,6 +160,7 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
 .empty-icon{width:48px;height:48px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:grid;place-items:center;margin:0 auto 12px}.empty-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .modal-bg{background:rgba(0,0,0,.45);backdrop-filter:blur(8px)}.modal-panel{box-shadow:none;background:var(--glass);border-radius:var(--r2)}.btn-glass{box-shadow:none;background:var(--bg-grad)}
 @media(max-width:560px){.synced-card,.local-card{grid-template-columns:1fr}.synced-card-actions{width:100%}.btn-synced-action,.btn-sync{flex:1;justify-content:center;height:40px}}
+@media(max-width:560px){.sync-card-skeleton{grid-template-columns:1fr;min-height:134px}.sync-skeleton-actions{width:100%}.sync-skeleton-actions i{height:40px;flex:1}.local-card-skeleton{min-height:111px}.local-card-skeleton .sync-skeleton-actions i{height:40px}}
 </style>
 </head>
 <body>
@@ -205,8 +207,8 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
       </div>
     </div>
     <div class="synced-grid" id="syncedGrid">
-      <div class="skeleton" style="height:68px;margin-bottom:4px;"></div>
-      <div class="skeleton" style="height:68px;"></div>
+      <div class="sync-card-skeleton"><span class="sync-skeleton-copy"><i class="skeleton"></i><i class="skeleton"></i><i class="skeleton"></i></span><span class="sync-skeleton-actions"><i class="skeleton"></i><i class="skeleton"></i></span></div>
+      <div class="sync-card-skeleton"><span class="sync-skeleton-copy"><i class="skeleton"></i><i class="skeleton"></i><i class="skeleton"></i></span><span class="sync-skeleton-actions"><i class="skeleton"></i><i class="skeleton"></i></span></div>
     </div>
   </div>
 
@@ -220,8 +222,8 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
     </div>
     <p style="font-size:13px;color:var(--text3);font-weight:600;margin-bottom:12px;">Al je zelfgemaakte sets. Synchroniseer ze om ze op al je apparaten te gebruiken (max. 5).</p>
     <div class="local-grid" id="localGrid">
-      <div class="skeleton" style="height:60px;margin-bottom:4px;"></div>
-      <div class="skeleton" style="height:60px;"></div>
+      <div class="sync-card-skeleton local-card-skeleton"><span class="sync-skeleton-copy"><i class="skeleton"></i><i class="skeleton"></i></span><span class="sync-skeleton-actions"><i class="skeleton"></i></span></div>
+      <div class="sync-card-skeleton local-card-skeleton"><span class="sync-skeleton-copy"><i class="skeleton"></i><i class="skeleton"></i></span><span class="sync-skeleton-actions"><i class="skeleton"></i></span></div>
     </div>
   </div>
 
@@ -242,7 +244,7 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260817-54"></script>
+<script src="supabase-client.js?v=20260821-2"></script>
 <script>
 let profile = null;
 let syncedSets = [];

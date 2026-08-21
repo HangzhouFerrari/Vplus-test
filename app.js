@@ -214,6 +214,7 @@ async function loadSetsFromDirectory(){
             try{set=decodeVset(content.trim());}catch{try{set=JSON.parse(content.trim());}catch(e){}}
             if(set&&set.title){
               set._serverFile=filename;
+              set.klas=set.klas||(window.VeliosSchool?VeliosSchool.inferClassFromFilename(filename):'');
               if(!set.id)set.id='srv_'+filename.replace('.vset','');
               if(!set.slug)set.slug=toSlug(set.title);
               if(!set.terms)set.terms=[];
@@ -330,6 +331,8 @@ async function loadSyncedSetsIntoLibrary() {
       const cloud = item.sets;
       if (!cloud) return;
       if (hiddenCloudSetIds.has(String(cloud.id))) return;
+      let cloudPayload=cloud.data;
+      if(typeof cloudPayload==='string'){try{cloudPayload=JSON.parse(cloudPayload)}catch(e){cloudPayload={}}}
       const cloudTerms = normalizeCloudTerms(cloud.data);
       const cloudDate = getCloudSetDate(cloud, item.synced_at);
       const mappedLocalId = Object.keys(syncMap).find(localId => String(syncMap[localId]) === String(cloud.id));
@@ -345,6 +348,7 @@ async function loadSyncedSetsIntoLibrary() {
         localSet.title = cloud.naam || cloud.title || localSet.title || 'Naamloze set';
         localSet.description = cloud.beschrijving || cloud.description || '';
         localSet.vak = cloud.vak || '';
+        localSet.klas = String(cloudPayload?.klas || cloud.klas || localSet.klas || '');
         localSet.terms = cloudTerms;
         localSet.datum = cloudDate;
         localSet._synced = true;
@@ -358,6 +362,7 @@ async function loadSyncedSetsIntoLibrary() {
         title: cloud.naam || cloud.title || 'Naamloze set',
         description: cloud.beschrijving || cloud.description || '',
         vak: cloud.vak || '',
+        klas: String(cloudPayload?.klas || cloud.klas || ''),
         terms: cloudTerms,
         datum: cloudDate,
         _cloud: true,
@@ -415,6 +420,7 @@ const SUBJECT_FALLBACK = [
   ['Natuurkunde','natuurkunde','#316f9e','assets/subjects/natuurkunde.webp'],['Scheikunde','scheikunde','#6a55a5','assets/subjects/scheikunde.webp'],
   ['Aardrijkskunde','aardrijkskunde','#477b42','assets/subjects/aardrijkskunde.webp'],['Economie','economie','#397e78','assets/subjects/economie.webp'],
   ['Engels','engels','#9b4452','assets/subjects/engels.webp'],['Frans','frans','#3c5f9b','assets/subjects/frans.webp'],['Overig','overig','#62636a','assets/subjects/overig.webp']
+  ,['Wiskunde','wiskunde','#2467a8','assets/subjects/placeholder.svg']
 ].map(([name,slug,color,image])=>({name,slug,color,image}));
 let SUBJECTS = [...SUBJECT_FALLBACK];
 
@@ -487,6 +493,8 @@ function showPage(page) {
   if(pageTransitionTimer)clearPageTransition(previousPage);
   if(isMobile&&!isSamePage&&document.activeElement instanceof HTMLElement)document.activeElement.blur();
   currentPage = page;
+  const pageTitles={home:'Dashboard',library:'Bestanden',vakken:'Vakken',zoeken:'Zoeken',subject:currentSubject||'Vak'};
+  document.title=`${pageTitles[page]||'Dashboard'} | Velios+`;
   renderPageContent(page);
 
   document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
@@ -810,7 +818,8 @@ function renderLibrary() {
 function renderVakken() {
   const el = document.getElementById('vakken-grid');
   if(!el)return;
-  el.innerHTML = SUBJECTS.map(subject => {
+  const visible=new Set(window.VeliosSchool?VeliosSchool.visibleSubjects(VeliosSchool.fromProfile(_currentProfile)):SUBJECTS.map(subject=>subject.name));
+  el.innerHTML = SUBJECTS.filter(subject=>visible.has(subject.name)).map(subject => {
     const count = DB.sets.filter(set => !isMySet(set)&&normalizeSubject(set.vak)===subject.name).length;
     return `
       <button class="subject-card" onclick="openSubject('${subject.slug}')"
@@ -1216,7 +1225,8 @@ function openSet(id){
   localStorage.setItem(recentKey,JSON.stringify(recent));
   let opened=[];try{opened=JSON.parse(localStorage.getItem('sd_opened_sets')||'[]');}catch(e){}
   if(!opened.includes(id)){opened.push(id);localStorage.setItem('sd_opened_sets',JSON.stringify(opened));}
-  window.location.href=`set.html?set=${encodeURIComponent(slug)}`;
+  const cloudSetId=getCloudSetId(s);
+  window.location.href=`set.html?set=${encodeURIComponent(slug)}${cloudSetId?`&cloud=${encodeURIComponent(cloudSetId)}`:''}`;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1760,6 +1770,7 @@ function showCreateModal(id) {
         vak: draft.vak || '',
         description: draft.desc || '',
         datum: draft.datum || '',
+        klas: draft.klas || '',
         terms: draft.pairs || []
       };
       setTimeout(() => showToast('Concept hersteld'), 100);
@@ -1834,6 +1845,17 @@ function showCreateModal(id) {
 }
 
 function buildCreateEditorMarkup(s,id,editorSubject){
+  const inferredClass=window.VeliosSchool?VeliosSchool.setClass(s):'';
+  const preferredClass=window.VeliosSchool?VeliosSchool.fromProfile(_currentProfile).schoolClass:'';
+  const editorClass=inferredClass||preferredClass||'';
+  const classOptions=['1','2','3','4','5','6','overig'].map(value=>({value,label:value==='overig'?'Overig':`Klas ${value}`}));
+  const visibleSubjects=new Set(window.VeliosSchool
+    ? VeliosSchool.visibleSubjects(VeliosSchool.fromProfile(_currentProfile))
+    : SUBJECTS.map(subject=>subject.name));
+  const subjectOptions=SUBJECTS
+    .filter(subject=>visibleSubjects.has(subject.name)||subject.name===editorSubject)
+    .map(subject=>({value:subject.name,label:subject.name}));
+  if(!subjectOptions.some(subject=>subject.value===editorSubject))subjectOptions.push({value:editorSubject,label:editorSubject});
   return `<div class="create-editor-shell">
     <div class="create-editor-drag-zone" aria-hidden="true"><span></span></div>
     <header class="create-editor-header">
@@ -1845,7 +1867,8 @@ function buildCreateEditorMarkup(s,id,editorSubject){
         <div class="create-editor-section-title"><div><span>Setgegevens</span><p>Deze informatie verschijnt op de setkaart.</p></div></div>
         <div class="create-editor-grid">
           <div class="input-group create-title-field"><label for="c-title">Titel <span>*</span></label><input id="c-title" type="text" placeholder="Bijv. Biologie H3" value="${esc(s?.title||'')}" oninput="ceSaveDraft()"></div>
-          <div class="input-group"><label>Vak</label><div class="subject-select"><input id="c-vak" type="hidden" value="${esc(editorSubject)}"><button type="button" class="subject-picker-btn" onclick="toggleSubjectPicker(this)"><span id="c-vak-label">${esc(editorSubject)}</span><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button></div></div>
+          <div class="input-group"><label>Vak</label>${VeliosSelect.markup({id:'c-vak',value:editorSubject,placeholder:'Selecteer een vak',options:subjectOptions,onChange:'selectEditorSubject',ariaLabel:'Vak'})}</div>
+          <div class="input-group"><label id="c-klas-label">Klas <span>*</span></label>${VeliosSelect.markup({id:'c-klas',value:editorClass,placeholder:'Selecteer je klas',options:classOptions,onChange:'ceSaveDraft',ariaLabel:'Klas'})}</div>
           <div class="input-group create-desc-field"><label for="c-desc">Omschrijving</label><textarea id="c-desc" placeholder="Waar gaat deze set over?" oninput="ceSaveDraft()">${esc(s?.description||'')}</textarea></div>
           <div class="input-group"><label for="c-datum">Datum toetsafname</label><input id="c-datum" type="date" value="${esc(formatSetDate(s?.datum))}" oninput="ceSaveDraft()"></div>
         </div>
@@ -1871,9 +1894,9 @@ function toggleSubjectPicker(button){
   popover.style.top=`${Math.max(12,Math.min(rect.bottom+8,window.innerHeight-356))}px`;
   popover.style.width=`${Math.min(Math.max(rect.width,240),280)}px`;
   const current=document.getElementById('c-vak')?.value;
-  popover.innerHTML=SUBJECTS.map(subject=>`
+  const visible=new Set(window.VeliosSchool?VeliosSchool.visibleSubjects(VeliosSchool.fromProfile(_currentProfile)):SUBJECTS.map(subject=>subject.name));
+  popover.innerHTML=SUBJECTS.filter(subject=>visible.has(subject.name)).map(subject=>`
     <button type="button" class="${subject.name===current?'active':''}" onclick="selectEditorSubject('${subject.slug}')">
-      <span class="subject-picker-color" style="background:${subject.color}"></span>
       <span>${esc(subject.name)}</span>
       ${subject.name===current?'<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>':''}
     </button>`).join('');
@@ -1884,12 +1907,11 @@ function closeSubjectPicker(){
   document.querySelector('.subject-picker-popover')?.remove();
 }
 
-function selectEditorSubject(slug){
-  const subject=getSubjectConfig(slug);
-  const input=document.getElementById('c-vak');
-  const label=document.getElementById('c-vak-label');
-  if(input)input.value=subject.name;
-  if(label)label.textContent=subject.name;
+function selectEditorSubject(value){
+  const subject=getSubjectConfig(value);
+  VeliosSelect.setValue('c-vak',subject.name,subject.name);
+  const legacyLabel=document.getElementById('c-vak-label');
+  if(legacyLabel)legacyLabel.textContent=subject.name;
   closeSubjectPicker();
   ceSaveDraft();
 }
@@ -1943,6 +1965,7 @@ function ceSaveDraft() {
     vak: document.getElementById('c-vak')?.value || '',
     desc: document.getElementById('c-desc')?.value || '',
     datum: document.getElementById('c-datum')?.value || '',
+    klas: document.getElementById('c-klas')?.value || '',
     pairs: CE.pairs
   };
   localStorage.setItem('sd_draft', JSON.stringify(draft));
@@ -1953,8 +1976,9 @@ function ceClearDraft() {
   localStorage.removeItem('sd_draft');
   CE.pairs = [{ term:'', def:'' }, { term:'', def:'' }];
   document.getElementById('c-title').value = '';
-  document.getElementById('c-vak').value = 'Overig';
-  document.getElementById('c-vak-label').textContent = 'Overig';
+  VeliosSelect.setValue('c-vak','Overig','Overig');
+  const legacyLabel=document.getElementById('c-vak-label');
+  if(legacyLabel)legacyLabel.textContent='Overig';
   document.getElementById('c-desc').value = '';
   ceRenderPairs();
 }
@@ -2013,6 +2037,8 @@ function ceRemoveImage(idx, imgIdx) {
 async function ceSave() {
   const title = document.getElementById('c-title').value.trim();
   if (!title) { showToast('Vul een titel in'); return; }
+  const schoolClass=document.getElementById('c-klas')?.value||'';
+  if (!schoolClass) { showToast('Selecteer een klas'); document.getElementById('c-klas')?.closest('.velios-select')?.querySelector('.velios-select-trigger')?.focus(); return; }
 
   // Sync all editors one last time before saving
   document.querySelectorAll('#ce-pairs .rich-editor').forEach(ed => syncPairFromEditor(ed));
@@ -2039,6 +2065,7 @@ async function ceSave() {
     description: document.getElementById('c-desc').value.trim(),
     vak: normalizeSubject(document.getElementById('c-vak').value),
     datum: document.getElementById('c-datum').value,
+    klas: schoolClass,
     terms
   };
 
@@ -2494,6 +2521,7 @@ async function initAccountNav() {
     }
     updateMenuTriggerButton();
     updateDashboardWelcome();
+    if (_currentSession) ensureRequiredSchoolProfile();
     // Als het menu open staat op het Account-tabblad, herteken het met de nieuwe info
     if (typeof MenuOverlay !== 'undefined' && MenuOverlay.open && MenuOverlay.tab === 'account') {
       renderOverlayTab('account');
@@ -2554,6 +2582,7 @@ const MENU_TABS = [
 // De CSS-maskers laten deze witte SVG-assets de kleur van hun omgeving volgen.
 MENU_TABS.find(tab=>tab.key==='settings').icon='<span class="ui-asset-icon ui-asset-icon-settings" aria-hidden="true"></span>';
 MENU_TABS.find(tab=>tab.key==='notifications').icon='<span class="ui-asset-icon ui-asset-icon-notification" aria-hidden="true"></span>';
+MENU_TABS.push({key:'subjects',label:'Vakken',icon:'<span class="ui-asset-icon ui-asset-icon-subjects" aria-hidden="true"></span>'});
 
 function openAccountOverlay(tab) {
   if (document.getElementById('account-overlay')) return; // al open
@@ -2774,6 +2803,7 @@ function renderOverlayTab(tab) {
   if (tab === 'account') html = renderAccountTabContent();
   else if (tab === 'settings') html = renderSettingsTabContent();
   else if (tab === 'notifications') html = renderNotificationsTabContent();
+  else if (tab === 'subjects') html = renderSchoolSubjectsTabContent();
   content.innerHTML = `<div class="acc-ov-content-inner">${html}</div>`;
   if (tab === 'settings') syncThemeUIControls();
   if (tab === 'account' && _currentSession) updateAccountSyncCount();
@@ -2888,6 +2918,83 @@ function renderSettingsTabContent() {
         <button class="btn btn-glass btn-sm" onclick="importVsetFile()" style="white-space:nowrap">Importeer</button>
       </div>
     </div>`;
+}
+
+/* ── Klas- en vakkeninstellingen ── */
+let schoolPreferencesSaveTimer=null;
+function getSchoolPreferences(){return window.VeliosSchool?VeliosSchool.fromProfile(_currentProfile):{schoolClass:'',schoolProfile:'',gymnasium:false,extraSubjects:[],hideIrrelevant:true}}
+function schoolSelect(values,current,handler,labeler=value=>value,placeholder='Maak een keuze'){return VeliosSelect.markup({value:current,onChange:handler,placeholder,ariaLabel:placeholder,options:values.map(value=>({value,label:labeler(value)}))})}
+function queueSchoolPreferencesSave(preferences){
+  const next=VeliosSchool.saveLocal(preferences);
+  _currentProfile={...(_currentProfile||{}),...VeliosSchool.metadata(next)};
+  clearTimeout(schoolPreferencesSaveTimer);
+  schoolPreferencesSaveTimer=setTimeout(async()=>{
+    if(!_currentSession)return;
+    try{
+      const {error}=await VeliosAuth.client.auth.updateUser({data:VeliosSchool.metadata(next)});
+      if(error)throw error;
+    }catch(error){console.warn('Klasinstellingen synchroniseren is mislukt:',error.message);showToast('Klasinstellingen konden niet worden gesynchroniseerd');}
+  },350);
+  renderCurrentDataPage();
+  return next;
+}
+function setSchoolClass(value){
+  const current=getSchoolPreferences();
+  const next=queueSchoolPreferencesSave({...current,schoolClass:value,schoolProfile:['4','5','6'].includes(value)?current.schoolProfile:'',extraSubjects:['4','5','6'].includes(value)?current.extraSubjects:[]});
+  if(MenuOverlay.open&&MenuOverlay.tab==='subjects')renderOverlayTab('subjects');
+  return next;
+}
+function setSchoolProfile(value){const next=queueSchoolPreferencesSave({...getSchoolPreferences(),schoolProfile:value});if(MenuOverlay.open&&MenuOverlay.tab==='subjects')renderOverlayTab('subjects');return next}
+function toggleSchoolSetting(key){const current=getSchoolPreferences();const next=queueSchoolPreferencesSave({...current,[key]:!current[key]});if(MenuOverlay.open&&MenuOverlay.tab==='subjects')renderOverlayTab('subjects');return next}
+function toggleExtraSchoolSubject(subject){
+  const current=getSchoolPreferences(),required=new Set(VeliosSchool.requiredSubjects(current));
+  if(required.has(subject))return;
+  const extra=new Set(current.extraSubjects);extra.has(subject)?extra.delete(subject):extra.add(subject);
+  queueSchoolPreferencesSave({...current,extraSubjects:[...extra]});
+  if(MenuOverlay.open&&MenuOverlay.tab==='subjects')renderOverlayTab('subjects');
+}
+function renderSubjectPills(preferences,editable){
+  const required=new Set(VeliosSchool.requiredSubjects(preferences));
+  const selected=new Set(VeliosSchool.selectedSubjects(preferences));
+  return `<div class="school-subject-grid">${VeliosSchool.ALL_SUBJECTS.map(subject=>{
+    const locked=required.has(subject),active=selected.has(subject);
+    return `<button type="button" class="school-subject${active?' active':''}${locked?' locked':''}" ${editable&&!locked?`onclick="toggleExtraSchoolSubject('${esc(subject)}')"`:'disabled'}>${esc(subject)}${locked?'<span>Vast</span>':''}</button>`;
+  }).join('')}</div>`;
+}
+function renderSchoolSubjectsTabContent(){
+  if(!window.VeliosSchool)return '<div class="notif-empty">Vakken konden niet worden geladen.</div>';
+  const p=getSchoolPreferences(),upper=VeliosSchool.isUpper(p);
+  return `<div class="school-settings">
+    <div class="settings-row school-hide-row"><span class="settings-row-copy"><strong>Niet-relevante vakken verbergen</strong><small>Vakken die niet bij je klas of profielkeuze horen, worden verborgen.</small></span><label class="toggle"><input type="checkbox" ${p.hideIrrelevant?'checked':''} onchange="toggleSchoolSetting('hideIrrelevant')"><span class="toggle-slider"></span></label></div>
+    <div class="settings-section"><div class="settings-section-title">Klas</div>${schoolSelect(['1','2','3','4','5','6','overig'],p.schoolClass,'setSchoolClass',value=>value==='overig'?'Overig':`Klas ${value}`,'Selecteer je klas')}</div>
+    ${p.schoolClass&&p.schoolClass!=='overig'?`<div class="settings-row"><span class="settings-row-copy"><strong>Gymnasium</strong><small>Voeg Latijn en Grieks toe als vaste vakken.</small></span><label class="toggle"><input type="checkbox" ${p.gymnasium?'checked':''} onchange="toggleSchoolSetting('gymnasium')"><span class="toggle-slider"></span></label></div>`:''}
+    ${upper?`<div class="settings-section"><div class="settings-section-title">Profiel</div>${schoolSelect(['NT','NG','EM','CM'],p.schoolProfile,'setSchoolProfile',value=>value,'Selecteer je profiel')}</div>`:''}
+    ${p.schoolClass?`<div class="settings-section"><div class="settings-section-title">${upper?'Jouw vakken':'Zichtbare vakken'}</div><p class="school-section-help">${upper?'Profielvakken staan vast. Andere vakken kun je zelf toevoegen.':'Deze vakken horen bij de gekozen klas.'}</p>${renderSubjectPills(p,upper)}</div>`:'<div class="school-empty"><strong>Selecteer je klas</strong><span>Daarna stellen we de juiste vakken voor je in.</span></div>'}
+  </div>`;
+}
+
+function ensureRequiredSchoolProfile(){
+  if(!window.VeliosSchool||!_currentSession||VeliosSchool.isComplete(getSchoolPreferences())||document.getElementById('school-required-overlay'))return;
+  const overlay=document.createElement('div');
+  overlay.id='school-required-overlay';overlay.className='school-required-overlay';
+  overlay.innerHTML='<section class="school-required-panel" role="dialog" aria-modal="true"><div id="schoolRequiredContent"></div></section>';
+  document.body.appendChild(overlay);renderRequiredSchoolPanel();
+}
+function chooseRequiredSchoolClass(value){const p=VeliosSchool.saveLocal({...getSchoolPreferences(),schoolClass:value,schoolProfile:['4','5','6'].includes(value)?getSchoolPreferences().schoolProfile:''});_currentProfile={...(_currentProfile||{}),...VeliosSchool.metadata(p)};renderRequiredSchoolPanel()}
+function chooseRequiredSchoolProfile(value){const p=VeliosSchool.saveLocal({...getSchoolPreferences(),schoolProfile:value});_currentProfile={...(_currentProfile||{}),...VeliosSchool.metadata(p)};renderRequiredSchoolPanel()}
+function renderRequiredSchoolPanel(){
+  const content=document.getElementById('schoolRequiredContent');if(!content)return;
+  const p=getSchoolPreferences(),upper=VeliosSchool.isUpper(p),complete=VeliosSchool.isComplete(p);
+  content.innerHTML=`<div class="school-required-brand"><img src="assets/branding/logo_full-svg.svg" alt="Velios+"><span></span></div><div class="school-required-progress">Je leeromgeving instellen</div><h1>Selecteer je klas</h1><p>Zo laten we alleen vakken en sets zien die voor jou relevant zijn.</p>${schoolSelect(['1','2','3','4','5','6','overig'],p.schoolClass,'chooseRequiredSchoolClass',value=>value==='overig'?'Overig':`Klas ${value}`,'Selecteer je klas')}${upper?`<h2>Kies je profiel</h2>${schoolSelect(['NT','NG','EM','CM'],p.schoolProfile,'chooseRequiredSchoolProfile',value=>value,'Selecteer je profiel')}`:''}<button class="btn btn-primary school-required-save" type="button" onclick="saveRequiredSchoolProfile()" ${complete?'':'disabled'}>${complete?'Doorgaan':'Maak een keuze'}</button>`;
+}
+async function saveRequiredSchoolProfile(){
+  const p=getSchoolPreferences();if(!VeliosSchool.isComplete(p))return;
+  const button=document.querySelector('.school-required-save');if(button){button.disabled=true;button.textContent='Opslaan…'}
+  try{
+    const {error}=await VeliosAuth.client.auth.updateUser({data:VeliosSchool.metadata(p)});if(error)throw error;
+    _currentProfile={...(_currentProfile||{}),...VeliosSchool.metadata(p)};renderCurrentDataPage();
+    const overlay=document.getElementById('school-required-overlay');overlay?.classList.add('closing');setTimeout(()=>overlay?.remove(),260);
+  }catch(error){if(button){button.disabled=false;button.textContent='Opnieuw proberen'}showToast('Je klas kon niet worden opgeslagen');}
 }
 
 /* ══════════════════════════════════════════════════════
@@ -3297,7 +3404,8 @@ function scheduleNotificationOnboarding(){
   const last=parseInt(localStorage.getItem('sd_notif_onboard_last')||'0',10)||0;
   if(last&&visit-last<5)return;
   const waitForWelcome=()=>{
-    if(document.getElementById('onboard-overlay')){setTimeout(waitForWelcome,300);return;}
+    const modalOpen=!document.getElementById('modal-bg')?.classList.contains('hidden');
+    if(document.getElementById('onboard-overlay')||document.getElementById('account-overlay')||document.getElementById('school-required-overlay')||modalOpen){setTimeout(waitForWelcome,300);return;}
     showNotificationOnboarding(visit);
   };
   setTimeout(waitForWelcome,420);

@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="sw-register.js?v=20260817-54"></script>
+<script src="sw-register.js?v=20260821-8"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" id="theme-meta" content="#f2f2f2">
-<title>Velios+ — Inloggen</title>
+<title>Inloggen | Velios+</title>
 <link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
 <link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="velios-select.css?v=20260821-8">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f2f2f2;--card:#fff;--text:#1b1b1b;--muted:#666;--line:#8a8886;--soft:#e5e5e5;--accent:#0067b8;--accent-hover:#005da6;--danger:#c42b1c;--font:"Segoe UI",Arial,sans-serif}
@@ -33,6 +34,7 @@ h1{font-size:24px;line-height:1.25;font-weight:600;margin-bottom:12px;letter-spa
 .verify-icon{width:48px;height:48px;border-radius:50%;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);display:grid;place-items:center;margin-bottom:18px}.verify-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7}
 .email-pill{font-weight:600;margin:8px 0 18px;overflow-wrap:anywhere}
 .social-auth{margin:20px 0 18px}.google-btn{width:100%;height:50px;border:1px solid var(--line);border-radius:999px;background:var(--input-bg);color:var(--text);display:flex;align-items:center;justify-content:center;gap:11px;font:750 14px var(--font);cursor:pointer;transition:border-color .18s ease,background .18s ease,transform .18s ease}.google-btn:hover{border-color:color-mix(in srgb,var(--text) 32%,var(--line));background:color-mix(in srgb,var(--input-bg) 92%,var(--text) 8%)}.google-btn:active{transform:scale(.985)}.google-btn:disabled{opacity:.58;cursor:default}.google-btn svg{width:20px;height:20px;flex:0 0 20px}.auth-divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-weight:650;margin:18px 0}.auth-divider::before,.auth-divider::after{content:'';height:1px;flex:1;background:var(--line)}.oauth-loading{min-height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}.oauth-loading .spinner{width:26px;height:26px;border-color:color-mix(in srgb,var(--accent) 28%,transparent);border-top-color:var(--accent)}.oauth-loading strong{font-size:18px}.oauth-loading span{color:var(--muted);font-size:13px}.auth-page-error{padding:11px 14px;margin:0 0 14px;border-radius:18px;background:color-mix(in srgb,var(--danger) 10%,transparent);color:var(--danger);font-size:13px;font-weight:650;line-height:1.4}
+.auth-loading-skeleton{padding:0 0 4px}.auth-loading-skeleton i,.auth-loading-skeleton b{display:block;background:linear-gradient(100deg,color-mix(in srgb,var(--text) 7%,transparent) 20%,color-mix(in srgb,var(--text) 14%,transparent) 38%,color-mix(in srgb,var(--text) 7%,transparent) 56%);background-size:240% 100%;animation:authShimmer 1.3s ease infinite}.auth-skeleton-title{width:42%;height:35px;border-radius:13px;margin-bottom:20px}.auth-skeleton-google{width:100%;height:50px;border-radius:999px}.auth-skeleton-divider{height:12px;margin:18px 0;display:flex;align-items:center;gap:12px}.auth-skeleton-divider b{height:1px;flex:1;border-radius:1px}.auth-skeleton-divider i{width:22px;height:10px;border-radius:5px}.auth-skeleton-input{width:100%;height:50px;border-radius:999px;margin:20px 0 15px}.auth-skeleton-link{width:58%;height:14px;border-radius:7px;margin-top:15px}.auth-skeleton-link-short{width:49%;height:14px;border-radius:7px;margin-top:15px}.auth-skeleton-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:27px}.auth-skeleton-actions i{width:118px;height:44px;border-radius:999px}@keyframes authShimmer{to{background-position:-140% 0}}
 #toast{position:fixed;right:24px;bottom:24px;max-width:min(360px,calc(100vw - 32px));padding:12px 16px;background:var(--card);border:1px solid var(--soft);box-shadow:0 4px 18px rgba(0,0,0,.18);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}#toast.show{opacity:1;transform:none}#toast.err{color:var(--danger)}
 @media(max-width:600px){body{justify-content:flex-start;padding:0;background:var(--card)}.auth-shell{max-width:none}.auth-card{min-height:auto;box-shadow:none;padding:calc(36px + env(safe-area-inset-top)) 28px 36px}.brand{margin-bottom:32px}}
 
@@ -56,6 +58,7 @@ h1{font-size:30px;font-weight:800;line-height:1.15;letter-spacing:-.7px;margin-b
 body.dark-mode .auth-card{background:#171719;border-color:#343439}body.dark-mode .field input{background:var(--input-bg);border-color:#44444a;color:#fff}body.dark-mode .field input:focus{border-color:var(--accent)}body.dark-mode .btn.secondary{background:#2b2b2f;color:#fff}
 .field input:-webkit-autofill,.field input:-webkit-autofill:hover,.field input:-webkit-autofill:focus{-webkit-text-fill-color:var(--text);box-shadow:0 0 0 1000px var(--input-bg) inset;transition:background-color 9999s ease-out}
 body.dark-mode .field input:-webkit-autofill,body.dark-mode .field input:-webkit-autofill:hover,body.dark-mode .field input:-webkit-autofill:focus{-webkit-text-fill-color:#fff;box-shadow:0 0 0 1000px var(--input-bg) inset}
+.auth-school-select{position:relative;margin:22px 0 8px}.auth-school-select .velios-select-trigger{font-size:15px}
 @media(max-width:600px){body,body.dark-mode{background:var(--card)}.auth-card{border:0;border-radius:0;min-height:auto;padding:calc(38px + env(safe-area-inset-top)) 26px calc(42px + env(safe-area-inset-bottom))}.auth-shell{max-width:none}}
 </style>
 </head>
@@ -65,9 +68,11 @@ body.dark-mode .field input:-webkit-autofill,body.dark-mode .field input:-webkit
 </main>
 <div id="toast" role="status"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260817-54"></script>
+<script src="school-profile.js?v=20260821-2"></script>
+<script src="velios-select.js?v=20260821-8"></script>
+<script src="supabase-client.js?v=20260821-2"></script>
 <script>
-const state={mode:'initializing',step:0,busy:false,availabilityToken:0,pageError:'',oauthUser:null,oauthProfile:null,oauthFields:[],data:{email:'',username:'',displayName:'',birthDate:'',password:'',confirm:'',avatarUrl:''}};
+const state={mode:'initializing',step:0,busy:false,availabilityToken:0,pageError:'',oauthUser:null,oauthProfile:null,oauthFields:[],data:{email:'',username:'',displayName:'',birthDate:'',schoolClass:'',schoolProfile:'',password:'',confirm:'',avatarUrl:''}};
 const card=document.getElementById('authCard');
 const emailPattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPattern=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
@@ -139,19 +144,41 @@ function oauthButtons(last){return `<div class="actions"><button class="btn seco
 const OAUTH_FIELDS={
   username:{title:'Kies een gebruikersnaam',lead:'Deze naam is zichtbaar in Velios+.',label:'Gebruikersnaam',type:'text',placeholder:'gebruikersnaam',autocomplete:'username'},
   displayName:{title:'Hoe mogen we je noemen?',lead:'Deze naam gebruiken we bijvoorbeeld op je dashboard.',label:'Weergavenaam',type:'text',placeholder:'Jouw naam',autocomplete:'name'},
-  birthDate:{title:'Wanneer ben je geboren?',lead:'Google deelt je geboortedatum niet met Velios+.',label:'Geboortedatum',type:'date',placeholder:'',autocomplete:'bday'}
+  birthDate:{title:'Wanneer ben je geboren?',lead:'Google deelt je geboortedatum niet met Velios+.',label:'Geboortedatum',type:'date',placeholder:'',autocomplete:'bday'},
+  schoolClass:{title:'In welke klas zit je?',lead:'Zo zie je alleen vakken die voor jou relevant zijn.'},
+  schoolProfile:{title:'Welk profiel volg je?',lead:'Je profiel bepaalt welke vakken standaard zichtbaar zijn.'}
 };
+
+const REGISTER_FIELDS={
+  email:{title:'Account maken',lead:'Gebruik een e-mailadres waarmee je straks kunt inloggen.',label:'E-mailadres',type:'text',placeholder:'naam@voorbeeld.nl',autocomplete:'email'},
+  username:{title:'Kies een gebruikersnaam',lead:'Deze naam is zichtbaar in Velios+.',label:'Gebruikersnaam',type:'text',placeholder:'gebruikersnaam',autocomplete:'username'},
+  displayName:{title:'Hoe mogen we je noemen?',lead:'Deze naam gebruiken we bijvoorbeeld op je dashboard.',label:'Weergavenaam',type:'text',placeholder:'Jouw naam',autocomplete:'name'},
+  birthDate:{title:'Wanneer ben je geboren?',lead:'Je geboortedatum helpt ons om je account passend in te stellen.',label:'Geboortedatum',type:'date',placeholder:'',autocomplete:'bday'},
+  schoolClass:{title:'In welke klas zit je?',lead:'Zo zie je alleen vakken die voor jou relevant zijn.'},
+  schoolProfile:{title:'Welk profiel volg je?',lead:'Je profiel bepaalt welke vakken standaard zichtbaar zijn.'},
+  password:{title:'Maak een wachtwoord',lead:'Gebruik minimaal 8 tekens, met een hoofdletter, kleine letter en cijfer. Speciale tekens zijn toegestaan.',label:'Wachtwoord',type:'password',placeholder:'Wachtwoord',autocomplete:'new-password'},
+  confirm:{title:'Bevestig je wachtwoord',lead:'Vul hetzelfde wachtwoord nog een keer in.',label:'Wachtwoord herhalen',type:'password',placeholder:'Wachtwoord herhalen',autocomplete:'new-password'}
+};
+function registrationKeys(){return ['email','username','displayName','birthDate','schoolClass',...(VeliosSchool.isUpper(state.data)?['schoolProfile']:[]),'password','confirm']}
+function authSchoolPicker(key){
+  const values=key==='schoolProfile'?['NT','NG','EM','CM']:['1','2','3','4','5','6','overig'];
+  const current=state.data[key];
+  return `<div class="auth-school-select">${VeliosSelect.markup({value:current,placeholder:key==='schoolClass'?'Selecteer je klas':'Selecteer je profiel',ariaLabel:key==='schoolClass'?'Klas':'Profiel',onChange:key==='schoolClass'?'chooseAuthSchoolClass':'chooseAuthSchoolProfile',options:values.map(value=>({value,label:value==='overig'?'Overig':key==='schoolClass'?`Klas ${value}`:value}))})}</div><div class="error" id="fieldError"></div>`;
+}
+function chooseAuthSchool(key,value){state.data[key]=value;if(key==='schoolClass'&&!['4','5','6'].includes(value))state.data.schoolProfile='';setError('');render()}
+function chooseAuthSchoolClass(value){chooseAuthSchool('schoolClass',value)}
+function chooseAuthSchoolProfile(value){chooseAuthSchool('schoolProfile',value)}
 
 function currentValue(){
   if(state.mode==='oauthSetup')return state.data[state.oauthFields[state.step]]||'';
   if(state.mode==='login')return state.step===0?state.data.email:state.data.password;
   if(state.mode==='forgot')return state.data.email;
-  return [state.data.email,state.data.username,state.data.displayName,state.data.birthDate,state.data.password,state.data.confirm][state.step]||'';
+  return state.data[registrationKeys()[state.step]]||'';
 }
 function render(){
   let html=logo();
   if(state.mode==='initializing'||state.mode==='oauthRedirect'){
-    html+=`<div class="oauth-loading"><span class="spinner"></span><strong>${state.mode==='oauthRedirect'?'Google wordt geopend…':'Aanmelding controleren…'}</strong><span>Een moment geduld.</span></div>`;
+    html+=state.mode==='oauthRedirect'?`<div class="oauth-loading"><span class="spinner"></span><strong>Google wordt geopend…</strong><span>Een moment geduld.</span></div>`:`<div class="auth-loading-skeleton" aria-label="Aanmelding controleren"><i class="auth-skeleton-title"></i><i class="auth-skeleton-google"></i><span class="auth-skeleton-divider"><b></b><i></i><b></b></span><i class="auth-skeleton-input"></i><i class="auth-skeleton-link"></i><i class="auth-skeleton-link-short"></i><span class="auth-skeleton-actions"><i></i><i></i></span></div>`;
   }else if(state.mode==='verify'){
     html+=`<div class="step"><div class="verify-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div><h1>Controleer je e-mail</h1><p class="lead">We hebben een bevestigingslink gestuurd naar:</p><div class="email-pill">${esc(state.data.email)}</div><p class="lead">Open de link om je account te activeren. Daarna kun je hier inloggen.</p><div class="actions"><button class="btn primary" type="button" onclick="finishVerification()">Terug naar inloggen</button></div></div>`;
   }else if(state.mode==='login'){
@@ -161,18 +188,10 @@ function render(){
     html+=`<form class="step" onsubmit="submitStep(event)">${backLine('Inloggen')}<h1>Je account herstellen</h1><p class="lead">Vul je e-mailadres in. Je ontvangt een link waarmee je een nieuw wachtwoord kunt kiezen.</p>${field({id:'authInput',label:'E-mailadres',placeholder:'naam@voorbeeld.nl',autocomplete:'email'})}${buttons('Volgende',true)}</form>`;
   }else if(state.mode==='oauthSetup'){
     const key=state.oauthFields[state.step],f=OAUTH_FIELDS[key],last=state.step===state.oauthFields.length-1;
-    html+=`<form class="step" onsubmit="submitStep(event)"><div class="account-line"><span>${esc(state.data.email)}</span></div><h1>${f.title}</h1><p class="lead">${f.lead}</p><div class="progress">Stap ${state.step+1} van ${state.oauthFields.length}</div>${field({id:'authInput',...f})}${oauthButtons(last)}</form>`;
+    html+=`<form class="step" onsubmit="submitStep(event)"><div class="account-line"><span>${esc(state.data.email)}</span></div><h1>${f.title}</h1><p class="lead">${f.lead}</p><div class="progress">Stap ${state.step+1} van ${state.oauthFields.length}</div>${key==='schoolClass'||key==='schoolProfile'?authSchoolPicker(key):field({id:'authInput',...f})}${oauthButtons(last)}</form>`;
   }else{
-    const fields=[
-      {title:'Account maken',lead:'Gebruik een e-mailadres waarmee je straks kunt inloggen.',label:'E-mailadres',type:'text',placeholder:'naam@voorbeeld.nl',autocomplete:'email'},
-      {title:'Kies een gebruikersnaam',lead:'Deze naam is zichtbaar in Velios+.',label:'Gebruikersnaam',type:'text',placeholder:'gebruikersnaam',autocomplete:'username'},
-      {title:'Hoe mogen we je noemen?',lead:'Deze naam gebruiken we bijvoorbeeld op je dashboard.',label:'Weergavenaam',type:'text',placeholder:'Jouw naam',autocomplete:'name'},
-      {title:'Wanneer ben je geboren?',lead:'Je geboortedatum helpt ons om je account passend in te stellen.',label:'Geboortedatum',type:'date',placeholder:'',autocomplete:'bday'},
-      {title:'Maak een wachtwoord',lead:'Gebruik minimaal 8 tekens, met een hoofdletter, kleine letter en cijfer. Speciale tekens zijn toegestaan.',label:'Wachtwoord',type:'password',placeholder:'Wachtwoord',autocomplete:'new-password'},
-      {title:'Bevestig je wachtwoord',lead:'Vul hetzelfde wachtwoord nog een keer in.',label:'Wachtwoord herhalen',type:'password',placeholder:'Wachtwoord herhalen',autocomplete:'new-password'}
-    ];
-    const f=fields[state.step];
-    html+=`<form class="step" onsubmit="submitStep(event)">${backLine(state.step?state.data.email:'Inloggen')}<h1>${f.title}</h1><p class="lead">${f.lead}</p><div class="progress">Stap ${state.step+1} van ${fields.length}</div>${state.step===0?googleButton():''}${field({id:'authInput',...f})}${buttons(state.step===fields.length-1?'Account maken':'Volgende')}</form>`;
+    const keys=registrationKeys(),key=keys[state.step],f=REGISTER_FIELDS[key];
+    html+=`<form class="step" onsubmit="submitStep(event)">${backLine(state.step?state.data.email:'Inloggen')}<h1>${f.title}</h1><p class="lead">${f.lead}</p><div class="progress">Stap ${state.step+1} van ${keys.length}</div>${state.step===0?googleButton():''}${key==='schoolClass'||key==='schoolProfile'?authSchoolPicker(key):field({id:'authInput',...f})}${buttons(state.step===keys.length-1?'Account maken':'Volgende')}</form>`;
   }
   card.innerHTML=html;
   const input=document.getElementById('authInput');
@@ -188,7 +207,7 @@ function saveInput(){
     const key=state.oauthFields[state.step];state.data[key]=key==='username'?value.trim().toLowerCase():key==='displayName'?value.trim():value;
   }else if(state.mode==='login'){if(state.step===0)state.data.email=value.trim().toLowerCase();else state.data.password=value}
   else if(state.mode==='forgot')state.data.email=value.trim().toLowerCase();
-  else ['email','username','displayName','birthDate','password','confirm'].forEach((key,index)=>{if(index===state.step)state.data[key]=index<2?value.trim().toLowerCase():index===2?value.trim():value});
+  else {const key=registrationKeys()[state.step];if(key)state.data[key]=key==='email'||key==='username'?value.trim().toLowerCase():key==='displayName'?value.trim():value}
 }
 function setError(message){const el=document.getElementById('fieldError');if(el)el.textContent=message}
 function setErrorHtml(message){const el=document.getElementById('fieldError');if(el)el.innerHTML=message}
@@ -208,26 +227,29 @@ async function submitStep(event){
   await advanceRegistration();
 }
 async function advanceRegistration(){
-  const {email,username,displayName,birthDate,password,confirm}=state.data;
-  if(state.step===0){
+  const {email,username,displayName,birthDate,password,confirm,schoolClass,schoolProfile}=state.data;
+  const keys=registrationKeys(),key=keys[state.step];
+  if(key==='email'){
     if(!emailPattern.test(email)){setError('Vul een geldig e-mailadres in.');return}
     setBusy(true);const used=await VeliosAuth.emailExists(email);setBusy(false);
     if(used===true){setErrorHtml('Dit e-mailadres is al in gebruik. <button type="button" onclick="useExistingEmail()">Ga naar inloggen</button>');return}
   }
-  if(state.step===1){
+  if(key==='username'){
     if(!/^[a-z][a-z0-9_.]{2,19}$/.test(username)){setError('Gebruik 3–20 tekens en begin met een letter.');return}
     setBusy(true);try{if(await VeliosAuth.usernameExists(username)){setBusy(false);setError('Deze gebruikersnaam is al in gebruik.');return}}catch(e){setBusy(false);setError('Controleren is niet gelukt. Probeer het opnieuw.');return}setBusy(false);
   }
-  if(state.step===2&&!displayName){setError('Vul een weergavenaam in.');return}
-  if(state.step===3){
+  if(key==='displayName'&&!displayName){setError('Vul een weergavenaam in.');return}
+  if(key==='birthDate'){
     const birth=new Date(`${birthDate}T12:00:00`),now=new Date();
     if(!birthDate||Number.isNaN(birth.getTime())){setError('Vul je geboortedatum in.');return}
     if(birth>now){setError('Je geboortedatum kan niet in de toekomst liggen.');return}
     if(now.getFullYear()-birth.getFullYear()>120){setError('Controleer of je geboortedatum klopt.');return}
   }
-  if(state.step===4&&!passwordPattern.test(password)){setError('Gebruik minimaal 8 tekens met een hoofdletter, kleine letter en cijfer.');return}
-  if(state.step===5&&confirm!==password){setError('De wachtwoorden komen niet overeen.');return}
-  if(state.step<5){await briefLoad();state.step++;render();return}
+  if(key==='schoolClass'&&!schoolClass){setError('Selecteer je klas.');return}
+  if(key==='schoolProfile'&&!schoolProfile){setError('Selecteer je profiel.');return}
+  if(key==='password'&&!passwordPattern.test(password)){setError('Gebruik minimaal 8 tekens met een hoofdletter, kleine letter en cijfer.');return}
+  if(key==='confirm'&&confirm!==password){setError('De wachtwoorden komen niet overeen.');return}
+  if(state.step<keys.length-1){await briefLoad();state.step++;render();return}
   await register();
 }
 async function signIn(){
@@ -246,7 +268,9 @@ async function register(){
   setBusy(true);
   const redirectTo=new URL('login.html',location.href).href;
   state.data.avatarUrl=state.data.avatarUrl||randomAnimalAvatar();
-  const {data,error}=await VeliosAuth.client.auth.signUp({email:state.data.email,password:state.data.password,options:{data:{username:state.data.username,display_name:state.data.displayName,birth_date:state.data.birthDate,avatar_url:state.data.avatarUrl},emailRedirectTo:redirectTo}});
+  const school=VeliosSchool.metadata(state.data);
+  VeliosSchool.saveLocal(state.data);
+  const {data,error}=await VeliosAuth.client.auth.signUp({email:state.data.email,password:state.data.password,options:{data:{username:state.data.username,display_name:state.data.displayName,birth_date:state.data.birthDate,avatar_url:state.data.avatarUrl,...school},emailRedirectTo:redirectTo}});
   if(error||data?.user?.identities?.length===0){setBusy(false);if(error?.message?.includes('already registered')||data?.user?.identities?.length===0)setErrorHtml('Dit e-mailadres is al in gebruik. <button type="button" onclick="useExistingEmail()">Ga naar inloggen</button>');else setError(error?.message||'Account maken is niet gelukt.');return}
   state.busy=false;state.mode='verify';render();
 }
@@ -263,7 +287,7 @@ function goBack(){
   else if(state.mode==='login'&&state.step>0){state.step=0;state.data.password=''}
   render();
 }
-function startRegister(){state.mode='register';state.step=0;state.data={email:state.data.email,username:'',displayName:'',birthDate:'',password:'',confirm:'',avatarUrl:randomAnimalAvatar()};render()}
+function startRegister(){state.mode='register';state.step=0;state.data={email:state.data.email,username:'',displayName:'',birthDate:'',schoolClass:'',schoolProfile:'',password:'',confirm:'',avatarUrl:randomAnimalAvatar()};render()}
 function useExistingEmail(){saveInput();state.mode='login';state.step=0;render()}
 function handleAuthInput(){
   saveInput();setError('');setStatus('');clearTimeout(availabilityTimer);const token=++state.availabilityToken;
@@ -334,14 +358,18 @@ async function prepareSignedInUser(user){
   const username=String(profile?.username||meta.username||'').trim().toLowerCase();
   const displayName=String(profile?.display_name||meta.display_name||meta.full_name||meta.name||'').trim();
   const birthDate=String(profile?.birth_date||meta.birth_date||'').slice(0,10);
+  const schoolClass=String(profile?.school_class||meta.school_class||'').toLowerCase();
+  const schoolProfile=String(profile?.school_profile||meta.school_profile||'').toUpperCase();
   const avatarUrl=animalAvatarOrRandom(profile?.avatar_url||meta.avatar_url);
   const fields=[];
   if(!username)fields.push('username');
   if(!displayName)fields.push('displayName');
   if(!birthDate)fields.push('birthDate');
+  if(!schoolClass)fields.push('schoolClass');
+  else if(['4','5','6'].includes(schoolClass)&&!schoolProfile)fields.push('schoolProfile');
   if(!fields.length&&profile?.id){location.replace('index.html');return}
   state.oauthUser=user;state.oauthProfile=profile;state.oauthFields=fields.length?fields:['username'];state.step=0;state.busy=false;
-  state.data={email:user.email||'',username,displayName,birthDate,password:'',confirm:'',avatarUrl};
+  state.data={email:user.email||'',username,displayName,birthDate,schoolClass,schoolProfile,password:'',confirm:'',avatarUrl};
   state.mode='oauthSetup';history.replaceState(null,'',location.pathname);render();
 }
 
@@ -361,6 +389,11 @@ async function advanceOAuthSetup(){
     if(birth>now){setError('Je geboortedatum kan niet in de toekomst liggen.');return}
     if(now.getFullYear()-birth.getFullYear()>120){setError('Controleer of je geboortedatum klopt.');return}
   }
+  if(key==='schoolClass'){
+    if(!value){setError('Selecteer je klas.');return}
+    if(['4','5','6'].includes(value)&&!state.oauthFields.includes('schoolProfile'))state.oauthFields.splice(state.step+1,0,'schoolProfile');
+  }
+  if(key==='schoolProfile'&&!value){setError('Selecteer je profiel.');return}
   if(state.step<state.oauthFields.length-1){await briefLoad();state.step++;render();return}
   await saveOAuthProfile();
 }
@@ -368,7 +401,8 @@ async function advanceOAuthSetup(){
 async function saveOAuthProfile(){
   setBusy(true);
   const avatarUrl=state.data.avatarUrl||randomAnimalAvatar();
-  const user=state.oauthUser,meta={...(user.user_metadata||{}),username:state.data.username,display_name:state.data.displayName,birth_date:state.data.birthDate,avatar_url:avatarUrl};
+  const school=VeliosSchool.metadata(state.data);VeliosSchool.saveLocal(state.data);
+  const user=state.oauthUser,meta={...(user.user_metadata||{}),username:state.data.username,display_name:state.data.displayName,birth_date:state.data.birthDate,avatar_url:avatarUrl,...school};
   const profileValues={username:state.data.username,display_name:state.data.displayName,avatar_url:avatarUrl};
   try{
     let profileError=null;

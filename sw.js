@@ -1,8 +1,9 @@
-const CACHE = 'velios-20260817-54';
+const CACHE = 'velios-20260821-8';
 const ASSETS = [
   './',
   './index.html',
   './welcome.html',
+  './404.html',
   './set.html',
   './login.html',
   './account-options.html',
@@ -12,6 +13,9 @@ const ASSETS = [
   './app.js',
   './set-app.js',
   './supabase-client.js',
+  './school-profile.js',
+  './velios-select.js',
+  './velios-select.css',
   './favicon.svg',
   './favicon-dark.svg',
   './appicon-192.png',

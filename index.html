@@ -7,9 +7,11 @@ try {
   if(!welcomeBypass&&!localStorage.getItem('sd_welcome_seen'))location.replace('welcome.html');
 } catch(e) {}
 </script>
-<script src="sw-register.js?v=20260817-54"></script>
+<script src="sw-register.js?v=20260821-8"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260817-54"></script>
+<script src="school-profile.js?v=20260821-2"></script>
+<script src="velios-select.js?v=20260821-8"></script>
+<script src="supabase-client.js?v=20260821-2"></script>
 <script>
 if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
   window.location.href = 'unsupported.html';
@@ -24,21 +26,37 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Velios+">
 <meta id="theme-color-meta" name="theme-color" content="#0a0812">
-<title>Velios+</title>
+<title>Dashboard | Velios+</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
 <link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260817-54">
+<link rel="stylesheet" href="style.css?v=20260821-8">
+<link rel="stylesheet" href="velios-select.css?v=20260821-8">
 </head>
 <body>
-<div id="loading-screen" style="position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;pointer-events:none">
-
-  <div style="width:48px;height:48px;position:relative">
-    <div style="position:absolute;inset:0;border:4px solid rgba(0,98,255,0.2);border-radius:50%"></div>
-    <div style="position:absolute;inset:0;border:4px solid transparent;border-top:4px solid var(--accent);border-right:4px solid var(--accent);border-radius:50%;animation:spin-material 1s linear infinite"></div>
+<div id="loading-screen" class="app-skeleton" aria-label="Dashboard laden">
+  <div class="app-skeleton-nav">
+    <span class="app-skeleton-logo skeleton-pulse"></span>
+    <div class="app-skeleton-nav-actions"><i class="app-skeleton-search skeleton-pulse"></i><i class="app-skeleton-create skeleton-pulse"></i><i class="app-skeleton-avatar skeleton-pulse"></i></div>
   </div>
+  <div class="app-skeleton-sidebar">
+    <span class="app-skeleton-nav-item"><i class="skeleton-pulse"></i><b class="skeleton-pulse"></b></span>
+    <span class="app-skeleton-nav-item"><i class="skeleton-pulse"></i><b class="skeleton-pulse"></b></span>
+    <span class="app-skeleton-nav-item app-skeleton-nav-create"><i class="skeleton-pulse"></i></span>
+    <span class="app-skeleton-nav-item"><i class="skeleton-pulse"></i><b class="skeleton-pulse"></b></span>
+    <span class="app-skeleton-nav-item app-skeleton-nav-search"><i class="skeleton-pulse"></i><b class="skeleton-pulse"></b></span>
+  </div>
+  <main class="app-skeleton-main">
+    <section class="app-skeleton-hero"><span class="app-skeleton-greeting skeleton-pulse"></span><span class="app-skeleton-message skeleton-pulse"></span><span class="app-skeleton-date skeleton-pulse"></span></section>
+    <div class="app-skeleton-section-title skeleton-pulse"></div>
+    <div class="app-skeleton-grid">
+      <div class="app-skeleton-card"><i class="skeleton-pulse"></i><i class="skeleton-pulse"></i><i class="skeleton-pulse"></i><span><b class="skeleton-pulse"></b><b class="skeleton-pulse"></b></span><div class="app-skeleton-card-actions"><b class="skeleton-pulse"></b></div></div>
+      <div class="app-skeleton-card"><i class="skeleton-pulse"></i><i class="skeleton-pulse"></i><i class="skeleton-pulse"></i><span><b class="skeleton-pulse"></b><b class="skeleton-pulse"></b></span><div class="app-skeleton-card-actions"><b class="skeleton-pulse"></b></div></div>
+      <div class="app-skeleton-card"><i class="skeleton-pulse"></i><i class="skeleton-pulse"></i><i class="skeleton-pulse"></i><span><b class="skeleton-pulse"></b><b class="skeleton-pulse"></b></span><div class="app-skeleton-card-actions"><b class="skeleton-pulse"></b></div></div>
+    </div>
+  </main>
 </div>
 <nav>
   <div class="nav-logo">
@@ -268,7 +286,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 </div>
 <div id="toast"></div>
 
-<script src="app.js?v=20260817-54"></script>
+<script src="app.js?v=20260821-8"></script>
 </div>
 </body>
 </html>

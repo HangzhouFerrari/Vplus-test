@@ -1,7 +1,7 @@
 (() => {
   if (!('serviceWorker' in navigator)) return;
 
-  const BUILD = '20260817-54';
+  const BUILD = '20260821-8';
   const RELOAD_KEY = `velios-sw-reloaded-${BUILD}`;
   let refreshing = false;
 

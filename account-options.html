@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="sw-register.js?v=20260817-54"></script>
+<script src="sw-register.js?v=20260821-8"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Velios+">
 <meta id="theme-meta" name="theme-color" content="#f0eef9">
-<title>Velios+ — Account beheren</title>
+<title>Account beheren | Velios+</title>
 <link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
 <link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
@@ -201,11 +201,13 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
 .field input:focus,.modal-confirm-field input:focus{background:var(--input-bg);box-shadow:0 0 0 3px var(--accent-light)}
 body.dark-mode .field input,body.dark-mode .modal-confirm-field input{background:var(--input-bg)!important;border-color:var(--glass-border)!important}
 body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focus{background:var(--input-bg)!important;border-color:var(--accent)!important}
+.account-page-skeleton{position:fixed;z-index:500;inset:var(--nav-h) 0 0;background:var(--bg-grad);padding:32px max(28px,calc((100vw - 680px)/2)) 100px;overflow-y:auto;display:flex;flex-direction:column;gap:20px;transition:opacity .22s}.account-skeleton-shape{display:block;background:linear-gradient(100deg,color-mix(in srgb,var(--text) 6%,transparent) 20%,color-mix(in srgb,var(--text) 12%,transparent) 38%,color-mix(in srgb,var(--text) 6%,transparent) 56%);background-size:240% 100%;animation:accountShimmer 1.35s ease infinite}.account-skeleton-card{width:100%;border:1px solid var(--glass-border);border-radius:var(--r2);overflow:hidden;background:var(--glass);flex:0 0 auto}.account-skeleton-header{height:68px;padding:18px 22px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--glass-border)}.account-skeleton-header i{width:31px;height:31px;border-radius:50%}.account-skeleton-header span{width:112px;height:14px;border-radius:7px}.account-skeleton-body{padding:20px 22px}.account-skeleton-avatar-row{height:72px;display:flex;align-items:center;gap:18px;margin-bottom:20px}.account-skeleton-avatar-row>i{width:72px;height:72px;border-radius:50%;flex:0 0 72px}.account-skeleton-copy{display:flex;flex:1;flex-direction:column;gap:8px}.account-skeleton-copy i:first-child{width:135px;height:16px;border-radius:8px}.account-skeleton-copy i:last-child{width:min(245px,90%);height:12px;border-radius:6px}.account-skeleton-label{width:126px;height:12px;border-radius:6px;margin-bottom:10px}.account-skeleton-avatar-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.account-skeleton-avatar-grid i{width:100%;aspect-ratio:1;border-radius:50%}.account-skeleton-classic{width:100%;height:44px;border-radius:999px;margin-top:16px}.account-skeleton-button{width:132px;height:42px;border-radius:999px;margin-top:16px}.account-skeleton-fields{display:flex;flex-direction:column;gap:16px}.account-skeleton-field{display:flex;flex-direction:column;gap:6px}.account-skeleton-field i:first-child{width:104px;height:13px;border-radius:7px}.account-skeleton-field i:last-child{width:100%;height:46px;border-radius:999px}.account-skeleton-profile .account-skeleton-button,.account-skeleton-email .account-skeleton-button{height:44px;width:118px;margin-top:20px}@keyframes accountShimmer{to{background-position:-140% 0}}
 .session-item{border-radius:var(--r4);background:var(--input-bg);border-color:var(--glass-border)}
 .modal-bg{background:rgba(0,0,0,.45);backdrop-filter:blur(8px)}.modal-panel{box-shadow:none;background:var(--glass);border-radius:var(--r2)}
 .btn-glass{box-shadow:none;background:var(--bg-grad)}
 .btn,.btn-danger,.btn-danger-solid{border-radius:999px!important}
-@media(max-width:520px){.avatar-preset-grid{grid-template-columns:repeat(3,1fr)}.avatar-current-row{align-items:flex-start}.danger-row{align-items:flex-start;flex-direction:column}.danger-row .btn-danger,.danger-row .btn-danger-solid{width:100%;height:42px}}
+@media(max-width:750px){.account-page-skeleton{padding:20px 16px 100px}}
+@media(max-width:520px){.avatar-preset-grid,.account-skeleton-avatar-grid{grid-template-columns:repeat(3,1fr)}.avatar-current-row{align-items:flex-start}.danger-row{align-items:flex-start;flex-direction:column}.danger-row .btn-danger,.danger-row .btn-danger-solid{width:100%;height:42px}}
 </style>
 </head>
 <body>
@@ -217,6 +219,11 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
   <div class="nav-title">Account beheren</div>
   <div class="nav-spacer"></div>
 </nav>
+<div class="account-page-skeleton" id="accountPageSkeleton" aria-label="Account laden">
+  <section class="account-skeleton-card account-skeleton-avatar"><header class="account-skeleton-header"><i class="account-skeleton-shape"></i><span class="account-skeleton-shape"></span></header><div class="account-skeleton-body"><div class="account-skeleton-avatar-row"><i class="account-skeleton-shape"></i><span class="account-skeleton-copy"><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i></span></div><i class="account-skeleton-label account-skeleton-shape"></i><div class="account-skeleton-avatar-grid"><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i></div><i class="account-skeleton-classic account-skeleton-shape"></i><i class="account-skeleton-button account-skeleton-shape"></i></div></section>
+  <section class="account-skeleton-card account-skeleton-profile"><header class="account-skeleton-header"><i class="account-skeleton-shape"></i><span class="account-skeleton-shape"></span></header><div class="account-skeleton-body"><div class="account-skeleton-fields"><span class="account-skeleton-field"><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i></span><span class="account-skeleton-field"><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i></span><span class="account-skeleton-field"><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i></span></div><i class="account-skeleton-button account-skeleton-shape"></i></div></section>
+  <section class="account-skeleton-card account-skeleton-email"><header class="account-skeleton-header"><i class="account-skeleton-shape"></i><span class="account-skeleton-shape"></span></header><div class="account-skeleton-body"><div class="account-skeleton-fields"><span class="account-skeleton-field"><i class="account-skeleton-shape"></i><i class="account-skeleton-shape"></i></span></div><i class="account-skeleton-button account-skeleton-shape"></i></div></section>
+</div>
 
 <div class="main">
 
@@ -419,7 +426,7 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js?v=20260817-54"></script>
+<script src="supabase-client.js?v=20260821-2"></script>
 <script>
 const AVATARS = VeliosAuth.AVATAR_OPTIONS;
 
@@ -450,6 +457,7 @@ let toastTimer;
   renderAvatarGrid();
   renderCurrentAvatar();
   renderSession();
+  const skeleton=document.getElementById('accountPageSkeleton');if(skeleton){skeleton.style.opacity='0';setTimeout(()=>skeleton.remove(),240)}
 })();
 
 function applyTheme() {

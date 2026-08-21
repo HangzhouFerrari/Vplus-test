@@ -11,5 +11,6 @@
   {"name":"Economie","slug":"economie","image":"assets/subjects/economie.webp","color":"#397e78"},
   {"name":"Engels","slug":"engels","image":"assets/subjects/engels.webp","color":"#9b4452"},
   {"name":"Frans","slug":"frans","image":"assets/subjects/frans.webp","color":"#3c5f9b"},
+  {"name":"Wiskunde","slug":"wiskunde","image":"assets/subjects/placeholder.svg","color":"#2467a8"},
   {"name":"Overig","slug":"overig","image":"assets/subjects/overig.webp","color":"#62636a"}
 ]
