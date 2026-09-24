@@ -1,0 +1,15 @@
+<!doctype html><pre id="out">RUNNING</pre><iframe id="frame" style="width:1363px;height:936px"></iframe><script>
+const wait=ms=>new Promise(r=>setTimeout(r,ms)),frame=document.getElementById('frame'),results=[];
+const check=(name,ok,data)=>results.push({name,ok,data});
+(async()=>{try{
+sessionStorage.setItem('velios-sw-reloaded-20260919-1','1');localStorage.setItem('sd_welcome_seen','1');localStorage.setItem('sd_onboard','{"home":true,"set":true,"flashcards":true}');localStorage.removeItem('sd_accessibility');
+frame.src='../index.html?skipWelcome#library';await new Promise(r=>frame.onload=r);await wait(700);let w=frame.contentWindow,d=w.document;
+check('hash navigation starts at top',d.title==='Bestanden | Velios+'&&w.scrollY===0&&d.getElementById('page-scroll-container').scrollTop===0,{title:d.title,windowY:w.scrollY,containerY:d.getElementById('page-scroll-container').scrollTop});
+check('default white labels',w.getComputedStyle(d.querySelector('.btn-primary')).color==='rgb(255, 255, 255)');
+w.openAccountOverlay('accessibility');check('accessibility controls',d.querySelectorAll('#accOvContent input[type=checkbox]').length===3);
+d.querySelector('#accOvContent input').click();check('high contrast applied',d.documentElement.classList.contains('high-contrast'));
+w.setAccessibilityPreference('reducedMotion',true);check('reduced motion applied',parseFloat(w.getComputedStyle(d.querySelector('.btn-primary')).transitionDuration)<.001);w.setAccessibilityPreference('reducedMotion',false);
+w.closeAccountOverlay();await wait(450);w.showPage('library');await wait(500);d.getElementById('page-scroll-container').scrollTop=300;w.scrollTo(0,150);w.showPage('home');await wait(500);check('index at top',d.getElementById('page-scroll-container').scrollTop===0&&w.scrollY===0);
+w.showOnboarding('home',true);await wait(100);check('scroll region without yellow outline',w.getComputedStyle(d.querySelector('.onboard-body')).outlineStyle==='none');
+frame.src='../set.html?set=040402033';await new Promise(r=>frame.onload=r);await wait(500);w=frame.contentWindow;d=w.document;check('preferences persist on set page',d.documentElement.classList.contains('high-contrast'));w.startMode('flashcards');await wait(500);check('two rotating stars',d.querySelectorAll('#fc-inner .fc-face .fc-star-btn').length===2);let star=d.querySelector('.fc-face:not([inert]) .fc-star-btn');star.click();check('star does not flip',w.eval('FC.flipped')===false);check('both stars synchronized',[...d.querySelectorAll('#fc-inner .fc-star-btn')].every(x=>x.classList.contains('starred')===star.classList.contains('starred')));w.setAccessibilityPreference('highContrast',false);check('high contrast off',!d.documentElement.classList.contains('high-contrast'));
+}catch(e){results.push({error:e.stack})}document.getElementById('out').textContent=JSON.stringify(results,null,2);})();</script>

@@ -1,0 +1,167 @@
+[
+  {
+    "name": "desktop editor closes promptly",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "editor and menu close buttons match",
+    "ok": true,
+    "data": {
+      "editor": {
+        "width": "28px",
+        "height": "28px",
+        "backgroundColor": "rgb(28, 28, 30)",
+        "color": "rgb(233, 233, 233)",
+        "borderRadius": "50%"
+      },
+      "menu": {
+        "width": "28px",
+        "height": "28px",
+        "backgroundColor": "rgb(28, 28, 30)",
+        "color": "rgb(233, 233, 233)",
+        "borderRadius": "50%"
+      }
+    }
+  },
+  {
+    "name": "dashboard glow keeps animation with app preference",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "header title hidden above page title",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "header title shown after scrolling past title",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "back to top appears",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "desktop create button hidden",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode header slides out",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "flame keeps animation with app preference",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "study card fits 1363",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "study card fits 390",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "study card fits 360",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "no speech control for non-language subjects",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "old label and counters removed",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "only set characters shown once",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "shift changes special characters to uppercase",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "special character enters answer",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "copy uses same input and blocks next",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "feedback above input",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "copy next button is neutral",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "copy enables next",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "override scores only once",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "partial answer shows complete answer",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "multiple choice options present",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "multiple choice feedback and next",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "header returns before flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "header hidden for flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "header returns before overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "header hidden for overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "no voice feature on language sets",
+    "ok": true,
+    "data": null
+  }
+]

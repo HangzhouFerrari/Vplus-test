@@ -1,0 +1,188 @@
+[
+  {
+    "name": "star during flashcards keeps saving",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "starred flashcards start separately",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "all flashcards resume independently",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "starred flashcards resume independently",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "changed star selection gets correct terms",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "returning to star selection restores progress",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "star and skip keep study progress",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning defaults to separate starred session",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "first round is multiple choice 1",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "second round is multiple choice 2",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "wrong multiple choice cannot unlock writing",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "pending retry and round resume correctly",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "writing unlocked by correct multiple choice",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning round 3",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning round 4",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning round 5",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning round 6",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning round 7",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "all study progress survives starred learning",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "starred study round survives filter switch",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "actual page reload restores scoped round",
+    "ok": true,
+    "data": {
+      "round": 7,
+      "correct": 7,
+      "wrong": 1,
+      "key": "st_prog_set_copy_1777393209204:stars:0"
+    }
+  },
+  {
+    "name": "round has seven distinct terms",
+    "ok": true,
+    "data": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  {
+    "name": "six answers stay in first round",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "seventh answer starts next batch",
+    "ok": true,
+    "data": [
+      7,
+      8,
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "batch waits for wrong answer retry",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "written round repeats batch one",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "partial seven-term batch resumes",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "written one leads to multiple choice three",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "written two repeats batch two",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "restart label flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "restart label stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "restart label overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "edited set cannot restore mismatched indices",
+    "ok": true,
+    "data": null
+  }
+]

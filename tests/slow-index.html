@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><pre id="out">RUNNING</pre><iframe id="frame" style="width:1363px;height:936px"></iframe><script>
+(async()=>{
+sessionStorage.setItem('velios-sw-reloaded-20260919-1','1');localStorage.setItem('sd_welcome_seen','1');localStorage.setItem('sd_onboard','{"home":true}');
+const frame=document.getElementById('frame');frame.src='.slow-index-fixture.html';
+await new Promise(r=>setTimeout(r,1500));
+const w=frame.contentWindow,d=w.document,results=[];
+try{results.push({name:'index usable with indefinitely stalled set and account requests',ok:d.getElementById('app-content').style.pointerEvents==='auto',visibleAt:w.performance.getEntriesByName('velios-app-visible').map(x=>x.startTime)});w.showPage('library');w.showCreateModal();results.push({name:'new set available during stalled network',ok:!!d.querySelector('.rich-editor')});}catch(e){results.push({error:e.stack})}
+document.getElementById('out').textContent=JSON.stringify(results,null,2);
+})();</script>

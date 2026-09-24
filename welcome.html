@@ -1,8 +1,21 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="velios-ui">
 <head>
-<script src="sw-register.js?v=20260821-9"></script>
 <meta charset="UTF-8">
+<style>html.theme-start-dark{background:#000;color-scheme:dark}</style>
+<script>
+(function(){
+  var dark=false;
+  try{
+    var saved=JSON.parse(localStorage.getItem('sd_theme')||'{}')||{};
+    dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;
+  }catch(e){dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;}
+  window.veliosInitialDark=dark;
+  document.documentElement.classList.toggle('theme-start-dark',dark);
+})();
+</script>
+
+<script src="sw-register.js?v=20260821-9"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" id="themeMeta" content="#ffad2f">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -28,13 +41,19 @@ body{min-height:100dvh;color:var(--ink);overflow:hidden}
 h1{font-size:clamp(48px,6.5vw,96px);line-height:1.02;letter-spacing:normal;font-weight:900;max-width:740px;margin-left:0}
 .intro{font-size:clamp(17px,1.55vw,23px);line-height:1.5;font-weight:650;color:var(--soft);margin-top:25px;max-width:510px}
 .features{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}.feature{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.16);font-size:13px;font-weight:800;backdrop-filter:blur(12px)}.feature svg{display:none}.feature::before{content:'';width:18px;height:18px;flex:0 0 18px;background:currentColor;-webkit-mask-position:center;-webkit-mask-repeat:no-repeat;-webkit-mask-size:contain;mask-position:center;mask-repeat:no-repeat;mask-size:contain}.feature:nth-child(1)::before{-webkit-mask-image:url('assets/icons/icon_sets.svg');mask-image:url('assets/icons/icon_sets.svg')}.feature:nth-child(2)::before{-webkit-mask-image:url('assets/icons/icon_learn.svg');mask-image:url('assets/icons/icon_learn.svg')}.feature:nth-child(3)::before{-webkit-mask-image:url('assets/icons/icon_cloud.svg');mask-image:url('assets/icons/icon_cloud.svg')}
-.actions{position:absolute;right:max(34px,env(safe-area-inset-right));bottom:max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2}.login-btn{min-width:270px;height:64px;padding:0 38px;border:0;border-radius:999px;background:var(--surface);color:#171109;font:850 17px 'DM Sans',sans-serif;box-shadow:0 13px 34px rgba(68,31,0,.2);cursor:pointer;text-decoration:none;display:grid;place-items:center;transition:transform .18s ease,box-shadow .18s ease}.login-btn:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(68,31,0,.26)}.login-btn:active{transform:scale(.98)}.skip{border:0;background:none;color:var(--ink);opacity:.62;font:750 15px 'DM Sans',sans-serif;cursor:pointer;padding:7px 12px}.skip:hover{opacity:1}
+.actions{position:absolute;right:max(34px,env(safe-area-inset-right));bottom:max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2}.login-btn{min-width:270px;height:64px;padding:0 38px;border:0;border-radius:999px;background:var(--surface);color:#171109;font:850 17px 'DM Sans',sans-serif;box-shadow:0 13px 34px rgba(68,31,0,.2);cursor:pointer;text-decoration:none;display:grid;place-items:center;transition:transform .18s ease,box-shadow .18s ease}.login-btn:hover{box-shadow:0 16px 38px rgba(68,31,0,.26)}.login-btn:active{}.skip{border:0;background:none;color:var(--ink);opacity:.62;font:750 15px 'DM Sans',sans-serif;cursor:pointer;padding:7px 12px}.skip:hover{opacity:1}
 @media(max-width:760px){body{overflow:auto}.welcome{min-height:100svh;padding:calc(20px + env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom));justify-content:flex-end}.brand{width:105px;position:absolute;left:22px;top:calc(20px + env(safe-area-inset-top))}.hero-art{inset:0 0 auto 0;width:100%;height:49%;object-position:65% center;-webkit-mask-image:linear-gradient(0deg,transparent 0,#000 28%);mask-image:linear-gradient(0deg,transparent 0,#000 28%)}.art-tint{background:linear-gradient(0deg,var(--welcome-bg) 50%,transparent 75%)}.copy{width:100%;margin:0;padding:44vh 0 126px}.eyebrow{margin-bottom:12px}h1{font-size:clamp(42px,13.5vw,64px);max-width:480px}.intro{font-size:16px;margin-top:17px;max-width:460px}.features{margin-top:18px;gap:7px}.feature{padding:8px 11px;font-size:12px}.actions{position:absolute;left:22px;right:22px;bottom:calc(20px + env(safe-area-inset-bottom))}.login-btn{width:100%;height:52px}.skip{font-size:12px}}
 @media(max-height:690px) and (max-width:760px){.hero-art{height:42%}.copy{padding-top:35vh}.intro{line-height:1.35}.features{display:none}}
 @media(prefers-reduced-motion:no-preference){.brand,.copy>*{animation:welcomeIn .65s cubic-bezier(.22,1,.36,1) both}.copy>*:nth-child(2){animation-delay:.06s}.copy>*:nth-child(3){animation-delay:.12s}.copy>*:nth-child(4){animation-delay:.18s}.hero-art{animation:artIn .85s cubic-bezier(.22,1,.36,1) both}@keyframes welcomeIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}@keyframes artIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:none}}}
 </style>
+<link rel="stylesheet" href="design-system.css?v=20260919-1">
+<script defer src="ui-system.js?v=20260919-1"></script>
 </head>
 <body>
+<script>
+document.body.classList.toggle('dark-mode',!!window.veliosInitialDark);
+document.documentElement.classList.remove('theme-start-dark');
+</script>
 <main class="welcome">
   <img class="hero-art" src="assets/welcome/study-hero.webp" alt="Een tablet met het Velios+ dashboard en kleurrijke schoolboeken">
   <div class="art-tint" aria-hidden="true"></div>
@@ -49,7 +68,7 @@ h1{font-size:clamp(48px,6.5vw,96px);line-height:1.02;letter-spacing:normal;font-
     </div>
   </section>
   <div class="actions">
-    <a class="login-btn" href="login.html" onclick="markSeen()">Inloggen</a>
+    <a class="btn btn-glass btn-lg login-btn" href="login.html" onclick="markSeen()">Inloggen</a>
     <button class="skip" type="button" onclick="skipLogin()">Inloggen overslaan</button>
   </div>
 </main>

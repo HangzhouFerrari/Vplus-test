@@ -1,0 +1,102 @@
+[
+  {
+    "name": "answer controls",
+    "ok": true,
+    "data": [
+      {
+        "background": "none",
+        "color": "rgb(255, 255, 255)",
+        "fill": "rgb(189, 37, 54)",
+        "shadow": "none",
+        "width": 180,
+        "height": 44
+      },
+      {
+        "background": "none",
+        "color": "rgb(255, 255, 255)",
+        "fill": "rgb(17, 123, 77)",
+        "shadow": "none",
+        "width": 180,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "name": "star stable",
+    "ok": true,
+    "data": {
+      "before": {
+        "x": 927,
+        "y": 417
+      },
+      "after": {
+        "x": 927,
+        "y": 417
+      }
+    }
+  },
+  {
+    "name": "one accessible face",
+    "ok": true
+  },
+  {
+    "name": "rapid answers count once",
+    "ok": true
+  },
+  {
+    "name": "undo restores index",
+    "ok": true
+  },
+  {
+    "name": "settings named",
+    "ok": true
+  },
+  {
+    "name": "next primary",
+    "ok": true
+  },
+  {
+    "name": "duplicate next hidden",
+    "ok": true
+  },
+  {
+    "name": "onboarding locked",
+    "ok": true
+  },
+  {
+    "name": "onboarding unlocked",
+    "ok": true,
+    "data": {
+      "top": 318,
+      "height": 160,
+      "total": 478
+    }
+  },
+  {
+    "name": "index visible",
+    "ok": true,
+    "data": [
+      10
+    ]
+  },
+  {
+    "name": "sidebar native",
+    "ok": true
+  },
+  {
+    "name": "editor dialog",
+    "ok": true
+  },
+  {
+    "name": "editor names",
+    "ok": true
+  },
+  {
+    "name": "editor removed",
+    "ok": true
+  },
+  {
+    "name": "search reset",
+    "ok": true
+  }
+]

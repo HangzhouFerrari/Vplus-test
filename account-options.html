@@ -1,8 +1,21 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="velios-ui">
 <head>
-<script src="sw-register.js?v=20260821-9"></script>
 <meta charset="UTF-8">
+<style>html.theme-start-dark{background:#000;color-scheme:dark}</style>
+<script>
+(function(){
+  var dark=false;
+  try{
+    var saved=JSON.parse(localStorage.getItem('sd_theme')||'{}')||{};
+    dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;
+  }catch(e){dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;}
+  window.veliosInitialDark=dark;
+  document.documentElement.classList.toggle('theme-start-dark',dark);
+})();
+</script>
+
+<script src="sw-register.js?v=20260821-9"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -41,7 +54,7 @@ body.dark-mode input::placeholder{color:var(--text3)!important;}
 nav{position:sticky;top:0;z-index:200;background:rgba(240,238,249,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(200,195,230,0.5);padding:env(safe-area-inset-top,0px) 28px 0;height:var(--nav-h);display:flex;align-items:center;gap:16px;transition:background .3s;}
 body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--glass-border)!important;}
 .nav-back{width:40px;height:40px;border-radius:var(--r3);background:var(--glass);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s var(--ease);flex-shrink:0;color:var(--text2);}
-.nav-back:hover{background:#fff;transform:scale(1.08);box-shadow:var(--glass-shadow-lg);}
+.nav-back:hover{background:#fff;box-shadow:var(--glass-shadow-lg);}
 .nav-back svg{width:18px;height:18px;}
 .nav-title{font-size:18px;font-weight:800;letter-spacing:-0.4px;color:var(--text);}
 .nav-spacer{flex:1;}
@@ -83,7 +96,7 @@ body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--gl
   font-size:28px;padding:0;font-family:var(--font);
   box-shadow:0 2px 8px rgba(0,0,0,0.06);
 }
-.avatar-preset:hover{transform:scale(1.1);box-shadow:0 4px 16px rgba(0,98,255,0.15);}
+.avatar-preset:hover{box-shadow:0 4px 16px rgba(0,98,255,0.15);}
 .avatar-preset.selected{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light),0 4px 16px rgba(0,98,255,0.15);transform:scale(1.08);}
 .avatar-preset img{width:100%;height:100%;object-fit:cover;pointer-events:none;}
 .avatar-classic{margin-top:16px;}
@@ -98,7 +111,7 @@ body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--gl
 .avatar-classic .avatar-preset-grid{margin-top:12px;}
 
 .btn-save-avatar{margin-top:16px;height:42px;padding:0 22px;border-radius:var(--r3);background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:all .2s var(--ease2);box-shadow:0 2px 12px var(--accent-light),inset 1px 1px 0 rgba(255,255,255,0.2);display:inline-flex;align-items:center;gap:8px;}
-.btn-save-avatar:hover:not(:disabled){filter:brightness(1.12);transform:scale(1.03);}
+.btn-save-avatar:hover:not(:disabled){filter:brightness(1.12);}
 .btn-save-avatar:disabled{opacity:.5;cursor:not-allowed;filter:none;transform:none;}
 
 /* FORM */
@@ -128,8 +141,8 @@ body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--gl
 .pw-label{font-size:11px;color:var(--text3);margin-top:3px;font-weight:600;}
 
 .btn-save{height:44px;padding:0 24px;border-radius:var(--r3);background:linear-gradient(180deg,var(--accent) 0%,var(--accent2) 100%);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;transition:all .2s var(--ease2);box-shadow:0 2px 12px var(--accent-light),inset 1px 1px 0 rgba(255,255,255,0.2);display:inline-flex;align-items:center;gap:8px;margin-top:4px;}
-.btn-save:hover:not(:disabled){filter:brightness(1.12);transform:scale(1.03);}
-.btn-save:active:not(:disabled){transform:scale(0.98);}
+.btn-save:hover:not(:disabled){filter:brightness(1.12);}
+.btn-save:active:not(:disabled){}
 .btn-save:disabled{opacity:.5;cursor:not-allowed;filter:none;transform:none;}
 
 /* SESSION */
@@ -166,9 +179,9 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
 .btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;padding:9px 18px;transition:all .2s;outline:none;}
 .btn-glass{background:var(--glass);color:var(--text);box-shadow:var(--glass-shadow);border:1px solid var(--glass-border);}
-.btn-glass:hover{background:rgba(255,255,255,.95);transform:scale(1.03);}
+.btn-glass:hover{background:rgba(255,255,255,.95);}
 .btn-red{background:var(--red);color:#fff;box-shadow:0 2px 10px rgba(232,58,74,0.3);}
-.btn-red:hover{filter:brightness(1.1);transform:scale(1.03);}
+.btn-red:hover{filter:brightness(1.1);}
 .btn-red:disabled{opacity:.5;cursor:not-allowed;filter:none;transform:none;}
 
 /* SPINNER */
@@ -187,14 +200,14 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 :root{--bg-grad:#f2f2f7;--input-bg:#f7f7f8;--glass:#fff;--glass2:#fff;--glass-border:#dedee5;--glass-shadow:none;--glass-shadow-lg:none;--text:#0b1029;--text2:#45465a;--text3:#77798b;--r:30px;--r2:36px;--r3:34px;--r4:30px}
 body.dark-mode{--bg-grad:#000;--input-bg:#2c2c2e;--glass:#1c1c1e;--glass2:#1c1c1e;--glass-border:#343438;--text:#fff;--text2:#d0d0d6;--text3:#8e8e93;--glass-shadow:none;--glass-shadow-lg:none}
 nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--glass-border)!important;backdrop-filter:none;-webkit-backdrop-filter:none}
-.nav-back{background:var(--glass);box-shadow:none;border-radius:50%}.nav-back:hover{background:var(--glass);box-shadow:none;transform:none}
+.nav-back{background:var(--glass);box-shadow:none;border-radius:50%}.nav-back:hover{background:var(--glass);box-shadow:none;}
 .section-card{box-shadow:none;border-radius:var(--r2);animation:none}.section-card-header{padding:18px 22px;border-color:var(--glass-border)}
 .section-card-icon{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:var(--accent-light);color:var(--accent)}
 .section-card-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.avatar-big,.avatar-preset{border-radius:50%;box-shadow:none}.avatar-big-emoji{font-size:24px;color:#fff;font-weight:800}.avatar-preset:hover,.avatar-preset.selected{transform:none}
+.avatar-big,.avatar-preset{border-radius:50%;box-shadow:none}.avatar-big-emoji{font-size:24px;color:#fff;font-weight:800}.avatar-preset:hover,.avatar-preset.selected{}
 .avatar-preset-grid{grid-template-columns:repeat(6,1fr);gap:12px}.avatar-preset{border-width:3px;background:#e9e9ee;box-shadow:none}.avatar-preset.selected{box-shadow:0 0 0 3px var(--accent-light)}
 .btn-save-avatar,.btn-save{background:var(--accent);color:var(--accent-contrast);box-shadow:none;border-radius:999px}
-.btn-save-avatar:hover:not(:disabled),.btn-save:hover:not(:disabled){filter:none;transform:none}
+.btn-save-avatar:hover:not(:disabled),.btn-save:hover:not(:disabled){filter:none;}
 .field input,.modal-confirm-field input{background:var(--input-bg);border:1px solid var(--glass-border);border-radius:999px;padding-inline:18px}
 .field .username-wrap input{padding-left:38px}
 .field .username-at{left:19px}
@@ -209,8 +222,14 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
 @media(max-width:750px){.account-page-skeleton{padding:20px 16px 100px}}
 @media(max-width:520px){.avatar-preset-grid,.account-skeleton-avatar-grid{grid-template-columns:repeat(3,1fr)}.avatar-current-row{align-items:flex-start}.danger-row{align-items:flex-start;flex-direction:column}.danger-row .btn-danger,.danger-row .btn-danger-solid{width:100%;height:42px}}
 </style>
+<link rel="stylesheet" href="design-system.css?v=20260919-1">
+<script defer src="ui-system.js?v=20260919-1"></script>
 </head>
 <body>
+<script>
+document.body.classList.toggle('dark-mode',!!window.veliosInitialDark);
+document.documentElement.classList.remove('theme-start-dark');
+</script>
 
 <nav>
   <button class="nav-back" onclick="window.location.href='index.html'">
@@ -256,7 +275,7 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
         <div class="avatar-preset-grid" id="avatarClassicGrid"></div>
       </details>
 
-      <button class="btn-save-avatar" id="btnSaveAvatar" onclick="saveAvatar()" disabled>
+      <button class="btn btn-primary btn-save-avatar" id="btnSaveAvatar" onclick="saveAvatar()" disabled>
         Foto opslaan
       </button>
     </div>
@@ -288,7 +307,7 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
         <div class="field-hint">Je geboortedatum wordt veilig bij je account opgeslagen.</div>
         <div class="field-error" id="err-birth-date"></div>
       </div>
-      <button class="btn-save" id="btnSaveProfile" onclick="saveProfile()" disabled>Opslaan</button>
+      <button class="btn btn-primary btn-save" id="btnSaveProfile" onclick="saveProfile()" disabled>Opslaan</button>
     </div>
   </div>
 
@@ -305,7 +324,7 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
         <div class="field-hint">Je ontvangt een bevestigingsmail op het nieuwe adres.</div>
         <div class="field-error" id="err-email"></div>
       </div>
-      <button class="btn-save" id="btnSaveEmail" onclick="saveEmail()" disabled>E-mail bijwerken</button>
+      <button class="btn btn-primary btn-save" id="btnSaveEmail" onclick="saveEmail()" disabled>E-mail bijwerken</button>
     </div>
   </div>
 
@@ -352,7 +371,7 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
         </div>
         <div class="field-error" id="err-pw-confirm"></div>
       </div>
-      <button class="btn-save" id="btnSavePw" onclick="savePassword()" disabled>Wachtwoord wijzigen</button>
+      <button class="btn btn-primary btn-save" id="btnSavePw" onclick="savePassword()" disabled>Wachtwoord wijzigen</button>
     </div>
   </div>
 
@@ -364,7 +383,7 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
     </div>
     <div class="section-card-body">
       <div id="sessionArea"></div>
-      <button class="btn-danger" style="margin-top:14px;width:100%;height:40px;border-radius:var(--r3);" onclick="showRevokeModal()">
+      <button class="btn btn-danger-soft btn-danger" style="margin-top:14px;width:100%;height:40px;border-radius:var(--r3);" onclick="showRevokeModal()">
         Alle andere sessies beëindigen
       </button>
     </div>
@@ -382,14 +401,14 @@ body.dark-mode .field input:focus,body.dark-mode .modal-confirm-field input:focu
           <h4>Uitloggen</h4>
           <p>Log je uit op dit apparaat.</p>
         </div>
-        <button class="btn-danger" onclick="doSignOut()">Uitloggen</button>
+        <button class="btn btn-danger-soft btn-danger" onclick="doSignOut()">Uitloggen</button>
       </div>
       <div class="danger-row">
         <div class="danger-row-text">
           <h4>Account verwijderen</h4>
           <p>Verwijdert je account en alle data permanent. Dit kan niet ongedaan worden gemaakt.</p>
         </div>
-        <button class="btn-danger-solid" onclick="showDeleteModal()">Verwijderen</button>
+        <button class="btn btn-red btn-danger-solid" onclick="showDeleteModal()">Verwijderen</button>
       </div>
     </div>
   </div>

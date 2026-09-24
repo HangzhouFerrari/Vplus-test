@@ -1,0 +1,73 @@
+[
+  {
+    "name": "learning has twice the rounds",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "written mode has single round count",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "answer fills a segment",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "initial half preview fades",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "half sixth segment 390",
+    "ok": true,
+    "data": {
+      "ratio": 0.5013123359580053,
+      "width": 302
+    }
+  },
+  {
+    "name": "half sixth segment 1363",
+    "ok": true,
+    "data": {
+      "ratio": 0.5004100377234706,
+      "width": 564
+    }
+  },
+  {
+    "name": "round six slides with preceding half",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "slide is animated",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "end has no trailing empty space",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "normal flashcards use continuous progress",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam uses continuous progress",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam answer fills segment",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "empty answer clears segment",
+    "ok": true,
+    "data": null
+  }
+]

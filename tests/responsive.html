@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><pre id="out">RUNNING</pre><iframe id="frame" style="width:1363px;height:936px"></iframe><script>
+const out=document.getElementById('out'),frame=document.getElementById('frame'),results=[];
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const check=(name,ok,data)=>results.push({name,ok,data});
+function luminance(color){let rgb=color.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722}
+function contrast(el,w){const s=w.getComputedStyle(el),a=luminance(s.color),b=luminance(s.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)}
+(async()=>{try{
+sessionStorage.setItem('velios-sw-reloaded-20260919-1','1');localStorage.setItem('sd_welcome_seen','1');localStorage.setItem('sd_onboard','{"home":true,"set":true,"flashcards":true,"stampen":true,"overhoren":true}');
+frame.src='../set.html?set=040402033';await new Promise(r=>frame.onload=r);await wait(700);const w=frame.contentWindow,d=w.document;w.startMode('flashcards');await wait(600);
+for(const width of [360,390,768,1024,1363]){frame.style.width=width+'px';await wait(100);const buttons=[...d.querySelectorAll('.fc-answer-actions .btn')];const sizes=buttons.map(b=>b.getBoundingClientRect());check('flashcards '+width,sizes.every(r=>r.height>=44&&r.width>=44&&r.right<=width)&&Math.abs(sizes[0].width-sizes[1].width)<1,sizes.map(r=>({width:r.width,height:r.height})));}
+for(const darkMode of [false,true])for(const accentColor of ['#ff9f0a','#0062ff','#ff6b6b','#10b981','#8b5cf6']){
+w.setAccessibilityPreference('highContrast',true);localStorage.setItem('sd_theme',JSON.stringify({darkMode,followSystem:false,accentColor,accentWasChosen:true}));w.loadThemeSettings();
+let sample=d.createElement('button');sample.className='btn btn-primary';sample.textContent='Test';d.body.appendChild(sample);
+let controls=[sample,...d.querySelectorAll('.fc-answer-actions .btn')];const ratios=controls.map(b=>contrast(b,w));check('contrast '+accentColor+' '+darkMode,ratios.every(r=>r>=4.5),ratios);sample.remove();}
+frame.style.width='390px';w.startMode('stampen');w.eval("ST.itype='open';ST.copyCorrect=true;stRenderQ()");await wait(100);d.getElementById('st-inp').value='zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz';w.stCheckOpen();check('copy gates next',d.getElementById('st-check-btn').disabled,w.eval('({copy:ST.copyCorrect,answer:ST._currentA,feedback:document.getElementById("st-fb").textContent})'));w.eval("document.getElementById('st-inp').value=ST._currentA;stCheckCopyInput(document.getElementById('st-inp'))");check('copy unlocks next',!d.getElementById('st-check-btn').disabled);w.stNext();await wait(100);w.stSkip();check('skip next state',d.getElementById('st-check-btn').textContent!=='Controleer');
+localStorage.setItem('sd_theme','{"followSystem":false,"darkMode":false,"accentColor":"#ff9f0a"}');
+frame.src='../index.html?skipWelcome';await new Promise(r=>frame.onload=r);await wait(700);let iw=frame.contentWindow,id=iw.document;iw.showCreateModal();await wait(500);
+for(const width of [360,390,768,1024]){frame.style.width=width+'px';await wait(150);const save=id.querySelector('.create-editor-footer .btn-primary'),r=save.getBoundingClientRect();check('editor save reachable '+width,r.left>=0&&r.right<=width&&r.height>=44,{x:r.x,right:r.right,height:r.height});}
+}catch(e){results.push({error:e.stack})}out.textContent=JSON.stringify(results,null,2);})();</script>

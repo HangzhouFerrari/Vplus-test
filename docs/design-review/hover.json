@@ -1,0 +1,53 @@
+[
+  {
+    "name": "animated hover is 0.98 scale and 0.95 brightness",
+    "ok": true,
+    "data": {
+      "scale": "0.98",
+      "filter": "brightness(0.95)",
+      "transition": "scale, filter, background-color, color, border-color",
+      "duration": "0.16s, 0.16s, 0.16s, 0.16s, 0.16s",
+      "hover": true,
+      "media": false
+    }
+  },
+  {
+    "name": "hover returns to rest",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "primary button appearance shared",
+    "ok": true,
+    "data": [
+      {
+        "backgroundColor": "rgb(255, 159, 10)",
+        "color": "rgb(255, 255, 255)",
+        "borderRadius": "999px",
+        "fontFamily": "\"DM Sans\", sans-serif",
+        "fontWeight": "700"
+      },
+      {
+        "backgroundColor": "rgb(255, 159, 10)",
+        "color": "rgb(255, 255, 255)",
+        "borderRadius": "999px",
+        "fontFamily": "\"DM Sans\", sans-serif",
+        "fontWeight": "700"
+      }
+    ]
+  },
+  {
+    "name": "rotating stars finish on the right",
+    "ok": true,
+    "data": {
+      "before": {
+        "x": 934.5,
+        "y": 309
+      },
+      "after": {
+        "x": 934.5,
+        "y": 309
+      }
+    }
+  }
+]

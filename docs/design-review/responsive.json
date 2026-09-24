@@ -1,0 +1,215 @@
+[
+  {
+    "name": "flashcards 360",
+    "ok": true,
+    "data": [
+      {
+        "width": 148.5,
+        "height": 44
+      },
+      {
+        "width": 148.5,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "name": "flashcards 390",
+    "ok": true,
+    "data": [
+      {
+        "width": 163.5,
+        "height": 44
+      },
+      {
+        "width": 163.5,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "name": "flashcards 768",
+    "ok": true,
+    "data": [
+      {
+        "width": 180,
+        "height": 44
+      },
+      {
+        "width": 180,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "name": "flashcards 1024",
+    "ok": true,
+    "data": [
+      {
+        "width": 180,
+        "height": 44
+      },
+      {
+        "width": 180,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "name": "flashcards 1363",
+    "ok": true,
+    "data": [
+      {
+        "width": 180,
+        "height": 44
+      },
+      {
+        "width": 180,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "name": "contrast #ff9f0a false",
+    "ok": true,
+    "data": [
+      7.189563570318359,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #0062ff false",
+    "ok": true,
+    "data": [
+      7.044611238541034,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #ff6b6b false",
+    "ok": true,
+    "data": [
+      7.024575335097225,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #10b981 false",
+    "ok": true,
+    "data": [
+      7.1093431812393835,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #8b5cf6 false",
+    "ok": true,
+    "data": [
+      7.140782339696222,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #ff9f0a true",
+    "ok": true,
+    "data": [
+      7.189563570318359,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #0062ff true",
+    "ok": true,
+    "data": [
+      7.044611238541034,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #ff6b6b true",
+    "ok": true,
+    "data": [
+      7.024575335097225,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #10b981 true",
+    "ok": true,
+    "data": [
+      7.1093431812393835,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "contrast #8b5cf6 true",
+    "ok": true,
+    "data": [
+      7.140782339696222,
+      6.031607533997224,
+      5.2974358029298125
+    ]
+  },
+  {
+    "name": "copy gates next",
+    "ok": true,
+    "data": {
+      "copy": true,
+      "answer": "Amerikaanse politiek in de Koude Oorlog om het communisme in te dammen",
+      "feedback": " Fout. Het juiste antwoord is: Amerikaanse politiek in de Koude Oorlog om het communisme in te dammen"
+    }
+  },
+  {
+    "name": "copy unlocks next",
+    "ok": true
+  },
+  {
+    "name": "skip next state",
+    "ok": true
+  },
+  {
+    "name": "editor save reachable 360",
+    "ok": true,
+    "data": {
+      "x": 14,
+      "right": 346,
+      "height": 44
+    }
+  },
+  {
+    "name": "editor save reachable 390",
+    "ok": true,
+    "data": {
+      "x": 14,
+      "right": 376,
+      "height": 44
+    }
+  },
+  {
+    "name": "editor save reachable 768",
+    "ok": true,
+    "data": {
+      "x": 575.859375,
+      "right": 733,
+      "height": 44
+    }
+  },
+  {
+    "name": "editor save reachable 1024",
+    "ok": true,
+    "data": {
+      "x": 831.859375,
+      "right": 989,
+      "height": 44
+    }
+  }
+]

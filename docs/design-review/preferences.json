@@ -1,0 +1,55 @@
+[
+  {
+    "name": "hash navigation starts at top",
+    "ok": true,
+    "data": {
+      "title": "Bestanden | Velios+",
+      "windowY": 0,
+      "containerY": 0
+    }
+  },
+  {
+    "name": "default white labels",
+    "ok": true
+  },
+  {
+    "name": "accessibility controls",
+    "ok": true
+  },
+  {
+    "name": "high contrast applied",
+    "ok": true
+  },
+  {
+    "name": "reduced motion applied",
+    "ok": true
+  },
+  {
+    "name": "index at top",
+    "ok": true
+  },
+  {
+    "name": "scroll region without yellow outline",
+    "ok": true
+  },
+  {
+    "name": "preferences persist on set page",
+    "ok": true
+  },
+  {
+    "name": "two rotating stars",
+    "ok": true
+  },
+  {
+    "name": "star does not flip",
+    "ok": true
+  },
+  {
+    "name": "both stars synchronized",
+    "ok": true
+  },
+  {
+    "name": "high contrast off",
+    "ok": true
+  }
+]

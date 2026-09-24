@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><pre id="out">RUNNING</pre><iframe id="frame" style="width:1363px;height:936px"></iframe><script>
+const out=document.getElementById('out'),frame=document.getElementById('frame');const results=[];
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const check=(name,ok,data)=>results.push({name,ok,data});
+sessionStorage.setItem('velios-sw-reloaded-20260919-1','1');localStorage.setItem('sd_welcome_seen','1');localStorage.setItem('sd_onboard',JSON.stringify({home:true,set:true,flashcards:true,stampen:true,overhoren:true}));
+async function load(url){frame.src=url;await new Promise(r=>frame.onload=r);await wait(700);return frame.contentWindow;}
+(async()=>{try{
+let w=await load('../set.html?set=040402033');let d=w.document;
+w.eval(`startMode('flashcards')`);await wait(700);
+const buttons=[...d.querySelectorAll('.fc-answer-actions .btn')];
+check('answer controls',buttons.length===2,buttons.map(b=>{const s=w.getComputedStyle(b),r=b.getBoundingClientRect();return{background:s.backgroundImage,color:s.color,fill:s.backgroundColor,shadow:s.boxShadow,width:r.width,height:r.height}}));
+let r=d.querySelector('.fc-face:not([inert]) .fc-star-btn').getBoundingClientRect();d.getElementById('fc-inner').style.transition='none';w.fcFlip();await wait(400);let r2=d.querySelector('.fc-face:not([inert]) .fc-star-btn').getBoundingClientRect();check('star stable',Math.abs(r.x-r2.x)<1&&Math.abs(r.y-r2.y)<1,{before:{x:r.x,y:r.y},after:{x:r2.x,y:r2.y}});check('one accessible face',d.querySelectorAll('.fc-face[aria-hidden="false"]').length===1);
+w.eval('fcMark(true);fcMark(true)');check('rapid answers count once',w.eval('FC.idx')===1);await wait(650);w.fcUndoLastAction();check('undo restores index',w.eval('FC.idx')===0);
+w.toggleDD('fc-dd');check('settings named',[...d.querySelectorAll('#fc-dd input,#fc-dd select')].every(el=>el.getAttribute('aria-label')));
+w.eval(`startMode('stampen');ST.itype='open';ST.copyCorrect=false;stRenderQ()`);await wait(100);d.getElementById('st-inp').value='incorrect QA answer';w.stCheckOpen();check('next primary',d.getElementById('st-check-btn').textContent==='Volgende');check('duplicate next hidden',d.querySelectorAll('#st-check-btn').length===1&&!d.getElementById('st-next-area'));
+d.getElementById('answer-mode-overlay')?.remove();w.showOnboarding('flashcards',true);await wait(100);let body=d.querySelector('.onboard-body');body.style.maxHeight='160px';await wait(50);body.scrollTop=0;body.dispatchEvent(new Event('scroll'));check('onboarding locked',d.querySelector('.onboard-btn').disabled);body.scrollTop=body.scrollHeight;await wait(600);body.dispatchEvent(new Event('scroll'));check('onboarding unlocked',!d.querySelector('.onboard-btn').disabled,{top:body.scrollTop,height:body.clientHeight,total:body.scrollHeight});
+w=await load('../index.html?skipWelcome');d=w.document;check('index visible',d.getElementById('app-content').style.pointerEvents==='auto',w.performance.getEntriesByName('velios-app-visible').map(x=>x.startTime));check('sidebar native',[...d.querySelectorAll('.sidebar-btn')].every(b=>b.tagName==='BUTTON'));
+w.showCreateModal();await wait(150);check('editor dialog',d.getElementById('modal-panel').getAttribute('role')==='dialog');check('editor names',[...d.querySelectorAll('.rich-editor')].every(e=>e.getAttribute('aria-label')));w.closeModal();await wait(450);check('editor removed',!d.querySelector('.rich-editor'));
+w.showPage('library');w.eval(`searchQuery='nonexistent QA term';renderLibrary()`);check('search reset',d.querySelector('#library-list').textContent.includes('Zoekopdracht wissen'));
+}catch(e){results.push({error:e.stack})}out.textContent=JSON.stringify(results,null,2);})();</script>

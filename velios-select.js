@@ -25,6 +25,22 @@
     </div>`;
   }
 
+  // Preserve each native field and its existing change handler as the source of truth.
+  function enhance(root=document) {
+    root.querySelectorAll('select.settings-select').forEach(select=>{
+      if(select.closest('.velios-select'))return;
+      const host=document.createElement('div');
+      host.innerHTML=markup({value:select.value,ariaLabel:select.getAttribute('aria-label'),
+        options:[...select.options].map(option=>({value:option.value,label:option.textContent})),
+        className:'velios-settings-select'});
+      const wrapper=host.firstElementChild;
+      select.replaceWith(wrapper);wrapper.append(select);
+      select.hidden=true;select.tabIndex=-1;select.setAttribute('aria-hidden','true');
+      wrapper._nativeSelect=select;
+      select.addEventListener('change',()=>setValue(wrapper,select.value));
+    });
+  }
+
   function readOptions(wrapper) {
     try { return normalizeOptions(JSON.parse(decodeURIComponent(wrapper.dataset.options || '[]'))); }
     catch (_) { return []; }
@@ -43,6 +59,7 @@
     const trigger = wrapper.querySelector('.velios-select-trigger');
     wrapper.dataset.value = nextValue;
     if (hiddenInput) hiddenInput.value = nextValue;
+    if(wrapper._nativeSelect)wrapper._nativeSelect.value=nextValue;
     const valueNode = trigger?.querySelector('.velios-select-value');
     if (valueNode) valueNode.textContent = nextLabel || trigger.getAttribute('aria-label') || 'Maak een keuze';
     trigger?.classList.toggle('is-placeholder', !nextValue);
@@ -115,8 +132,9 @@
     const { wrapper, trigger } = openState;
     const value = option.dataset.value || '';
     const label = option.querySelector('span')?.textContent || value;
-    const input = wrapper.querySelector('input[type="hidden"]');
+    const input = wrapper._nativeSelect || wrapper.querySelector('input[type="hidden"]');
     wrapper.dataset.value = value;
+    close();
     if (input) {
       input.value = value;
       input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -124,9 +142,8 @@
     trigger.querySelector('.velios-select-value').textContent = label;
     trigger.classList.remove('is-placeholder');
     const handler = wrapper.dataset.onchange;
-    close();
     if (handler && typeof window[handler] === 'function') window[handler](value);
-    trigger.focus({ preventScroll: true });
+    if(trigger.isConnected&&!trigger.closest('[inert]')&&trigger.getClientRects().length)trigger.focus({ preventScroll: true });
   }
 
   function focusRelative(menu, delta) {
@@ -155,15 +172,15 @@
       const options = event.currentTarget.querySelectorAll('.velios-select-option');
       options[event.key === 'Home' ? 0 : options.length - 1]?.focus();
     } else if (event.key === 'Escape') {
-      event.preventDefault(); const trigger = openState?.trigger; close(); trigger?.focus();
-    } else if (event.key === 'Tab') close();
+      event.preventDefault(); event.stopPropagation(); const trigger = openState?.trigger; close(); trigger?.focus({preventScroll:true});
+    } else if (event.key === 'Tab') {const trigger=openState?.trigger;close();trigger?.focus({preventScroll:true});}
   }
 
   document.addEventListener('pointerdown', event => {
     if (openState && !event.target.closest('.velios-select-menu') && !event.target.closest('.velios-select')) close();
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && openState) { const trigger = openState.trigger; close(); trigger?.focus(); }
+    if (event.key === 'Escape' && openState) { event.preventDefault();event.stopImmediatePropagation();const trigger = openState.trigger; close(); trigger?.focus(); }
   });
   window.addEventListener('resize', () => close(true));
   window.addEventListener('scroll', event => {
@@ -173,5 +190,5 @@
     if (openState && !document.body.contains(openState.trigger)) close(true);
   }).observe(document.documentElement, { childList: true, subtree: true });
 
-  window.VeliosSelect = { markup, setValue, toggle, keydown, close, position };
+  window.VeliosSelect = { enhance, markup, setValue, toggle, keydown, close, position };
 })();

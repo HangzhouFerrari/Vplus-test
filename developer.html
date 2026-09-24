@@ -1,12 +1,25 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="velios-ui">
 <head>
+<meta charset="UTF-8">
+<style>html.theme-start-dark{background:#000;color-scheme:dark}</style>
+<script>
+(function(){
+  var dark=false;
+  try{
+    var saved=JSON.parse(localStorage.getItem('sd_theme')||'{}')||{};
+    dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;
+  }catch(e){dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;}
+  window.veliosInitialDark=dark;
+  document.documentElement.classList.toggle('theme-start-dark',dark);
+})();
+</script>
+
 <script>
 if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
   window.location.href = 'unsupported.html';
 }
 </script>
-<meta charset="UTF-8">
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="expires" content="0">
@@ -34,9 +47,9 @@ body{min-height:100vh;background:var(--bg-grad);background-attachment:fixed;padd
 
 .btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;padding:9px 18px;transition:all .2s var(--ease);outline:none;white-space:nowrap;}
 .btn-primary{background:linear-gradient(180deg,#0062ff 0%,rgba(0,98,255,0.85) 100%);color:#fff;box-shadow:0 2px 12px rgba(0,98,255,0.35),inset 1px 1px 0 rgba(255,255,255,0.25);}
-.btn-primary:hover{filter:brightness(1.15);transform:scale(1.04)translate(0,-1px)}
+.btn-primary:hover{filter:brightness(1.15);}
 .btn-glass{background:linear-gradient(180deg,rgba(255,255,255,0.9) 0%,rgba(255,255,255,0.75) 100%);color:var(--text);box-shadow:inset 1px 1px 0 rgba(255,255,255,1),0 2px 8px rgba(80,60,160,0.1);border:none;}
-.btn-glass:hover{background:rgba(255,255,255,0.95);transform:scale(1.04)}
+.btn-glass:hover{background:rgba(255,255,255,0.95);}
 .btn-lg{padding:13px 26px;font-size:16px;border-radius:var(--r)}
 .btn-danger{background:linear-gradient(180deg,#e83a4a 0%,rgba(232,58,74,0.85) 100%);color:#fff;box-shadow:0 2px 12px rgba(232,58,74,0.3)}
 .btn-danger:hover{filter:brightness(1.15)}
@@ -99,8 +112,14 @@ textarea#vset-content{min-height:200px;font-family:monospace;font-size:12px}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
+<link rel="stylesheet" href="design-system.css?v=20260919-1">
+<script defer src="ui-system.js?v=20260919-1"></script>
 </head>
 <body>
+<script>
+document.body.classList.toggle('dark-mode',!!window.veliosInitialDark);
+document.documentElement.classList.remove('theme-start-dark');
+</script>
 
 <!-- Login Screen -->
 <div class="login-screen" id="login-screen">
@@ -122,7 +141,7 @@ textarea#vset-content{min-height:200px;font-family:monospace;font-size:12px}
     <div class="header">
       <h1>Developer Console</h1>
       <div class="btn-group">
-        <a href="index.html" class="btn btn-glass btn-lg" style="text-decoration:none;">← Terug naar Home</a>
+        <a href="index.html" class="btn btn-glass return-btn" style="text-decoration:none;">← Terug naar Home</a>
         <button class="btn btn-primary btn-lg btn-logout" onclick="logout()">Uitloggen</button>
       </div>
     </div>

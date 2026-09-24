@@ -134,7 +134,7 @@ function applyThemeSettings(darkMode,accentColor){
     root.setProperty('--accent',accentColor);
     root.setProperty('--accent2',`rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`);
     root.setProperty('--accent-light',`rgba(${r},${g},${b},0.12)`);
-    root.setProperty('--accent-contrast','#fff');
+    applyAccessibilityPreferences();
   }
 }
 
@@ -158,6 +158,7 @@ if(window.matchMedia){
    DB
 ══════════════════════════════════════════════════════ */
 let DB={sets:[]};
+let publicLibraryLoading=true;
 function initDB(){
   try{
     DB.sets=JSON.parse(localStorage.getItem('sd_sets')||'[]');
@@ -172,7 +173,7 @@ function initDB(){
 async function syncLocalWithServer(){
   try{
     const baseURL=window.location.protocol==='file:'?'./sets/':'./sets/';
-    const indexResp=await fetch(baseURL+'index.json');
+    const indexResp=await fetch(baseURL+'index.json',{signal:AbortSignal.timeout(8000)});
     if(indexResp.ok){
       const fileList=await indexResp.json();
       const serverFiles=new Set(fileList);
@@ -197,17 +198,18 @@ async function loadSetsFromDirectory(){
   try{
     // Load from local /sets/ directory instead of GitHub
     const baseURL=window.location.protocol==='file:'?'./sets/':'./sets/';
-    const indexResp=await fetch(baseURL+'index.json');
+    const indexResp=await fetch(baseURL+'index.json',{signal:AbortSignal.timeout(8000)});
     if(indexResp.ok){
       const fileList=await indexResp.json();
-      for(const filename of fileList){
+      const pendingFiles=[...fileList];
+      const loadFile=async filename=>{
         try{
           // For local file:// protocol, decode filename properly
           let filePath=baseURL+filename;
           if(window.location.protocol==='file:'){
             filePath=baseURL+encodeURIComponent(filename);
           }
-          const sr=await fetch(filePath);
+          const sr=await fetch(filePath,{signal:AbortSignal.timeout(8000)});
           if(sr.ok){
             const content=await sr.text();
             let set=null;
@@ -235,7 +237,11 @@ async function loadSetsFromDirectory(){
             }
           }
         }catch(e){console.warn('Failed to load',filename,':',e.message)}
-      }
+      };
+      // Bound concurrency so one slow set does not delay every other set.
+      await Promise.all(Array.from({length:Math.min(6,pendingFiles.length)},async()=>{
+        while(pendingFiles.length)await loadFile(pendingFiles.shift());
+      }));
       saveDB();
     }
   }catch(e){console.warn('Could not load sets from /sets/ directory:',e.message)}
@@ -444,7 +450,8 @@ function getSubjectConfig(value){
 }
 
 function getPageFromLocation() {
-  const hashPage = decodeURIComponent(window.location.hash.slice(1));
+  const hashPage = decodeURIComponent((window.veliosInitialHash||window.location.hash).slice(1));
+  window.veliosInitialHash='';
   if(hashPage.startsWith('subject/')){
     currentSubject=getSubjectConfig(hashPage.slice(8)).name;
     return 'subject';
@@ -481,6 +488,7 @@ function renderPageContent(page){
 
 function showPage(page) {
   if (!['home', 'library', 'vakken', 'zoeken', 'subject'].includes(page)) page = 'home';
+  document.querySelectorAll('.sidebar-btn').forEach(button=>{if(button.getAttribute('onclick')===`showPage('${page}')`)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
   const targetPage=document.getElementById(page);
   if(!targetPage)return;
   const previousPage=document.getElementById(currentPage)||document.querySelector('.page.active');
@@ -512,6 +520,7 @@ function showPage(page) {
     window.history.replaceState(window.history.state, '', nextHash);
   }
 
+  if(isFirstPage||isSamePage||reduceMotion)resetPageScroll();
   if(reduceMotion){
     clearPageTransition(targetPage);
     if(page==='subject'&&!isFirstPage)resetPageScroll();
@@ -579,15 +588,18 @@ function showPage(page) {
 function resetPageScroll(){
   const scrollContainer=document.getElementById('page-scroll-container');
   const scrollToTop=()=>{
-    if(scrollContainer)scrollContainer.scrollTop=0;
+    if(scrollContainer)scrollContainer.scrollTo({top:0,left:0,behavior:'instant'});
     document.documentElement.scrollTop=0;
     document.body.scrollTop=0;
-    window.scrollTo(0,0);
+    window.scrollTo({top:0,left:0,behavior:'instant'});
   };
   scrollToTop();
   requestAnimationFrame(scrollToTop);
 }
 
+if('scrollRestoration' in history)history.scrollRestoration='manual';
+window.addEventListener('pageshow',resetPageScroll);
+window.addEventListener('load',resetPageScroll);
 window.addEventListener('hashchange', () => showPage(getPageFromLocation()));
 
 function updateRecentSidebar() {
@@ -648,7 +660,7 @@ function renderHome(){
       document.getElementById('section-recent').style.display = 'block';
       renderSetGrid('recent-grid', recentSets);
     } else document.getElementById('section-recent').style.display = 'none';
-    const recommended = DB.sets.filter(s => s.vak).sort(() => Math.random() - 0.5).slice(0, 3);
+    const recommended = DB.sets.filter(s => s.vak).sort((a,b) => String(a.id).localeCompare(String(b.id))).slice(0, 3);
     if (recommended.length) renderSetGrid('recommended-grid', recommended);
     const newest = DB.sets.filter(s => s.fromServer).sort((a, b) => (b.id || '').localeCompare(a.id || '')).slice(0, 3);
     const newestSect = document.getElementById('section-newest');
@@ -753,8 +765,11 @@ function isMySet(set){
 function renderSetGrid(elementId, sets, options={}) {
   const el = document.getElementById(elementId);
   if (!el) return;
+  if (!sets.length && publicLibraryLoading) {
+    el.innerHTML='<div class="empty-state" role="status">Sets worden geladen… Je kunt alvast navigeren of een nieuwe set maken.</div>';return;
+  }
   if (!sets.length) {
-    el.innerHTML = '<div class="empty-state">Geen sets gevonden met deze instellingen.</div>';
+    el.innerHTML = `<div class="empty-state">${searchQuery ? `Geen sets gevonden voor ‘${esc(searchQuery)}’.` : 'Geen sets gevonden met deze instellingen.'}${elementId==='library-list' ? `<p><button class="btn btn-glass" onclick="resetLibrarySearch()">${searchQuery?'Zoekopdracht wissen':'Filters wissen'}</button></p>` : ''}</div>`;
     return;
   }
   const playIcon='<img src="assets/icons/icon_play.svg" alt="">';
@@ -773,12 +788,12 @@ function renderSetGrid(elementId, sets, options={}) {
         <span class="badge badge-purple">${s.terms.length} begrippen</span>
         ${s.vak?`<span class="badge badge-orange">${esc(s.vak)}</span>`:''}
         ${synced?'<span class="badge badge-cloud" title="Gesynchroniseerd" aria-label="Gesynchroniseerd"><span class="badge-cloud-icon" aria-hidden="true"></span></span>':''}
-        ${formatSetDate(s.datum)?`<span class="set-card-date">${formatSetDate(s.datum)}</span>`:''}
+        ${formatSetDate(s.datum)?`<span class="set-card-date">Toets: ${displaySetDate(s.datum)}</span>`:''}
       </div>
       <div class="set-card-actions" onclick="event.stopPropagation()">
-        <button class="btn btn-sm set-icon-btn" onclick="openSet('${s.id}')" aria-label="Openen">${playIcon}</button>
-        ${local||synced?`<button class="btn btn-sm set-icon-btn" onclick="showCreateModal('${s.id}')" aria-label="Bewerken">${editIcon}</button>`:''}
-        ${local||synced?`<button class="btn btn-sm set-icon-btn set-delete-btn" onclick="confirmDelete('${s.id}')" aria-label="Verwijderen">${deleteIcon}</button>`:''}
+        <button class="btn btn-icon btn-tonal set-icon-btn" onclick="openSet('${s.id}')" aria-label="Openen">${playIcon}</button>
+        ${local||synced?`<button class="btn btn-icon btn-tonal set-icon-btn" onclick="showCreateModal('${s.id}')" aria-label="Bewerken">${editIcon}</button>`:''}
+        ${local||synced?`<button class="btn btn-icon btn-tonal set-icon-btn set-delete-btn" onclick="confirmDelete('${s.id}')" aria-label="Verwijderen">${deleteIcon}</button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -1391,6 +1406,7 @@ function setupSearch(){
   searchBox.addEventListener('input',(e)=>{
     const query=e.target.value.trim().toLowerCase();
     searchQuery=query;
+    if(currentPage==='library'){dropdown.style.display='none';renderLibrary();return;}
     
     if(!query){
       dropdown.style.display='none';
@@ -1611,7 +1627,7 @@ function buildPairRowHTML(i, p) {
       <div class="pair-col" data-label="Begrip / term">
         <div
           class="rich-editor"
-          id="${termEdId}"
+          id="${termEdId}" role="textbox" aria-multiline="true" aria-label="Begrip ${i+1}"
           contenteditable="true"
           data-placeholder="Begrip"
           data-idx="${i}"
@@ -1627,7 +1643,7 @@ function buildPairRowHTML(i, p) {
       <div class="pair-col" data-label="Definitie">
         <div
           class="rich-editor"
-          id="${defEdId}"
+          id="${defEdId}" role="textbox" aria-multiline="true" aria-label="Definitie ${i+1}"
           contenteditable="true"
           data-placeholder="Definitie"
           data-idx="${i}"
@@ -1645,19 +1661,19 @@ function buildPairRowHTML(i, p) {
 
 function buildToolbarHTML(barId, edId) {
   const swatches = COLORS.map(c =>
-    `<div class="color-swatch" style="background:${c.hex}" title="${c.label}"
-      data-color="${c.hex}" data-editor="${edId}"></div>`
+    `<button type="button" aria-label="Tekstkleur ${c.label}" class="color-swatch" style="background:${c.hex}" title="${c.label}"
+      data-color="${c.hex}" data-editor="${edId}"></button>`
   ).join('');
 
   return `
     <div class="fmt-bar" id="${barId}">
       ${swatches}
       <div class="fmt-sep"></div>
-      <button class="fmt-btn" data-cmd="bold" data-editor="${edId}" title="Vet (Ctrl+B)"><b>B</b></button>
-      <button class="fmt-btn" data-cmd="italic" data-editor="${edId}" title="Cursief (Ctrl+I)"><i>I</i></button>
+      <button class="fmt-btn" aria-label="Vet" data-cmd="bold" data-editor="${edId}" title="Vet (Ctrl+B)"><b>B</b></button>
+      <button class="fmt-btn" aria-label="Cursief" data-cmd="italic" data-editor="${edId}" title="Cursief (Ctrl+I)"><i>I</i></button>
       <div class="fmt-sep"></div>
       <button class="fmt-clear" data-editor="${edId}" title="Verwijder alle opmaak">✕ Opmaak wissen</button>
-      <button class="img-upload-btn" data-upload="${edId}" style="margin-left:auto"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;vertical-align:-3px;margin-right:4px"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m4 18 5-5 3 3 2-2 6 5"/></svg>Afb.</button>
+      <button class="img-upload-btn" aria-label="Afbeelding toevoegen" data-upload="${edId}" style="margin-left:auto"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;vertical-align:-3px;margin-right:4px"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m4 18 5-5 3 3 2-2 6 5"/></svg>Afb.</button>
     </div>
   `;
 }
@@ -1685,18 +1701,14 @@ function bindPairEvents(container) {
         if (e.key === 'b' || e.key === 'B') { e.preventDefault(); saveSelection(); applyCmd(ed, 'bold'); }
         if (e.key === 'i' || e.key === 'I') { e.preventDefault(); saveSelection(); applyCmd(ed, 'italic'); }
       }
-      // Tab → jump to next editor
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        const all = [...container.querySelectorAll('.rich-editor')];
-        const cur = all.indexOf(ed);
-        const next = all[cur + 1];
-        if (next) { next.focus(); const r = document.createRange(); r.selectNodeContents(next); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
-        else { ceAdd(); } // Tab on last field → add new pair
-      }
+      // Native Tab order includes the formatting controls and respects Shift+Tab.
+      if(e.key==='Tab')saveSelection();
     });
   });
 
+  container.querySelectorAll('.fmt-btn,.color-swatch,.fmt-clear').forEach(button => {
+    button.addEventListener('click', e => { if(e.detail===0)button.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true})); });
+  });
   // ── Toolbar buttons (bold/italic) ──
   container.querySelectorAll('.fmt-btn[data-cmd]').forEach(btn => {
     btn.addEventListener('mousedown', (e) => {
@@ -1860,7 +1872,7 @@ function buildCreateEditorMarkup(s,id,editorSubject){
     <div class="create-editor-drag-zone" aria-hidden="true"><span></span></div>
     <header class="create-editor-header">
       <div class="create-editor-heading"><h2>${id?'Set bewerken':'Nieuwe set'}</h2></div>
-      <div class="create-editor-header-actions"><button class="modal-header-btn create-editor-icon-btn create-editor-expand" type="button" onclick="toggleMaximize()" aria-label="Volledig scherm"><img src="assets/icons/icon_maximize.svg" alt=""></button><button class="create-editor-icon-btn" type="button" onclick="closeModal()" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="create-editor-header-actions"><button class="acc-ov-icon-btn create-editor-icon-btn create-editor-expand" type="button" onclick="toggleMaximize()" aria-label="Volledig scherm"><svg viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg></button><button class="acc-ov-icon-btn create-editor-icon-btn" type="button" onclick="closeModal()" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     </header>
     <div class="create-editor-scroll modal-content">
       <section class="create-editor-card create-editor-details">
@@ -1880,7 +1892,7 @@ function buildCreateEditorMarkup(s,id,editorSubject){
         <button class="btn btn-glass btn-add-term" type="button" onclick="ceAdd()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Begrip toevoegen</button>
       </section>
     </div>
-    <footer class="create-editor-footer modal-footer"><button class="btn create-editor-clear" type="button" onclick="ceClearDraft()">Concept verwijderen</button><div class="create-editor-save-actions"><button class="btn btn-primary" type="button" onclick="ceSave()"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>${id?'Opslaan':'Set aanmaken'}</button></div></footer>
+    <footer class="create-editor-footer modal-footer"><button class="btn btn-danger-soft create-editor-clear" type="button" onclick="ceClearDraft()">Concept verwijderen</button><div class="create-editor-save-actions"><button class="btn btn-primary" type="button" onclick="ceSave()"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>${id?'Opslaan':'Set aanmaken'}</button></div></footer>
   </div>`;
 }
 
@@ -1930,7 +1942,7 @@ function toggleMaximize() {
   }else{
     ['width','max-width','height','max-height','border-radius'].forEach(prop=>panel.style.removeProperty(prop));
   }
-  if(btn){btn.innerHTML=`<img src="assets/icons/${CE.viewMode===2?'icon_minimize.svg':'icon_maximize.svg'}" alt="">`;btn.setAttribute('aria-label',CE.viewMode===2?'Volledig scherm verlaten':'Volledig scherm');}
+  if(btn){btn.innerHTML=`<svg viewBox="0 0 24 24"><path d="${CE.viewMode===2?'M3 8h5V3m8 0v5h5M8 21v-5H3m18 0h-5v5':'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5'}"/></svg>`;btn.setAttribute('aria-label',CE.viewMode===2?'Volledig scherm verlaten':'Volledig scherm');}
   return;
 
   const maxSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(255,255,255,0)" d="M2433 926h256v256h-256z" transform="translate(-2433 -926)"/><path data-name="Rectangle 20" d="M2504.766 936h112.468A61.766 61.766 0 0 1 2679 997.766v112.468a61.766 61.766 0 0 1-61.766 61.766h-112.468a61.766 61.766 0 0 1-61.766-61.766V997.766A61.766 61.766 0 0 1 2504.766 936" fill="var(--accent)" opacity=".4" transform="translate(-2433 -926)"/><path data-name="Rectangle 59" fill="var(--accent)" opacity=".6" d="m2634.186 960.308 20.506 20.506-166.877 166.877-20.506-20.506z" transform="translate(-2433 -926)"/><path data-name="Path 235" d="M2602.5 936h14.734A61.766 61.766 0 0 1 2679 997.766v14.734a14.5 14.5 0 0 1-14.5 14.5 14.5 14.5 0 0 1-14.5-14.5v-14.734A32.8 32.8 0 0 0 2617.234 965H2602.5a14.5 14.5 0 0 1-14.5-14.5 14.5 14.5 0 0 1 14.5-14.5" fill="var(--accent)" transform="translate(-2433 -926)"/><path data-name="Path 236" d="M2519.5 1172h-14.734a61.766 61.766 0 0 1-61.766-61.766V1095.5a14.5 14.5 0 0 1 14.5-14.5 14.5 14.5 0 0 1 14.5 14.5v14.734a32.8 32.8 0 0 0 32.766 32.766h14.734a14.5 14.5 0 0 1 14.5 14.5 14.5 14.5 0 0 1-14.5 14.5" fill="var(--accent)" transform="translate(-2433 -926)"/></svg>';
@@ -2218,10 +2230,16 @@ function doDelete(id) {
 /* ══════════════════════════════════════════════════════
    MODAL
 ══════════════════════════════════════════════════════ */
+let modalReturnFocus;
 function showModal(html) {
+  modalReturnFocus=document.activeElement;
   const panel=document.getElementById('modal-panel');
   panel.classList.remove('create-modal-panel');
   panel.innerHTML = html;
+  panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');
+  panel.setAttribute('aria-label',panel.querySelector('h3')?.textContent.trim()||'Dialoog');
+  panel.tabIndex=-1;
+  setTimeout(()=>{panel.querySelector('input,button,[tabindex="0"]')?.focus();},0);
   const bg = document.getElementById('modal-bg');
   bg.classList.remove('create-modal-bg');
   bg.classList.remove('hidden');
@@ -2264,6 +2282,8 @@ function setupCreateModalSwipe(){
 function finishCloseModal(){
   const bg=document.getElementById('modal-bg'),panel=document.getElementById('modal-panel');
   document.documentElement.classList.remove('modal-open');document.body.classList.remove('modal-open');CE.viewMode=0;
+  panel.replaceChildren();
+  if(modalReturnFocus?.isConnected)modalReturnFocus.focus({preventScroll:true});
   bg.classList.add('hidden');bg.classList.remove('modal-maximized','modal-fullscreen','create-modal-bg','closing');
   panel.classList.remove('create-modal-panel','closing','swipe-dismiss','is-dragging','is-returning','is-ready');
   ['transform','width','max-width','height','max-height','border-radius','--create-dismiss-start','--create-content-opacity'].forEach(prop=>panel.style.removeProperty(prop));
@@ -2271,7 +2291,9 @@ function finishCloseModal(){
 function closeModal() {
   closeSubjectPicker();
   const bg=document.getElementById('modal-bg'),panel=document.getElementById('modal-panel');
-  if(bg.classList.contains('create-modal-bg')&&!bg.classList.contains('closing')){bg.classList.add('closing');panel.classList.remove('is-dragging','is-returning');panel.classList.add('closing');setTimeout(finishCloseModal,380);return;}
+  if(bg.classList.contains('create-modal-bg')&&!bg.classList.contains('closing')){bg.classList.add('closing');panel.classList.remove('is-dragging','is-returning');panel.classList.add('closing');const duration=Math.max(...getComputedStyle(panel).animationDuration.split(',').map(parseFloat))*1000;
+    if(duration<1){finishCloseModal();return;}
+    let finished=false;const finish=()=>{if(finished)return;finished=true;panel.removeEventListener('animationend',onEnd);if(bg.classList.contains('closing'))finishCloseModal();};const onEnd=e=>{if(e.target===panel)finish();};panel.addEventListener('animationend',onEnd);setTimeout(finish,duration+40);return;}
   finishCloseModal();
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); if (document.getElementById('account-overlay')) closeAccountOverlay(); } });
@@ -2352,16 +2374,17 @@ const ONBOARD_DEFS = {
 function showOnboarding(key, force = false) {
   const seen = JSON.parse(localStorage.getItem('sd_onboard') || '{}');
   if (!force && seen[key]) return false;
-  seen[key] = true;
-  localStorage.setItem('sd_onboard', JSON.stringify(seen));
+
   const d = ONBOARD_DEFS[key];
   if (!d) return false;
   const el = document.createElement('div');
   el.className = 'onboard-overlay';
   el.id = 'onboard-overlay';
+  el.dataset.onboardKey=key;
+  el._returnFocus=document.activeElement;
   el.innerHTML = `
-    <div class="onboard-panel">
-      <div class="onboard-body">
+    <div class="onboard-panel" role="dialog" aria-modal="true" aria-label="${d.title}">
+      <div class="onboard-body" tabindex="0" role="region" aria-label="Uitleg" aria-describedby="onboard-scroll-hint">
         <span class="onboard-icon">${d.icon}</span>
         <div class="onboard-title">${d.title}</div>
         <div class="onboard-desc">${d.desc}</div>
@@ -2375,7 +2398,7 @@ function showOnboarding(key, force = false) {
           </div>`).join('')}
       </div>
       <div class="onboard-footer">
-        <button class="onboard-btn" onclick="closeOnboarding()">Verdergaan</button>
+        <p id="onboard-scroll-hint" class="onboard-scroll-hint" role="status">Lees de volledige uitleg en scroll naar beneden om verder te gaan.</p><button class="onboard-btn" disabled onclick="closeOnboarding()">Verdergaan</button>
       </div>
     </div>`;
   document.body.appendChild(el);
@@ -2385,15 +2408,24 @@ function showOnboarding(key, force = false) {
     const canScroll = body.scrollHeight <= body.clientHeight + 2;
     const isBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 2;
     btn.disabled = !(canScroll || isBottom);
+    el.querySelector('#onboard-scroll-hint').textContent = btn.disabled ? 'Lees de volledige uitleg en scroll naar beneden om verder te gaan.' : 'Je bent aan het einde van de uitleg. Je kunt verdergaan.';
   }
   body.addEventListener('scroll', updateOnboardButtonState);
-  setTimeout(updateOnboardButtonState, 0);
+  setTimeout(() => { updateOnboardButtonState(); body.focus({preventScroll:true}); }, 0);
+  const resizeObserver = new ResizeObserver(updateOnboardButtonState);
+  resizeObserver.observe(body);
+  el._scrollObserver = resizeObserver;
   return true;
 }
 
 function closeOnboarding() {
   const el = document.getElementById('onboard-overlay');
   if (!el) return;
+  if(el.querySelector('.onboard-btn')?.disabled)return;
+  el._scrollObserver?.disconnect();
+  const completed=JSON.parse(localStorage.getItem('sd_onboard')||'{}');
+  completed[el.dataset.onboardKey]=true;localStorage.setItem('sd_onboard',JSON.stringify(completed));
+  if(el._returnFocus?.isConnected)el._returnFocus.focus();
   el.style.pointerEvents = 'none';
   const panel = el.querySelector('.onboard-panel');
   if (panel) {
@@ -2447,30 +2479,38 @@ window.debugDb = function(){
   console.log('Sets in memory:', DB.sets.length, DB.sets);
   return DB.sets;
 };
-loadSetsFromDirectory().then(loadSyncedSetsIntoLibrary).then(() => {
-  syncedLibraryReady = true;
+// Show the local library immediately; public sets and account sync refresh independently.
+const publicLibraryReady=loadSetsFromDirectory().finally(()=>{
+  publicLibraryLoading=false;
+  renderPageContent(currentPage);
+});
+Promise.resolve().then(() => {
   updateConnectionState();
   showPage(getPageFromLocation());
-  setupSearch();
-  setupMobileSearch();
-  initMobileSidebar();
-  loadAllNotifications();
-  scheduleNotificationOnboarding();
-  const loadingScreen = document.getElementById('loading-screen');
-  const appContent = document.getElementById('app-content');
-  if (loadingScreen && appContent) {
-    loadingScreen.style.opacity = '0';
-    appContent.style.opacity = '1';
-    appContent.style.pointerEvents = 'auto';
-    setTimeout(() => { loadingScreen.style.display = 'none'; }, 500);
-  }
-  const urlParams = new URLSearchParams(window.location.search);
+  setupSearch();setupMobileSearch();initMobileSidebar();
+  const loadingScreen=document.getElementById('loading-screen');
+  const appContent=document.getElementById('app-content');
+  if(loadingScreen)loadingScreen.style.display='none';
+  if(appContent){appContent.style.opacity='1';appContent.style.pointerEvents='auto';}
+  performance.mark('velios-app-visible');
+  const urlParams=new URLSearchParams(window.location.search);
   if (urlParams.get('create') === '1') {
     setTimeout(() => showCreateModal(), 0);
   }
   if (urlParams.get('menu')) {
     setTimeout(() => openAccountOverlay(urlParams.get('menu')), 0);
   }
+});
+const accountLibraryReady=new Promise(resolve=>{
+  const refresh=()=>{initAccountNav();loadSyncedSetsIntoLibrary().finally(()=>{
+    syncedLibraryReady=true;renderPageContent(currentPage);resolve();
+  });};
+  if(window.VeliosAuth)refresh();
+  else document.addEventListener('DOMContentLoaded',refresh,{once:true});
+});
+Promise.allSettled([publicLibraryReady,accountLibraryReady]).then(() => {
+  loadAllNotifications();
+  const urlParams = new URLSearchParams(window.location.search);
   const editCloudId = urlParams.get('editCloud');
   const editId = urlParams.get('edit') || (editCloudId ? findSetByCloudId(editCloudId)?.id : null);
   if (editId) {
@@ -2507,6 +2547,7 @@ setInterval(() => {
 
 let accountNavRefreshPromise = null;
 async function initAccountNav() {
+  if(!window.VeliosAuth)return;
   if (accountNavRefreshPromise) return accountNavRefreshPromise;
   accountNavRefreshPromise = (async () => {
     try {
@@ -2582,6 +2623,7 @@ const MENU_TABS = [
 // De CSS-maskers laten deze witte SVG-assets de kleur van hun omgeving volgen.
 MENU_TABS.find(tab=>tab.key==='settings').icon='<span class="ui-asset-icon ui-asset-icon-settings" aria-hidden="true"></span>';
 MENU_TABS.find(tab=>tab.key==='notifications').icon='<span class="ui-asset-icon ui-asset-icon-notification" aria-hidden="true"></span>';
+MENU_TABS.push({key:'accessibility',label:'Toegankelijkheid',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="4" r="2"/><path d="M4 9h16m-8 0v6m0 0-5 7m5-7 5 7"/></svg>'});
 MENU_TABS.push({key:'subjects',label:'Vakken',icon:'<span class="ui-asset-icon ui-asset-icon-subjects" aria-hidden="true"></span>'});
 
 function openAccountOverlay(tab) {
@@ -2803,6 +2845,7 @@ function renderOverlayTab(tab) {
   if (tab === 'account') html = renderAccountTabContent();
   else if (tab === 'settings') html = renderSettingsTabContent();
   else if (tab === 'notifications') html = renderNotificationsTabContent();
+  else if (tab === 'accessibility') html = renderAccessibilityTabContent();
   else if (tab === 'subjects') html = renderSchoolSubjectsTabContent();
   content.innerHTML = `<div class="acc-ov-content-inner">${html}</div>`;
   if (tab === 'settings') syncThemeUIControls();
@@ -3266,7 +3309,7 @@ function renderNotificationsTabContent() {
     const n = AllNotifs.find(x => x.id === NotifDetailId);
     if (n) {
       return offlineNotice+`
-        <button class="notif-detail-back" onclick="closeNotifDetail()">
+        <button class="btn btn-glass return-btn notif-detail-back" onclick="closeNotifDetail()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           Terug
         </button>
@@ -3430,7 +3473,7 @@ function showNotificationOnboarding(visit){
   const el=document.createElement('div');
   el.className='onboard-overlay notification-onboard';el.id='notification-onboard';
   el.innerHTML=`<div class="onboard-panel notification-onboard-panel">
-    <div class="onboard-body">
+    <div class="onboard-body" tabindex="0" role="region" aria-label="Uitleg" aria-describedby="onboard-scroll-hint">
       <span class="onboard-icon notification-onboard-icon"><svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M0 0h256v256H0z"/><g data-name="Group 41" fill="var(--accent)"><path data-name="Path 252" d="M105.508 247.202a31.7 31.7 0 0 1-10.7-21.709v-.232c.16-.781 66.543-.549 66.543 0a31.47 31.47 0 0 1-10.473 21.824 32.2 32.2 0 0 1-22.8 8.912 32.42 32.42 0 0 1-22.57-8.795" opacity=".6"/><path data-name="Path 253" d="M32.977 208.951a14.9 14.9 0 0 1-10.814-4.225 16.66 16.66 0 0 1-5.057-10.316 15.12 15.12 0 0 1 3.174-11.148l13.287-16.547a21.63 21.63 0 0 0 4.466-13.25v-49.863q0-29.807 17.636-52.678a90 90 0 0 1 45.839-31.443 25.63 25.63 0 0 1 9.753-13.959 27.8 27.8 0 0 1 16.814-5.523 27.66 27.66 0 0 1 16.693 5.406 24.15 24.15 0 0 1 9.522 13.729 87.4 87.4 0 0 1 34.2 18.3 85.5 85.5 0 0 1 21.869 29.568 86.9 86.9 0 0 1 7.405 35.191v51.275a21.25 21.25 0 0 0 4.583 13.25l13.158 16.547a14.52 14.52 0 0 1 3.421 11.033 16.2 16.2 0 0 1-4.939 10.432 14.92 14.92 0 0 1-10.814 4.225Z"/></g></svg></span>
       <div class="onboard-title">Blijf op de hoogte</div>
       <div class="onboard-desc">Zet meldingen aan voor belangrijke updates en nieuwe berichten in Velios+.</div>
@@ -3470,4 +3513,16 @@ function maybeSendSystemNotification(notifications) {
     unsent.forEach(notification=>sentIds.add(String(notification.id)));
     localStorage.setItem(SYSTEM_NOTIFS_SENT_KEY,JSON.stringify([...sentIds]));
   } catch (e) {}
+}
+
+function resetLibrarySearch(){
+  if(searchQuery){searchQuery='';const input=document.getElementById('search-box');if(input)input.value='';}
+  else libraryFilters={size:'all',opened:'all',images:'all',sync:'all'};
+  renderLibrary();
+}
+
+function renderAccessibilityTabContent(){
+  const preferences=getAccessibilityPreferences();
+  const options=[['highContrast','Hoog contrast','Meer verschil tussen tekst, knoppen en achtergrond.'],['reducedMotion','Minder beweging','Beperk beweging bij navigeren, kaarten en knoppen. De systeemvoorkeur blijft altijd gelden.'],['underlineLinks','Links onderstrepen','Maak links in tekst gemakkelijker herkenbaar.']];
+  return `<div class="settings-section"><div class="settings-section-title">Toegankelijkheid</div><p class="accessibility-intro">Pas Velios+ aan jouw voorkeuren aan. Je keuzes gelden ook tijdens het leren en worden op dit apparaat bewaard.</p>${options.map(([key,label,description])=>`<div class="settings-row"><span class="settings-row-copy"><strong id="a11y-${key}-label">${label}</strong><small id="a11y-${key}-desc">${description}</small></span><label class="toggle"><input type="checkbox" aria-labelledby="a11y-${key}-label" aria-describedby="a11y-${key}-desc" ${preferences[key]?'checked':''} onchange="setAccessibilityPreference('${key}',this.checked)"><span class="toggle-slider"></span></label></div>`).join('')}</div>`;
 }

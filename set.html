@@ -1,17 +1,30 @@
 <!DOCTYPE html>
-<html lang="nl" class="set-page">
+<html lang="nl" class="set-page velios-ui">
 <head>
-<script src="sw-register.js?v=20260821-9"></script>
+<meta charset="UTF-8">
+<style>html.theme-start-dark{background:#000;color-scheme:dark}</style>
+<script>
+(function(){
+  var dark=false;
+  try{
+    var saved=JSON.parse(localStorage.getItem('sd_theme')||'{}')||{};
+    dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;
+  }catch(e){dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;}
+  window.veliosInitialDark=dark;
+  document.documentElement.classList.toggle('theme-start-dark',dark);
+})();
+</script>
+
+<script src="sw-register.js?v=20260919-1"></script>
 <script>
 if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
   window.location.href = 'unsupported.html';
 }
 </script>
-<meta charset="UTF-8">
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Velios+">
@@ -24,13 +37,19 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260821-9">
+<link rel="stylesheet" href="style.css?v=20260919-1">
 
+<link rel="stylesheet" href="velios-select.css?v=20260919-1">
+<link rel="stylesheet" href="design-system.css?v=20260919-1">
 </head>
 <body>
+<script>
+document.body.classList.toggle('dark-mode',!!window.veliosInitialDark);
+document.documentElement.classList.remove('theme-start-dark');
+</script>
 <div id="app" class="navigation-visible">
 <nav>
-  <a class="nav-logo" href="index.html">
+  <a aria-label="Velios+ Dashboard" class="nav-logo" href="index.html">
     <svg class="nav-logo-svg" xmlns="http://www.w3.org/2000/svg" width="256" height="78.312" viewBox="0 0 256 78.312"><path data-name="Path 239" d="M18.177 77.297 0 31.088h12.146L25.311 67.44h-4.5L34.06 31.088h12.146L28.029 77.297Zm51.812 1.019A23.7 23.7 0 0 1 57.5 75.084a22.5 22.5 0 0 1-8.324-8.748 25.4 25.4 0 0 1-2.973-12.231 24.9 24.9 0 0 1 3.018-12.358 22.7 22.7 0 0 1 8.239-8.536 22.2 22.2 0 0 1 11.679-3.143 23.9 23.9 0 0 1 9.555 1.784 20.4 20.4 0 0 1 7.006 4.927 22.1 22.1 0 0 1 4.417 7.177 24.4 24.4 0 0 1 1.529 8.706q0 1.189-.127 2.463a9.2 9.2 0 0 1-.467 2.208H55.379V48.84h29.388L79.5 52.831a12.66 12.66 0 0 0-.382-6.965 9.97 9.97 0 0 0-3.737-4.841 10.74 10.74 0 0 0-6.243-1.784 11.24 11.24 0 0 0-6.2 1.741 10.8 10.8 0 0 0-4.119 5.1 17.7 17.7 0 0 0-1.062 8.111 15 15 0 0 0 1.143 7.514 11.16 11.16 0 0 0 4.417 5.054 12.73 12.73 0 0 0 6.753 1.784 12.36 12.36 0 0 0 6.5-1.614 11.65 11.65 0 0 0 4.2-4.332l9 4.417a15.7 15.7 0 0 1-4.247 5.86 21.2 21.2 0 0 1-6.837 3.992 25.2 25.2 0 0 1-8.698 1.444Zm26.67-1.019v-64.3h11.127v64.3Zm18.007 0v-46.2l11.042.085.085 46.119Zm0-51.385V14.016h11.042l.085 11.891Zm40.6 52.4a24.7 24.7 0 0 1-12.358-3.143 23.8 23.8 0 0 1-8.833-8.578 23.6 23.6 0 0 1-3.27-12.4 23.6 23.6 0 0 1 3.27-12.4 23.9 23.9 0 0 1 8.791-8.578 24.6 24.6 0 0 1 12.4-3.143 24.45 24.45 0 0 1 12.316 3.143 24 24 0 0 1 8.791 8.536 23.5 23.5 0 0 1 3.27 12.443 23.35 23.35 0 0 1-3.313 12.4 24.2 24.2 0 0 1-8.833 8.578 24.3 24.3 0 0 1-12.232 3.142Zm0-10.192a12.13 12.13 0 0 0 6.583-1.784 12.56 12.56 0 0 0 4.5-4.969 15.3 15.3 0 0 0 1.656-7.177 15 15 0 0 0-1.656-7.177 13.03 13.03 0 0 0-4.5-4.926 11.9 11.9 0 0 0-6.583-1.826 12.3 12.3 0 0 0-6.71 1.826 12.9 12.9 0 0 0-4.544 4.926 15 15 0 0 0-1.656 7.177 15.3 15.3 0 0 0 1.656 7.177 12.45 12.45 0 0 0 4.544 4.969 12.5 12.5 0 0 0 6.709 1.783Zm46.97 10.192a23.26 23.26 0 0 1-12.868-3.525 17.9 17.9 0 0 1-7.517-9.555l8.324-3.992a14.64 14.64 0 0 0 4.969 6.115 12.17 12.17 0 0 0 7.092 2.208 7.8 7.8 0 0 0 4.841-1.359 4.27 4.27 0 0 0 1.784-3.567 3.46 3.46 0 0 0-.722-2.251 6 6 0 0 0-1.954-1.529 15 15 0 0 0-2.675-1.06l-7.559-2.123a18.03 18.03 0 0 1-8.876-5.181 12.18 12.18 0 0 1-3.015-8.239 12.9 12.9 0 0 1 2.166-7.432 14.4 14.4 0 0 1 6.031-4.969 21 21 0 0 1 8.876-1.784 21.3 21.3 0 0 1 11.551 3.143 17.23 17.23 0 0 1 7.135 8.833l-8.494 3.992a10.24 10.24 0 0 0-3.992-5.011 11.1 11.1 0 0 0-6.285-1.869 6.95 6.95 0 0 0-4.417 1.274 4.03 4.03 0 0 0-1.614 3.312 3.65 3.65 0 0 0 .68 2.208 5 5 0 0 0 1.911 1.529 21.4 21.4 0 0 0 2.845 1.1l7.39 2.208a18.9 18.9 0 0 1 8.791 5.1 11.9 11.9 0 0 1 3.1 8.324 12.6 12.6 0 0 1-2.208 7.347 14.64 14.64 0 0 1-6.115 4.969 21.9 21.9 0 0 1-9.175 1.784" fill="var(--text)"/><path data-name="Path 238" d="M237.739 42.468h-11.042l1.885-15.714h-15.05V15.713h16.375L231.793 0h11.039l-1.883 15.713h15.05v11.041h-16.374l1.324-11.033h-11.042v.008l9.718 11.023-1.886 15.715Z" fill="var(--accent)"/></svg>
   </a>
   <div id="nav-set-title" class="nav-set-title" style="font-weight:800;font-size:16px;color:var(--text)"></div>
@@ -99,8 +118,10 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <div id="checkpoint-layer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="school-profile.js?v=20260821-9"></script>
-<script src="supabase-client.js?v=20260821-9"></script>
-<script src="set-app.js?v=20260821-9"></script>
+<script src="school-profile.js?v=20260919-1"></script>
+<script src="supabase-client.js?v=20260919-1"></script>
+<script src="velios-select.js?v=20260919-1"></script>
+<script src="ui-system.js?v=20260919-1"></script>
+<script src="set-app.js?v=20260919-1"></script>
 </body>
 </html>

@@ -1,0 +1,112 @@
+[
+  {
+    "name": "normal cards continuous",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning uses card transition",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "milestone countdown lasts two seconds",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "milestone closes automatically",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "encouragement sits above answer button",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning segments once per seven",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "overview after seven",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "overview restored",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "wrong retry pauses at checkpoint without inflating mistakes",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "undo retry restores counters and queue",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "retry restored",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "next round preserves the progress rail",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "correct retry unlocks second round",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "short last round has overview",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "learning completes after all cards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "historical mistakes can be starred after completion",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "restart preserves learning choice",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "switch back restores continuous bar",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam continuous and filling",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "wrong retry yields to another card",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "retry pass pauses with unique errors",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "leaving clears checkpoint and countdown",
+    "ok": true,
+    "data": null
+  }
+]

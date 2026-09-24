@@ -1,0 +1,165 @@
+[
+  {
+    "name": "header stays fixed after opening scrolled editor",
+    "ok": true,
+    "data": {
+      "before": {
+        "scale": "none",
+        "filter": "none",
+        "bg": "rgb(17, 17, 19)",
+        "color": "rgb(255, 255, 255)",
+        "x": 0,
+        "y": 0,
+        "w": 1353,
+        "h": 72
+      },
+      "after": {
+        "scale": "none",
+        "filter": "none",
+        "bg": "rgb(17, 17, 19)",
+        "color": "rgb(255, 255, 255)",
+        "x": 0,
+        "y": 0,
+        "w": 1353,
+        "h": 72
+      }
+    }
+  },
+  {
+    "name": "editor does not shrink on content hover",
+    "ok": true,
+    "data": {
+      "scale": "none",
+      "filter": "none",
+      "bg": "rgb(0, 0, 0)",
+      "color": "rgb(255, 255, 255)",
+      "x": 306.5,
+      "y": 148,
+      "w": 740,
+      "h": 640
+    }
+  },
+  {
+    "name": "backdrop is not a hover control",
+    "ok": true,
+    "data": {
+      "scale": "none",
+      "filter": "none",
+      "bg": "rgba(0, 0, 0, 0.5)",
+      "color": "rgb(255, 255, 255)",
+      "x": 0,
+      "y": 0,
+      "w": 1353,
+      "h": 936
+    }
+  },
+  {
+    "name": "editor fits viewport 1363",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "editor fits viewport 390",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "set action buttons exist",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "action row does not animate",
+    "ok": true,
+    "data": {
+      "scale": "none",
+      "filter": "none",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 255)",
+      "x": 171.5,
+      "y": 435.296875,
+      "w": 226,
+      "h": 53
+    }
+  },
+  {
+    "name": "card does not shrink around actions",
+    "ok": true,
+    "data": {
+      "scale": "1",
+      "filter": "none",
+      "bg": "rgb(28, 28, 30)",
+      "color": "rgb(255, 255, 255)",
+      "x": 148.5,
+      "y": 232.796875,
+      "w": 272,
+      "h": 278.5
+    }
+  },
+  {
+    "name": "action background visible False",
+    "ok": true,
+    "data": {
+      "scale": "0.98",
+      "filter": "brightness(0.95)",
+      "bg": "rgb(229, 229, 234)",
+      "color": "rgb(11, 15, 42)",
+      "x": 355.3999938964844,
+      "y": 448.6968688964844,
+      "w": 39.199981689453125,
+      "h": 39.20001220703125
+    }
+  },
+  {
+    "name": "action background visible True",
+    "ok": true,
+    "data": {
+      "scale": "0.98",
+      "filter": "brightness(0.95)",
+      "bg": "rgb(44, 44, 46)",
+      "color": "rgb(255, 255, 255)",
+      "x": 357.8999938964844,
+      "y": 448.6968688964844,
+      "w": 39.199981689453125,
+      "h": 39.20001220703125
+    }
+  },
+  {
+    "name": "header stays visible with account overlay",
+    "ok": true,
+    "data": {
+      "scale": "none",
+      "filter": "none",
+      "bg": "rgb(17, 17, 19)",
+      "color": "rgb(255, 255, 255)",
+      "x": 0,
+      "y": 0,
+      "w": 1353,
+      "h": 72
+    }
+  },
+  {
+    "name": "login uses shared primary style",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "login hover animated",
+    "ok": true,
+    "data": {
+      "scale": "0.98",
+      "filter": "brightness(0.95)",
+      "bg": "rgb(255, 159, 10)",
+      "color": "rgb(255, 255, 255)",
+      "x": 754.6799926757812,
+      "y": 657.0025024414062,
+      "w": 115.6400146484375,
+      "h": 43.1199951171875
+    }
+  },
+  {
+    "name": "login accessibility settings applied",
+    "ok": true,
+    "data": null
+  }
+]

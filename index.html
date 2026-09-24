@@ -1,27 +1,43 @@
 <!DOCTYPE html>
-<html lang="nl" class="index-page">
+<html lang="nl" class="index-page velios-ui">
 <head>
+<meta charset="UTF-8">
+<style>html.theme-start-dark{background:#000;color-scheme:dark}</style>
+<script>
+(function(){
+  var dark=false;
+  try{
+    var saved=JSON.parse(localStorage.getItem('sd_theme')||'{}')||{};
+    dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;
+  }catch(e){dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;}
+  window.veliosInitialDark=dark;
+  document.documentElement.classList.toggle('theme-start-dark',dark);
+})();
+</script>
+
 <script>
 try {
+  history.scrollRestoration='manual';
+  window.veliosInitialHash=location.hash;
+  if(location.hash)history.replaceState(history.state,'',location.pathname+location.search);
   const welcomeBypass=new URLSearchParams(location.search).has('skipWelcome');
   if(!welcomeBypass&&!localStorage.getItem('sd_welcome_seen'))location.replace('welcome.html');
 } catch(e) {}
 </script>
-<script src="sw-register.js?v=20260821-9"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="school-profile.js?v=20260821-9"></script>
-<script src="velios-select.js?v=20260821-9"></script>
-<script src="supabase-client.js?v=20260821-9"></script>
+<script src="sw-register.js?v=20260919-1"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="school-profile.js?v=20260919-1"></script>
+<script src="velios-select.js?v=20260919-1"></script>
+<script defer src="supabase-client.js?v=20260919-1"></script>
 <script>
 if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || !Array.prototype.includes) {
   window.location.href = 'unsupported.html';
 }
 </script>
-<meta charset="UTF-8">
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Velios+">
@@ -31,11 +47,16 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.svg" media="(prefers-color-scheme: light)">
 <link rel="icon" href="favicon-dark.svg" media="(prefers-color-scheme: dark)">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260821-9">
-<link rel="stylesheet" href="velios-select.css?v=20260821-9">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="style.css?v=20260919-1">
+<link rel="stylesheet" href="velios-select.css?v=20260919-1">
+<link rel="stylesheet" href="design-system.css?v=20260919-1">
 </head>
 <body>
+<script>
+document.body.classList.toggle('dark-mode',!!window.veliosInitialDark);
+document.documentElement.classList.remove('theme-start-dark');
+</script>
 <div id="loading-screen" class="app-skeleton" aria-label="Dashboard laden">
   <div class="app-skeleton-nav">
     <span class="app-skeleton-logo skeleton-pulse"></span>
@@ -59,7 +80,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
   </main>
 </div>
 <nav>
-  <div class="nav-logo">
+  <div aria-label="Velios+ Dashboard" class="nav-logo">
     <svg class="nav-logo-svg" xmlns="http://www.w3.org/2000/svg" width="256" height="78.312" viewBox="0 0 256 78.312"><path data-name="Path 239" d="M18.177 77.297 0 31.088h12.146L25.311 67.44h-4.5L34.06 31.088h12.146L28.029 77.297Zm51.812 1.019A23.7 23.7 0 0 1 57.5 75.084a22.5 22.5 0 0 1-8.324-8.748 25.4 25.4 0 0 1-2.973-12.231 24.9 24.9 0 0 1 3.018-12.358 22.7 22.7 0 0 1 8.239-8.536 22.2 22.2 0 0 1 11.679-3.143 23.9 23.9 0 0 1 9.555 1.784 20.4 20.4 0 0 1 7.006 4.927 22.1 22.1 0 0 1 4.417 7.177 24.4 24.4 0 0 1 1.529 8.706q0 1.189-.127 2.463a9.2 9.2 0 0 1-.467 2.208H55.379V48.84h29.388L79.5 52.831a12.66 12.66 0 0 0-.382-6.965 9.97 9.97 0 0 0-3.737-4.841 10.74 10.74 0 0 0-6.243-1.784 11.24 11.24 0 0 0-6.2 1.741 10.8 10.8 0 0 0-4.119 5.1 17.7 17.7 0 0 0-1.062 8.111 15 15 0 0 0 1.143 7.514 11.16 11.16 0 0 0 4.417 5.054 12.73 12.73 0 0 0 6.753 1.784 12.36 12.36 0 0 0 6.5-1.614 11.65 11.65 0 0 0 4.2-4.332l9 4.417a15.7 15.7 0 0 1-4.247 5.86 21.2 21.2 0 0 1-6.837 3.992 25.2 25.2 0 0 1-8.698 1.444Zm26.67-1.019v-64.3h11.127v64.3Zm18.007 0v-46.2l11.042.085.085 46.119Zm0-51.385V14.016h11.042l.085 11.891Zm40.6 52.4a24.7 24.7 0 0 1-12.358-3.143 23.8 23.8 0 0 1-8.833-8.578 23.6 23.6 0 0 1-3.27-12.4 23.6 23.6 0 0 1 3.27-12.4 23.9 23.9 0 0 1 8.791-8.578 24.6 24.6 0 0 1 12.4-3.143 24.45 24.45 0 0 1 12.316 3.143 24 24 0 0 1 8.791 8.536 23.5 23.5 0 0 1 3.27 12.443 23.35 23.35 0 0 1-3.313 12.4 24.2 24.2 0 0 1-8.833 8.578 24.3 24.3 0 0 1-12.232 3.142Zm0-10.192a12.13 12.13 0 0 0 6.583-1.784 12.56 12.56 0 0 0 4.5-4.969 15.3 15.3 0 0 0 1.656-7.177 15 15 0 0 0-1.656-7.177 13.03 13.03 0 0 0-4.5-4.926 11.9 11.9 0 0 0-6.583-1.826 12.3 12.3 0 0 0-6.71 1.826 12.9 12.9 0 0 0-4.544 4.926 15 15 0 0 0-1.656 7.177 15.3 15.3 0 0 0 1.656 7.177 12.45 12.45 0 0 0 4.544 4.969 12.5 12.5 0 0 0 6.709 1.783Zm46.97 10.192a23.26 23.26 0 0 1-12.868-3.525 17.9 17.9 0 0 1-7.517-9.555l8.324-3.992a14.64 14.64 0 0 0 4.969 6.115 12.17 12.17 0 0 0 7.092 2.208 7.8 7.8 0 0 0 4.841-1.359 4.27 4.27 0 0 0 1.784-3.567 3.46 3.46 0 0 0-.722-2.251 6 6 0 0 0-1.954-1.529 15 15 0 0 0-2.675-1.06l-7.559-2.123a18.03 18.03 0 0 1-8.876-5.181 12.18 12.18 0 0 1-3.015-8.239 12.9 12.9 0 0 1 2.166-7.432 14.4 14.4 0 0 1 6.031-4.969 21 21 0 0 1 8.876-1.784 21.3 21.3 0 0 1 11.551 3.143 17.23 17.23 0 0 1 7.135 8.833l-8.494 3.992a10.24 10.24 0 0 0-3.992-5.011 11.1 11.1 0 0 0-6.285-1.869 6.95 6.95 0 0 0-4.417 1.274 4.03 4.03 0 0 0-1.614 3.312 3.65 3.65 0 0 0 .68 2.208 5 5 0 0 0 1.911 1.529 21.4 21.4 0 0 0 2.845 1.1l7.39 2.208a18.9 18.9 0 0 1 8.791 5.1 11.9 11.9 0 0 1 3.1 8.324 12.6 12.6 0 0 1-2.208 7.347 14.64 14.64 0 0 1-6.115 4.969 21.9 21.9 0 0 1-9.175 1.784" fill="var(--text)"/><path data-name="Path 238" d="M237.739 42.468h-11.042l1.885-15.714h-15.05V15.713h16.375L231.793 0h11.039l-1.883 15.713h15.05v11.041h-16.374l1.324-11.033h-11.042v.008l9.718 11.023-1.886 15.715Z" fill="var(--accent)"/></svg>
   </div>
   <div class="nav-actions">
@@ -85,25 +106,25 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
   <div><strong>Geen verbinding</strong><span>Je ziet de gegevens die op dit apparaat beschikbaar zijn.</span></div>
 </div>
 <div class="sidebar">
-    <div class="sidebar-btn active" onclick="showPage('home')" title="Home">
+    <button type="button" class="sidebar-btn active" onclick="showPage('home')" title="Dashboard">
       <svg  width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="200" viewBox="0 0 256 200"><path data-name="Path 151" d="M0 32.218C0 14.424 14.014-.001 31.3-.001h193.4c17.288 0 31.3 14.425 31.3 32.219V167.78c0 17.794-14.014 32.219-31.3 32.219H31.301c-17.287 0-31.3-14.425-31.3-32.219Z" opacity="0.4" fill="var(--text)"/><g data-name="Group 4" transform="translate(-2032 1444.819)" fill="var(--text)"><rect data-name="Rectangle 5" width="137" height="174" rx="21" transform="translate(2045 -1433)"/><rect data-name="Rectangle 6" width="81" height="71" rx="21" transform="translate(2194 -1433)"/><rect data-name="Rectangle 9" width="81" height="33" rx="16.5" transform="translate(2194 -1292)"/><rect data-name="Rectangle 7" width="41" height="47" rx="10" transform="translate(2194 -1351)"/><rect data-name="Rectangle 8" width="29" height="47" rx="10" transform="translate(2246 -1351)"/></g></svg>
       <div class="sidebar-label">Dashboard</div>
-    </div>
-    <div class="sidebar-btn" onclick="showPage('library')" title="Bibliotheek">
+    </button>
+    <button type="button" class="sidebar-btn" onclick="showPage('library')" title="Bestanden">
       <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="191.999" viewBox="0 0 256 191.999"><g fill="var(--text)"><path data-name="Path 148" d="M0 38.631C0 22.366 14.014 9.18 31.3 9.18h193.4c17.288 0 31.3 13.186 31.3 29.451v123.917c0 16.265-14.014 29.451-31.3 29.451H31.301c-17.287 0-31.3-13.186-31.3-29.451Z" opacity=".4"/><rect data-name="Rectangle 4" width="216" height="141" rx="14" transform="translate(22 34)" opacity=".4"/><path data-name="Path 150" d="M0 25.239C0 11.3 11.051 0 24.683 0h60.792a55.17 55.17 0 0 1 45.235 23.844l2.625 3.768a55.17 55.17 0 0 0 45.235 23.844h52.747c13.632 0 24.684 11.3 24.684 25.239v90.066C256 180.7 244.949 192 231.316 192H24.683C11.051 192 0 180.7 0 166.761Z"/></g></svg>
       <div class="sidebar-label">Bestanden</div>
-    </div>
-    <button class="btn btn-primary btn-sm-nav" onclick="showCreateModal()">
+    </button>
+    <button aria-label="Nieuwe set" class="btn btn-primary btn-sm-nav" onclick="showCreateModal()">
       <svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path data-name="Rectangle 20" fill="rgba(255,255,255,0)" d="M0 0h256v256H0z"/><g data-name="Group 28" fill="#fff"><path data-name="Rectangle 20" d="M71.766 10h112.468A61.766 61.766 0 0 1 246 71.766v112.468A61.766 61.766 0 0 1 184.234 246H71.766A61.766 61.766 0 0 1 10 184.234V71.766A61.766 61.766 0 0 1 71.766 10" opacity=".4"/><path data-name="Path 207" d="M124.5 198a9.626 9.626 0 0 1-9.626-9.626v-47.25h-47.25A9.625 9.625 0 0 1 58 131.5v-7a9.625 9.625 0 0 1 9.625-9.625h47.25v-47.25A9.626 9.626 0 0 1 124.5 58h7a9.625 9.625 0 0 1 9.626 9.625v47.25h47.25A9.625 9.625 0 0 1 198 124.5v7a9.625 9.625 0 0 1-9.625 9.625h-47.25v47.25A9.626 9.626 0 0 1 131.5 198Z"/></g></svg>
     </button>
-    <div class="sidebar-btn" onclick="showPage('vakken')" title="Vakken">
+    <button type="button" class="sidebar-btn" onclick="showPage('vakken')" title="Vakken">
       <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path fill="rgba(255,255,255,0)" d="M0 0h256v256H0z"/><g data-name="Group 15" transform="translate(-2019 818)" fill="var(--text)"><rect data-name="Rectangle 26" width="104" height="104" rx="30" transform="translate(2032 -805)"/><rect data-name="Rectangle 27" width="104" height="104" rx="30" transform="translate(2158 -805)"/><rect data-name="Rectangle 28" width="104" height="104" rx="30" transform="translate(2158 -679)" opacity=".4"/><rect data-name="Rectangle 29" width="104" height="104" rx="30" transform="translate(2032 -679)"/></g></svg>
       <div class="sidebar-label">Vakken</div>
-    </div>
-    <div class="sidebar-btn" id="sidebar-search-btn" onclick="showPage('zoeken')" title="Zoeken" style="display:none">
+    </button>
+    <button type="button" class="sidebar-btn" id="sidebar-search-btn" onclick="showPage('zoeken')" title="Zoeken" style="display:none">
       <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><g transform="translate(-2433 -926)"><path data-name="Rectangle 20" fill="rgba(0,0,0,0)" d="M2433 926h256v256h-256z"/><rect data-name="Rectangle 28" width="170" height="170" rx="85" transform="translate(2460 953)" fill="var(--text)" opacity=".4"/><path data-name="Rectangle 26" d="M2545 978a60 60 0 1 0 60 60 60.07 60.07 0 0 0-60-60m0-25a85 85 0 1 1-85 85 85 85 0 0 1 85-85" fill="var(--text)"/><rect data-name="Rectangle 27" width="30" height="94" rx="15" transform="rotate(-45 2612.226 -2568.255)" fill="var(--text)" opacity=".6"/></g></svg>
       <div class="sidebar-label">Zoeken</div>
-    </div>
+    </button>
 
     <div style="width:60%;height:1px;background:rgba(200,195,230,0.3);margin:12px 0;flex-shrink:0"></div>
     <div id="recent-sidebar" style="display:flex;flex-direction:column;gap:8px;width:100%;align-items:center"></div>
@@ -234,7 +255,7 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
       <div class="subject-detail page-enter">
         <div class="subject-hero" id="subject-hero">
           <div class="subject-hero-content">
-            <button class="subject-back-btn" onclick="showPage('vakken')">
+            <button class="btn btn-glass return-btn subject-back-btn" onclick="showPage('vakken')">
               <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
               Terug naar vakken
             </button>
@@ -286,7 +307,8 @@ if (!window.Promise || !window.localStorage || typeof Symbol === 'undefined' || 
 </div>
 <div id="toast"></div>
 
-<script src="app.js?v=20260821-10"></script>
+<script src="ui-system.js?v=20260919-1"></script>
+<script src="app.js?v=20260919-1"></script>
 </div>
 </body>
 </html>

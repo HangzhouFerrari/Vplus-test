@@ -1,8 +1,21 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="velios-ui">
 <head>
-<script src="sw-register.js?v=20260821-9"></script>
 <meta charset="UTF-8">
+<style>html.theme-start-dark{background:#000;color-scheme:dark}</style>
+<script>
+(function(){
+  var dark=false;
+  try{
+    var saved=JSON.parse(localStorage.getItem('sd_theme')||'{}')||{};
+    dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;
+  }catch(e){dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;}
+  window.veliosInitialDark=dark;
+  document.documentElement.classList.toggle('theme-start-dark',dark);
+})();
+</script>
+
+<script src="sw-register.js?v=20260821-9"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,7 +51,7 @@ body.dark-mode{--bg-grad:linear-gradient(180deg,#0a0812 0%,#10091e 100%);--glass
 nav{position:sticky;top:0;z-index:200;background:rgba(240,238,249,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(200,195,230,0.5);padding:env(safe-area-inset-top,0px) 28px 0;height:var(--nav-h);display:flex;align-items:center;gap:16px;transition:background .3s;}
 body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--glass-border)!important;}
 .nav-back{width:40px;height:40px;border-radius:var(--r3);background:var(--glass);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s var(--ease);flex-shrink:0;color:var(--text2);}
-.nav-back:hover{background:#fff;transform:scale(1.08);box-shadow:var(--glass-shadow-lg);}
+.nav-back:hover{background:#fff;box-shadow:var(--glass-shadow-lg);}
 .nav-back svg{width:18px;height:18px;}
 .nav-title{font-size:18px;font-weight:800;letter-spacing:-0.4px;color:var(--text);}
 .nav-spacer{flex:1;}
@@ -82,7 +95,7 @@ body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--gl
 .synced-grid{display:flex;flex-direction:column;gap:8px;}
 .synced-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r);padding:14px 18px;box-shadow:var(--glass-shadow);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;position:relative;overflow:hidden;transition:transform .2s var(--ease),box-shadow .2s var(--ease);}
 .synced-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.65;}
-.synced-card:hover{transform:translateX(4px);box-shadow:var(--glass-shadow-lg);}
+.synced-card:hover{box-shadow:var(--glass-shadow-lg);}
 .synced-card-info h3{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-0.2px;margin-bottom:4px;}
 .synced-card-meta{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
 .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
@@ -91,7 +104,7 @@ body.dark-mode nav{background:rgba(10,8,20,0.97)!important;border-color:var(--gl
 .synced-card-date{font-size:11px;color:var(--text3);font-weight:600;margin-top:3px;}
 .synced-card-actions{display:flex;align-items:center;gap:7px}
 .btn-synced-action{height:34px;padding:0 13px;border-radius:999px;background:#e5e5ea;border:0;color:var(--text);font-family:var(--font);font-size:12px;font-weight:750;cursor:pointer;transition:background .15s,transform .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.btn-synced-action:hover{background:#dadae0;transform:scale(.96)}
+.btn-synced-action:hover{background:#dadae0;}
 .btn-synced-action.danger{background:rgba(232,58,74,.1);color:var(--red)}
 .btn-synced-action.danger:hover{background:rgba(232,58,74,.17)}
 .btn-synced-action svg{width:13px;height:13px}
@@ -100,11 +113,11 @@ body.dark-mode .btn-synced-action{background:#2c2c2e}
 /* LOCAL CARD */
 .local-grid{display:flex;flex-direction:column;gap:8px;}
 .local-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r);padding:13px 18px;box-shadow:var(--glass-shadow);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;transition:transform .2s var(--ease),box-shadow .2s var(--ease);}
-.local-card:hover{transform:translateX(3px);box-shadow:var(--glass-shadow-lg);}
+.local-card:hover{box-shadow:var(--glass-shadow-lg);}
 .local-card-info h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .local-card-meta{font-size:11px;color:var(--text3);font-weight:600;}
 .btn-sync{height:32px;padding:0 12px;border-radius:var(--r4);background:var(--accent-light);border:1px solid rgba(0,98,255,0.2);color:var(--accent);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px;}
-.btn-sync:hover{background:rgba(0,98,255,0.2);transform:scale(1.04);}
+.btn-sync:hover{background:rgba(0,98,255,0.2);}
 .btn-sync:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 .btn-sync svg{width:12px;height:12px;}
 
@@ -126,7 +139,7 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;}
 .btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;padding:9px 18px;transition:all .2s var(--ease);outline:none;}
 .btn-glass{background:var(--glass);color:var(--text);box-shadow:var(--glass-shadow);border:1px solid var(--glass-border);}
-.btn-glass:hover{background:rgba(255,255,255,.95);transform:scale(1.03);}
+.btn-glass:hover{background:rgba(255,255,255,.95);}
 .btn-danger{background:rgba(232,58,74,0.1);color:var(--red);border:1px solid rgba(232,58,74,0.25);}
 .btn-danger:hover{background:rgba(232,58,74,0.18);}
 .btn-danger:disabled{opacity:.5;cursor:not-allowed;}
@@ -151,19 +164,25 @@ body.dark-mode .modal-panel{background:rgb(16,14,26)!important;border-color:var(
 :root{--bg-grad:#f2f2f7;--glass:#fff;--glass2:#fff;--glass-border:#dedee5;--glass-shadow:none;--glass-shadow-lg:none;--text:#0b1029;--text2:#45465a;--text3:#77798b;--r:30px;--r2:36px;--r3:34px;--r4:30px}
 body.dark-mode{--bg-grad:#000;--glass:#1c1c1e;--glass2:#1c1c1e;--glass-border:#343438;--text:#fff;--text2:#d0d0d6;--text3:#8e8e93;--glass-shadow:none;--glass-shadow-lg:none}
 nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--glass-border)!important;backdrop-filter:none;-webkit-backdrop-filter:none}
-.nav-back{background:var(--glass);box-shadow:none;border-radius:50%}.nav-back:hover{background:var(--glass);box-shadow:none;transform:none}
+.nav-back{background:var(--glass);box-shadow:none;border-radius:50%}.nav-back:hover{background:var(--glass);box-shadow:none;}
 .page-header{animation:none}.page-avatar{border-radius:50%;background:var(--accent);box-shadow:none}.page-avatar img{border-radius:50%}
 .sync-meter-wrap,.synced-card,.local-card{box-shadow:none;border-radius:var(--r2);animation:none}.synced-card::before{display:none}
-.synced-card:hover,.local-card:hover{transform:none;box-shadow:none}.sync-fill{background:var(--accent);box-shadow:none}.sync-fill.full{background:var(--red)}
-.badge{border-radius:999px}.btn-sync{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast)}.btn-sync:hover{background:var(--accent);transform:none}
+.synced-card:hover,.local-card:hover{box-shadow:none}.sync-fill{background:var(--accent);box-shadow:none}.sync-fill.full{background:var(--red)}
+.badge{border-radius:999px}.btn-sync{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast)}.btn-sync:hover{background:var(--accent);}
 .btn,.btn-sync,.btn-unsync{border-radius:999px!important}
 .empty-icon{width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;margin:0 auto 12px}.empty-icon img{width:26px;height:26px;display:block;object-fit:contain}
 .modal-bg{background:rgba(0,0,0,.45);backdrop-filter:blur(8px)}.modal-panel{box-shadow:none;background:var(--glass);border-radius:var(--r2)}.btn-glass{box-shadow:none;background:var(--bg-grad)}
 @media(max-width:560px){.synced-card,.local-card{grid-template-columns:1fr}.synced-card-actions{width:100%}.btn-synced-action,.btn-sync{flex:1;justify-content:center;height:40px}}
 @media(max-width:560px){.sync-card-skeleton{grid-template-columns:1fr;min-height:134px}.sync-skeleton-actions{width:100%}.sync-skeleton-actions i{height:40px;flex:1}.local-card-skeleton{min-height:111px}.local-card-skeleton .sync-skeleton-actions i{height:40px}}
 </style>
+<link rel="stylesheet" href="design-system.css?v=20260919-1">
+<script defer src="ui-system.js?v=20260919-1"></script>
 </head>
 <body>
+<script>
+document.body.classList.toggle('dark-mode',!!window.veliosInitialDark);
+document.documentElement.classList.remove('theme-start-dark');
+</script>
 
 <nav>
   <button class="nav-back" onclick="window.location.href='index.html'">
@@ -236,7 +255,7 @@ nav,body.dark-mode nav{background:var(--bg-grad)!important;border-color:var(--gl
     <div class="modal-desc" id="desyncDesc">Deze set wordt niet meer gesynchroniseerd tussen je apparaten. Je lokale kopie blijft beschikbaar.</div>
     <div class="modal-footer">
       <button class="btn btn-glass" onclick="closeDesyncModal()">Annuleren</button>
-      <button class="btn btn-danger" id="desyncConfirmBtn" onclick="confirmDesync()">Desynchroniseren</button>
+      <button class="btn btn-danger-soft btn-danger" id="desyncConfirmBtn" onclick="confirmDesync()">Desynchroniseren</button>
     </div>
   </div>
 </div>
@@ -387,11 +406,11 @@ function renderSyncedSets() {
         ${date?`<div class="synced-card-date">${date}</div>`:''}
       </div>
       <div class="synced-card-actions">
-        <button class="btn-synced-action" onclick="window.location.href='index.html?editCloud=${encodeURIComponent(item.set_id)}'">
+        <button class="btn btn-tonal btn-synced-action" onclick="window.location.href='index.html?editCloud=${encodeURIComponent(item.set_id)}'">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
           Bewerken
         </button>
-        <button class="btn-synced-action danger" onclick="window.location.href='index.html?deleteCloud=${encodeURIComponent(item.set_id)}'">
+        <button class="btn btn-danger-soft btn-synced-action danger" onclick="window.location.href='index.html?deleteCloud=${encodeURIComponent(item.set_id)}'">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
           Verwijderen
         </button>
@@ -435,7 +454,7 @@ function renderLocalSets(syncCount) {
       </div>
       ${alreadySynced
         ? `<span class="badge badge-purple" style="flex-shrink:0">Gesynchroniseerd</span>`
-        : `<button class="btn-sync" ${disabled?'disabled':''} onclick="doSync('${set.id}',this)">
+        : `<button class="btn btn-primary btn-sync" ${disabled?'disabled':''} onclick="doSync('${set.id}',this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
             ${limitReached ? 'Limiet bereikt' : 'Synchroniseer'}
           </button>`

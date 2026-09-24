@@ -1,0 +1,344 @@
+[
+  {
+    "name": "flashcard has no shadow",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "old known label removed",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "flashcard itself centered",
+    "ok": true,
+    "data": {
+      "middle": 468,
+      "viewport": 468
+    }
+  },
+  {
+    "name": "good counter updates",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "undo restores counters",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "wrong counter updates",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "counters persist when resuming",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "study card itself centered",
+    "ok": true,
+    "data": {
+      "middle": 468.04083251953125,
+      "viewport": 468
+    }
+  },
+  {
+    "name": "correct feedback stays for first part of second",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "correct answer advances after one second",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "manual next cancels delayed advance",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "wrong answer does not auto advance",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "correct multiple choice auto advances",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "leaving mode cancels advance",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam excluded from focal centering",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "centered content fits 390",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "study focal center 390",
+    "ok": true,
+    "data": {
+      "middle": 422.00640869140625,
+      "viewport": 422
+    }
+  },
+  {
+    "name": "centered content fits 1363",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "study focal center 1363",
+    "ok": true,
+    "data": {
+      "middle": 468,
+      "viewport": 468
+    }
+  },
+  {
+    "name": "voice removed entirely",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "close matches skip button style",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "active star filled white",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "active star uses accent fill",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "close returns to set",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "title hidden at top 360",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile title below logo and menu 360",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "title hidden at top 390",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile title below logo and menu 390",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "title hidden at top 750",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile title below logo and menu 750",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "close button and hidden header flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "close button and hidden header stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "close button and hidden header overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "bulk star marks entire set",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "bulk clear disables empty star filter",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "menu black in dark mode",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "grouped button corners",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits flashcards (390, 844)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "inactive face content immediately hidden",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits stampen (390, 844)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "input avoids iOS focus zoom",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits overhoren (390, 844)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam page retains answer",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam review paginates",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits flashcards (360, 640)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "inactive face content immediately hidden",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits stampen (360, 640)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "input avoids iOS focus zoom",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits overhoren (360, 640)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam page retains answer",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam review paginates",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits flashcards (844, 390)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "inactive face content immediately hidden",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits stampen (844, 390)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "input avoids iOS focus zoom",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits overhoren (844, 390)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam page retains answer",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam review paginates",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits flashcards (390, 360)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "inactive face content immediately hidden",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits stampen (390, 360)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "input avoids iOS focus zoom",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mode locked and fits overhoren (390, 360)",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam page retains answer",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "exam review paginates",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "scroll restored on exit",
+    "ok": true,
+    "data": null
+  }
+]

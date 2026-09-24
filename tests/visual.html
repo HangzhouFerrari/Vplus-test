@@ -1,0 +1,4 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;height:100%;overflow:hidden}iframe{border:0;width:100%;height:100%}</style><iframe id="frame"></iframe><script>
+sessionStorage.setItem('velios-sw-reloaded-20260919-1','1');localStorage.setItem('sd_welcome_seen','1');localStorage.setItem('sd_onboard','{"home":true,"set":true,"flashcards":true,"stampen":true,"overhoren":true}');localStorage.setItem('sd_theme','{"followSystem":false,"darkMode":false,"accentColor":"#ff9f0a"}');
+const frame=document.getElementById('frame');frame.src='../set.html?set=040402033';frame.onload=()=>setTimeout(()=>{const w=frame.contentWindow;const mode=new URLSearchParams(location.search).get('mode')||'flashcards';w.startMode(mode);if(mode==='stampen'){w.eval("ST.itype='open';ST.copyCorrect=false;stRenderQ();document.getElementById('st-inp').value='onjuist';stCheckOpen()");}if(new URLSearchParams(location.search).has('settings'))w.toggleDD('fc-dd');},700);
+</script>

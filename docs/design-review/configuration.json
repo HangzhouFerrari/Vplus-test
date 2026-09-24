@@ -1,0 +1,526 @@
+[
+  {
+    "name": "settings complete and fit flashcards 390 False",
+    "ok": true,
+    "data": {
+      "rows": 5,
+      "controls": 5,
+      "body": true,
+      "x": 0,
+      "y": 44,
+      "right": 390,
+      "bottom": 844,
+      "header": "Flitskaarten",
+      "display": "flex",
+      "bg": "rgb(242, 242, 247)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface flashcards False",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile category hides navigation",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile back restores categories",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit stampen 390 False",
+    "ok": true,
+    "data": {
+      "rows": 9,
+      "controls": 9,
+      "body": true,
+      "x": 0,
+      "y": 44,
+      "right": 390,
+      "bottom": 844,
+      "header": "Stampen",
+      "display": "flex",
+      "bg": "rgb(242, 242, 247)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface stampen False",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile category hides navigation",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile back restores categories",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit overhoren 390 False",
+    "ok": true,
+    "data": {
+      "rows": 9,
+      "controls": 9,
+      "body": true,
+      "x": 0,
+      "y": 44,
+      "right": 390,
+      "bottom": 844,
+      "header": "Overhoren",
+      "display": "flex",
+      "bg": "rgb(242, 242, 247)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface overhoren False",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile category hides navigation",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile back restores categories",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit flashcards 390 True",
+    "ok": true,
+    "data": {
+      "rows": 5,
+      "controls": 5,
+      "body": true,
+      "x": 0,
+      "y": 44,
+      "right": 390,
+      "bottom": 844,
+      "header": "Flitskaarten",
+      "display": "flex",
+      "bg": "rgb(0, 0, 0)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface flashcards True",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile category hides navigation",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile back restores categories",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit stampen 390 True",
+    "ok": true,
+    "data": {
+      "rows": 9,
+      "controls": 9,
+      "body": true,
+      "x": 0,
+      "y": 44,
+      "right": 390,
+      "bottom": 844,
+      "header": "Stampen",
+      "display": "flex",
+      "bg": "rgb(0, 0, 0)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface stampen True",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile category hides navigation",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile back restores categories",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit overhoren 390 True",
+    "ok": true,
+    "data": {
+      "rows": 9,
+      "controls": 9,
+      "body": true,
+      "x": 0,
+      "y": 44,
+      "right": 390,
+      "bottom": 844,
+      "header": "Overhoren",
+      "display": "flex",
+      "bg": "rgb(0, 0, 0)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface overhoren True",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile category hides navigation",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "mobile back restores categories",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit flashcards 1363 False",
+    "ok": true,
+    "data": {
+      "rows": 5,
+      "controls": 5,
+      "body": true,
+      "x": 311.5,
+      "y": 102,
+      "right": 1051.5,
+      "bottom": 742,
+      "header": "Kaarten",
+      "display": "flex",
+      "bg": "rgb(242, 242, 247)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface flashcards False",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit stampen 1363 False",
+    "ok": true,
+    "data": {
+      "rows": 9,
+      "controls": 9,
+      "body": true,
+      "x": 311.5,
+      "y": 102,
+      "right": 1051.5,
+      "bottom": 742,
+      "header": "Vragen",
+      "display": "flex",
+      "bg": "rgb(242, 242, 247)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface stampen False",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit overhoren 1363 False",
+    "ok": true,
+    "data": {
+      "rows": 9,
+      "controls": 9,
+      "body": true,
+      "x": 311.5,
+      "y": 102,
+      "right": 1051.5,
+      "bottom": 742,
+      "header": "Toets",
+      "display": "flex",
+      "bg": "rgb(242, 242, 247)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface overhoren False",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit flashcards 1363 True",
+    "ok": true,
+    "data": {
+      "rows": 5,
+      "controls": 5,
+      "body": true,
+      "x": 311.5,
+      "y": 102,
+      "right": 1051.5,
+      "bottom": 742,
+      "header": "Kaarten",
+      "display": "flex",
+      "bg": "rgb(0, 0, 0)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface flashcards True",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit stampen 1363 True",
+    "ok": true,
+    "data": {
+      "rows": 9,
+      "controls": 9,
+      "body": true,
+      "x": 311.5,
+      "y": 102,
+      "right": 1051.5,
+      "bottom": 742,
+      "header": "Vragen",
+      "display": "flex",
+      "bg": "rgb(0, 0, 0)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface stampen True",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings complete and fit overhoren 1363 True",
+    "ok": true,
+    "data": {
+      "rows": 9,
+      "controls": 9,
+      "body": true,
+      "x": 311.5,
+      "y": 102,
+      "right": 1051.5,
+      "bottom": 742,
+      "header": "Toets",
+      "display": "flex",
+      "bg": "rgb(0, 0, 0)",
+      "overflow": false
+    }
+  },
+  {
+    "name": "menu surface overhoren True",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "category shows its settings overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "settings returns to owner overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "changing mode preserves behavior and removes old panel",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "leaving mode removes settings panel",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "native selects replaced flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "custom list above menu and fits flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "escape closes choice only flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "choice updates mode flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "closing settings removes choice list flashcards",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "native selects replaced stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "custom list above menu and fits stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "escape closes choice only stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "choice updates mode stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "closing settings removes choice list stampen",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "native selects replaced overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "custom list above menu and fits overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "escape closes choice only overhoren",
+    "ok": true,
+    "data": null
+  },
+  {
+    "name": "choice updates mode overhoren",
+    "ok": true,
+    "data": null
+  }
+]

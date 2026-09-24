@@ -1,0 +1,5 @@
+<!doctype html><pre id="out">RUNNING</pre><iframe id="frame"></iframe><script>
+sessionStorage.setItem('velios-sw-reloaded-20260919-1','1');localStorage.setItem('sd_onboard','{"set":true,"flashcards":true}');
+const frame=document.getElementById('frame');frame.src='../set.html?set=040402033';frame.onload=()=>setTimeout(()=>{
+try{const w=frame.contentWindow;w.startMode('flashcards');const reduced=w.matchMedia('(prefers-reduced-motion:reduce)').matches;const duration=parseFloat(w.getComputedStyle(w.document.getElementById('fc-inner')).transitionDuration);document.getElementById('out').textContent=JSON.stringify([{name:'reduced motion preference honored',ok:reduced&&duration<.001,duration}]);}catch(e){document.getElementById('out').textContent=JSON.stringify([{error:e.stack}])}},700);
+</script>

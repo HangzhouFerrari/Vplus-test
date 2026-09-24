@@ -1,8 +1,21 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="velios-ui">
 <head>
+<meta charset="UTF-8">
+<style>html.theme-start-dark{background:#000;color-scheme:dark}</style>
+<script>
+(function(){
+  var dark=false;
+  try{
+    var saved=JSON.parse(localStorage.getItem('sd_theme')||'{}')||{};
+    dark=saved.followSystem!==false?window.matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;
+  }catch(e){dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;}
+  window.veliosInitialDark=dark;
+  document.documentElement.classList.toggle('theme-start-dark',dark);
+})();
+</script>
+
   <script src="sw-register.js?v=20260821-9"></script>
-  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta id="theme-color-meta" name="theme-color" content="#f2f2f7">
   <title>Pagina niet gevonden | Velios+</title>
@@ -24,10 +37,16 @@
     @media(max-width:560px){header{height:calc(70px + env(safe-area-inset-top))}.brand{width:104px}.actions{flex-direction:column}.btn{width:100%}.code{line-height:.9}}
     @media(prefers-reduced-motion:no-preference){.error{animation:enter .48s cubic-bezier(.22,1,.36,1) both}@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}}
   </style>
+<link rel="stylesheet" href="design-system.css?v=20260919-1">
+<script defer src="ui-system.js?v=20260919-1"></script>
 </head>
 <body>
+<script>
+document.body.classList.toggle('dark-mode',!!window.veliosInitialDark);
+document.documentElement.classList.remove('theme-start-dark');
+</script>
   <header><a class="brand" href="index.html#home" aria-label="Velios+ dashboard"><img src="assets/branding/logo_full-svg.svg" alt="Velios+"><span class="brand-plus"></span></a></header>
-  <main><section class="error"><div class="code" aria-hidden="true">404</div><h1>Deze pagina bestaat niet</h1><p>De link klopt misschien niet meer. Ga terug naar je dashboard of open de bestanden om verder te leren.</p><div class="actions"><a class="btn primary" href="index.html#home">Naar dashboard</a><a class="btn secondary" href="index.html#library">Naar bestanden</a></div></section></main>
+  <main><section class="error"><div class="code" aria-hidden="true">404</div><h1>Deze pagina bestaat niet</h1><p>De link klopt misschien niet meer. Ga terug naar je dashboard of open de bestanden om verder te leren.</p><div class="actions"><a class="btn btn-primary" href="index.html#home">Naar dashboard</a><a class="btn btn-tonal" href="index.html#library">Naar bestanden</a></div></section></main>
   <script>(function(){try{const saved=JSON.parse(localStorage.getItem('sd_theme')||'{}');const dark=saved.followSystem!==false?matchMedia('(prefers-color-scheme:dark)').matches:!!saved.darkMode;document.body.classList.toggle('dark-mode',dark);document.getElementById('theme-color-meta').content=dark?'#000000':'#f2f2f7';const accent=saved.accentColor==='#0062ff'&&!saved.accentWasChosen?'#ff9f0a':(saved.accentColor||'#ff9f0a');document.documentElement.style.setProperty('--accent',accent);document.documentElement.style.setProperty('--accent-light',`color-mix(in srgb,${accent} 13%,transparent)`)}catch(e){}})();</script>
 </body>
 </html>
